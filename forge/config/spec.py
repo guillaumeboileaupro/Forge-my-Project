@@ -17,8 +17,12 @@ PROJECT_TYPES = ("library", "cli", "api", "web")
 OPTIONS = {"mcp": False}
 FIELDS = {
     "schema_version", "name", "description", "project_type", "architecture", "technologies",
-    "versions", "agents", "security", "options",
+    "versions", "agents", "security", "options", "external_skills",
 }
+REPOSITORY = re.compile(r"^[A-Za-z0-9-]{1,39}/[A-Za-z0-9._-]{1,100}$")
+COMMIT = re.compile(r"^[0-9a-f]{40}$")
+SKILL_PATH = re.compile(r"^[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)*$")
+MAX_EXTERNAL_SKILLS = 20
 MAX_TECHNOLOGIES = 30
 
 
@@ -37,6 +41,7 @@ class ProjectSpec:
     architecture: str = ""
     versions: dict = field(default_factory=dict)
     options: dict = field(default_factory=lambda: dict(OPTIONS))
+    external_skills: tuple = ()  # approbations explicites : (depot, commit, chemin de base, nom)
 
     @property
     def package_name(self):
@@ -95,6 +100,28 @@ def _options(data):
     return merged
 
 
+def _external_skills(data):
+    """Skills externes approuves par l'utilisateur, epingles sur un commit."""
+    value = data.get("external_skills", [])
+    if not isinstance(value, list) or len(value) > MAX_EXTERNAL_SKILLS:
+        raise SpecError("external_skills : liste d'au plus %d approbations" % MAX_EXTERNAL_SKILLS)
+    approvals = []
+    for item in value:
+        if not isinstance(item, dict) or set(item) != {"repository", "commit", "path", "name"}:
+            raise SpecError("external_skills : champs repository, commit, path, name requis")
+        repository, commit, path, name = item["repository"], item["commit"], item["path"], item["name"]
+        if not all(isinstance(v, str) for v in item.values()):
+            raise SpecError("external_skills : valeurs textuelles attendues")
+        if not REPOSITORY.fullmatch(repository) or not COMMIT.fullmatch(commit):
+            raise SpecError("external_skills : depot ou commit invalide (SHA complet requis)")
+        if not SKILL_PATH.fullmatch(path) or ".." in path.split("/") or not TECH_ID.fullmatch(name):
+            raise SpecError("external_skills : chemin ou nom invalide")
+        approvals.append((repository, commit, path, name))
+    if len(set(approvals)) != len(approvals):
+        raise SpecError("external_skills : doublon")
+    return tuple(approvals)
+
+
 def parse_spec(data):
     """Valide un dictionnaire (JSON) et retourne un ProjectSpec immuable."""
     if not isinstance(data, dict):
@@ -123,4 +150,5 @@ def parse_spec(data):
         architecture=_text(data, "architecture", 4000),
         versions=_versions(data),
         options=_options(data),
+        external_skills=_external_skills(data),
     )

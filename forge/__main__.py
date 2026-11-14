@@ -3,8 +3,9 @@
     python -m forge plan spec.json                    diagnostics et fichiers prevus (JSON)
     python -m forge plan spec.json --verify --skills  + verification en ligne et skills my-skills
     python -m forge show spec.json AGENTS.md          contenu d'un fichier rendu
+    python -m forge skills-search spec.json           candidats de skills externes (reseau, aucune copie)
 
-Sans --verify ni --skills, aucune requete reseau n'est emise.
+Sans --verify, --skills ni skills-search, aucune requete reseau n'est emise.
 """
 import argparse
 import json
@@ -12,6 +13,8 @@ import sys
 
 from forge.diagnostics import ForgeError
 from forge.pipeline import run
+from forge.planner.plan import build_plan
+from forge.skills.service import search_for_plan
 
 
 def _load(path):
@@ -29,11 +32,27 @@ def _parser():
             command.add_argument("path")
         command.add_argument("--verify", action="store_true", help="verifier packages, versions, vulnerabilites (reseau)")
         command.add_argument("--skills", action="store_true", help="recuperer les skills de my-skills (reseau)")
+    search = sub.add_parser("skills-search", help="rechercher des skills externes (candidats a approuver)")
+    search.add_argument("spec")
     return parser
+
+
+def _search(path):
+    plan = build_plan(_load(path))
+    found = search_for_plan(plan)
+    print(json.dumps({"candidates": [c.as_dict() for c in found.candidates], "notes": found.notes},
+                     ensure_ascii=False, indent=2))
+    return 0
 
 
 def main(argv=None):
     args = _parser().parse_args(argv)
+    if args.command == "skills-search":
+        try:
+            return _search(args.spec)
+        except (OSError, ValueError) as exc:
+            print("Erreur : %s" % exc, file=sys.stderr)
+            return 2
     try:
         result = run(_load(args.spec), verify=args.verify, skills=args.skills)
     except ForgeError as exc:

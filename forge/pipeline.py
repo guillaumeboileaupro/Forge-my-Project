@@ -12,7 +12,7 @@ from forge import diagnostics as d
 from forge.diagnostics import ForgeError
 from forge.generator.render import render_plan
 from forge.planner.plan import build_plan
-from forge.skills.my_skills import skills_for_plan
+from forge.skills.service import skills_for_plan
 from forge.verification.report import verify_plan
 
 

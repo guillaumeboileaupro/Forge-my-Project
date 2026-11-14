@@ -7,7 +7,7 @@ seule ; seuls des fichiers texte sont copies.
 from dataclasses import dataclass
 
 from forge.skills import bundle as b
-from forge.skills.github import SHA, check_repository, default_client
+from forge.skills.github import SHA, check_repository
 from forge.verification.http import FetchError
 
 
@@ -38,8 +38,9 @@ def fetch_snapshot(client, repository, ref, base_path):
     return Snapshot(repository, commit, entries)
 
 
-def _load_skill(name, snapshot, client, base_path, policy):
-    record = b.SkillRecord(name, snapshot.repository, snapshot.commit, "copie")
+def load_skill(name, snapshot, client, base_path, policy, status="copie"):
+    """Telecharge les fichiers copiables d'un skill (jamais les scripts) et le valide."""
+    record = b.SkillRecord(name, snapshot.repository, snapshot.commit, status)
     total = 0
     for rel, mode, size in sorted(snapshot.entries[name]):
         reason = b.classify_entry(rel, mode, size, policy)
@@ -55,37 +56,26 @@ def _load_skill(name, snapshot, client, base_path, policy):
     return record
 
 
-def collect_skills(names, agents, client=None, config=None):
-    """Recupere les skills demandes ; une indisponibilite produit des avertissements, pas d'echec."""
-    config = config or b.load_copy_policy()
+def collect_skills(names, agents, client, config, result):
+    """Ajoute a `result` les skills my-skills demandes ; indisponibilite = avertissement."""
     source, policy = config["my_skills"], config["copy"]
-    result = b.SkillBundle()
     if not names:
         return result
     try:
-        client = client or default_client()
         snapshot = fetch_snapshot(client, source["repository"], source["ref"], source["path"])
     except FetchError as exc:
         for name in names:
             result.records.append(b.SkillRecord(name, source["repository"], "", "NON VERIFIE", notes=[str(exc)]))
-    else:
-        for name in names:
-            if name not in snapshot.entries:
-                result.records.append(b.SkillRecord(name, source["repository"], snapshot.commit, "absent"))
-                continue
-            try:
-                record = _load_skill(name, snapshot, client, source["path"], policy)
-            except FetchError as exc:
-                record = b.SkillRecord(name, source["repository"], snapshot.commit, "NON VERIFIE", notes=[str(exc)])
-            result.records.append(record)
-            if record.status == "copie":
-                b.place(record, agents, result)
-    for record in result.records:
-        result.diagnostics.extend(b.record_diagnostics(record))
-    result.files["docs/SKILLS.md"] = b.provenance_document(result, agents)
+        return result
+    for name in names:
+        if name not in snapshot.entries:
+            result.records.append(b.SkillRecord(name, source["repository"], snapshot.commit, "absent"))
+            continue
+        try:
+            record = load_skill(name, snapshot, client, source["path"], policy)
+        except FetchError as exc:
+            record = b.SkillRecord(name, source["repository"], snapshot.commit, "NON VERIFIE", notes=[str(exc)])
+        result.records.append(record)
+        if record.status == "copie":
+            b.place(record, agents, result)
     return result
-
-
-def skills_for_plan(plan, client=None, config=None):
-    """Adaptateur pour generate(..., skills=...)."""
-    return collect_skills(list(plan.composition.skills), plan.spec.agents, client, config)

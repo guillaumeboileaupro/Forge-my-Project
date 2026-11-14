@@ -17,7 +17,7 @@ from forge.verification.http import FetchError, fetch_json, fetch_text
 REPOSITORY = re.compile(r"^[A-Za-z0-9-]{1,39}/[A-Za-z0-9._-]{1,100}$")
 REF = re.compile(r"^[A-Za-z0-9._/-]{1,100}$")
 SHA = re.compile(r"^[0-9a-f]{40}$")
-API_PATH = re.compile(r"^/repos/[A-Za-z0-9._/%?=&-]+$")
+API_PATH = re.compile(r"^/repos/[A-Za-z0-9._/%?=&-]+$|^/search/code\?q=[A-Za-z0-9+:._%-]+&per_page=\d{1,3}$")
 
 
 def check_repository(repository, ref):

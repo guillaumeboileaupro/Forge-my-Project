@@ -5,7 +5,8 @@ from forge.diagnostics import ForgeError
 from forge.pipeline import run
 from forge.skills import bundle
 from forge.skills.github import GhCliClient
-from forge.skills.my_skills import collect_skills, fetch_snapshot
+from forge.skills.my_skills import fetch_snapshot
+from forge.skills.service import skills_for_plan
 from forge.verification.http import FetchError
 
 SHA = "a" * 40
@@ -66,7 +67,11 @@ class SnapshotTests(unittest.TestCase):
 
 class CollectTests(unittest.TestCase):
     def collect(self, names, agents=("codex", "claude"), client=None):
-        return collect_skills(names, agents, client or FakeGitHub(repo()))
+        plan = mock.Mock()
+        plan.composition.skills = names
+        plan.spec.agents = agents
+        plan.spec.external_skills = ()
+        return skills_for_plan(plan, client or FakeGitHub(repo()))
 
     def test_only_text_files_are_copied_for_each_agent(self):
         result = self.collect(["code-solid"])
@@ -113,8 +118,7 @@ class PipelineTests(unittest.TestCase):
     SPEC = {"name": "lib-x", "project_type": "library", "agents": ["codex"], "technologies": ["python", "unittest"]}
 
     def test_pipeline_merges_skills(self):
-        result = run(self.SPEC, skills=True, skill_collector=lambda plan: collect_skills(
-            list(plan.composition.skills), plan.spec.agents, FakeGitHub(repo())))
+        result = run(self.SPEC, skills=True, skill_collector=lambda plan: skills_for_plan(plan, FakeGitHub(repo())))
         self.assertIn(".agents/skills/code-solid/SKILL.md", result.files)
         self.assertIn("docs/SKILLS.md", result.files)
         self.assertTrue(result.as_dict()["ok"])
