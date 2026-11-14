@@ -1,25 +1,79 @@
-# Architecture du generateur
+# Architecture cible - Forge-my-Project
 
-## But
-Formulaire local -> configuration validee -> plan de generation -> fichiers -> ZIP telechargeable.
+## Etat actuel
+Prototype en Python standard library: server.py expose un formulaire local index.html; generator.py valide une configuration limitee, produit une arborescence et l'export ZIP. Le prototype ne satisfait pas encore les specifications. Conserver son fonctionnement pendant la migration et ne pas annoncer les modules cibles comme implementes.
 
-## Composants
-- index.html : interface et soumission JSON, aucune logique de confiance.
-- server.py : serveur HTTP uniquement sur loopback, limite de requete, erreurs et telechargement.
-- generator.py : validate() refuse les options inconnues, build() produit un dictionnaire chemin-contenu, generate() ecrit l'archive en memoire.
-- tests/ : contrat des options, refus des chemins dangereux, fichiers generes, tests de securite de base.
+## Flux cible
+```text
+UI locale (Firefox) -> questionnaire conditionnel / profils
+  -> schema versionne / validation
+  -> planificateur de regles et compatibilites
+  -> catalogues et templates externes versionnes
+  -> selection skills / verification packages, versions et MCP optionnels
+  -> rendu deterministe des documents, hooks, workflows
+  -> audit des fichiers / apercu arbre + edition + diff
+  -> validation explicite / sauvegarde + ecriture atomique dans dossier choisi
+  -> rapport et logs expurges
+```
 
-## Frontieres de confiance
-Le navigateur est non fiable. Le serveur ne doit jamais executer les donnees du formulaire en shell et ne doit jamais ecrire une entree archive hors du dossier racine du projet. Pas de communication GitHub ni d'installation depuis l'interface tant que des permissions explicites et une verification n'existent pas.
+## Arborescence cible (a creer progressivement)
+```text
+Forge-my-Project/
+  AGENTS.md
+  README.md
+  TODO.md
+  docs/
+    SPECIFICATIONS.md
+    ARCHITECTURE.md
+    DEVELOPMENT_PLAN.md
+    FINALIZATION_PLAN.md
+    SECURITY.md
+    TESTING.md
+    DECISIONS/
+  forge/
+    config/
+    rules/
+    planner/
+    generator/
+    skills/
+    verification/
+    security/
+    filesystem/
+  ui/
+    index.html
+    css/
+    js/
+  templates/
+    agents/
+    documentation/
+    architecture/
+    skills/
+    hooks/
+    ci/
+  catalogs/
+    technologies/
+    security/
+    profiles/
+  tests/
+  .agents/skills/
+  .github/workflows/
+  .githooks/
+```
 
-## Cible evolutive
-1. Schema versionne et questionnaire conditionnel.
-2. Catalogue de stacks et templates approuves (langage, base, deployeur, agents).
-3. Resolver de dependances : registre officiel, versions, docs des imports/API, licences, advisory databases; echec ferme si hors ligne.
-4. Assembleur de skills avec conventions Codex/Claude compatibles et profils utilisateurs.
-5. Moteur de securite : politiques, hooks, analyse statique, secret scan, SCA, SBOM, attestations.
-6. Adaptateurs CI/CD avec pipelines réellement executables, actions epinglees, permissions minimales.
-7. Apercu/diff et rapport de validation avant telechargement ou push distant.
+## Contrats
+- config: normalise et valide les informations de l'utilisateur; schema versionne.
+- rules/planner: propose une architecture et une liste de fichiers; signale conflits et lacunes; aucune IA.
+- templates/catalogs: donnees externes versionnees, validees avant utilisation, jamais executees comme commandes.
+- skills: recuperation depuis my-skills par Git/gh, source authentifiee et verification; externes soumis a approbation.
+- verification/security: controle des dependances, API, licences, vulnérabilites, CI et hooks; etat PASS/FAIL/NON VERIFIE.
+- filesystem: simulation/diff, protection contre sorties de repertoire, sauvegarde et ecriture controlee, jamais de remplacement implicite.
+- UI: ne detient pas la logique de confiance; toute requete est revalidee cote serveur.
 
-## Invariants
-Aucun appel reseau en generation pure. Aucun token dans le ZIP. Pas de claim de securite sans preuve. Aucun deployement effectif depuis le simple formulaire.
+## Frontieres de securite
+Serveur borne a 127.0.0.1. Les champs, modeles, depots distants et fichiers existants sont non fiables. Refuser la traversee de chemins, l'injection de commandes, les scripts non approuves et la divulgation d'identifiants. Les acces reseau aux registres, skills et MCP sont explicites, journalises et soumis aux regles d'autorisation. Aucun acces distant aux dossiers utilisateur sans validation.
+
+## Decisions
+- Aucun LLM integre, ni hebergement.
+- Aucune creation ni push du depot du projet cible.
+- Python et UI web legere retenus pour le moteur.
+- Evolution progressive des scripts existants avec tests de non-regression.

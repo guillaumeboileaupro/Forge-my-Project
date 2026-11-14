@@ -1,68 +1,47 @@
-# TODO - Cartographie et suivi de Forge-my-Project
+# TODO - Forge-my-Project
 
-Mise a jour: 2026-11-14. Etat base sur le code du depot, pas une execution de recette exhaustive.
+Reference: docs/SPECIFICATIONS.md et docs/DEVELOPMENT_PLAN.md.
+Statuts: TODO, IN PROGRESS, BLOCKED, DONE. Les durees sont des estimations indicatives. Le temps reel et l'ecart restent a renseigner pendant le developpement.
 
-## Legende
-- [ ] TODO - a faire
-- [x] DONE - implemente dans le depot (ne signifie pas validation complete)
-- Priorites P0 (bloquant), P1 (important), P2 (amelioration).
-- Charges en journees de developpement estimees, hors delais externes.
-- Toujours renseigner preuve et resultat avant de cocher.
-
-## Carte des modules
+## Cartographie
 ```text
-[UI index.html]
-       |
-       v
-[server.py] -> [config/validation] -> [planner] -> [templates]
-                                           |          |
-                                           v          v
-                                     [packages]   [code + docs]
-                                     [MCP]        [agents + skills]
-                                           \        /
-                                            [audit / tests]
-                                                  |
-                                         [preview + ZIP]
-                                                  |
-                                         [GitHub opt-in]
+T01 -> T02 -> T03 -> T04
+        |      +-> T05
+        +-> T06 -> T07 -> T08 -> T10 -> T14 -> T18
+                        |      +-> T09 -> T10 -> T15 -> T18
+                        |      +-> T11 -> T12 -> T13 -> T18
+                        |      +-> T16 -> T17 -> T18
 ```
-Aujourd'hui: UI, serveur, validation et ZIP sont dans index.html/server.py/generator.py. Les blocs planner/packages/MCP/audit sont cibles, pas encore implementes.
+Le graphe est indicatif: la colonne Depend de fait foi.
 
-## Taches ordonnees et dependances
+## Taches
+| ID | Phase | Travail | Depend de | Estime | Reel | Ecart | Statut | Critere de fin |
+| --- | --- | --- | --- | ---: | ---: | ---: | --- | --- |
+| T01 | P1 | Auditer le prototype et corriger ses defauts | - | 1 j | - | - | TODO | Tests serveur/ZIP et JS reproductibles |
+| T02 | P1 | Reorganiser modules et modeles externes sans casser l'existant | T01 | 1 j | - | - | TODO | Contrats clairs, tests verts |
+| T03 | P2 | Formulaire hybride, navigation et progression | T02 | 2 j | - | - | TODO | Parcours UI valides |
+| T04 | P2 | Questions conditionnelles et validation | T03 | 1 j | - | - | TODO | Questions coherentes selon reponses |
+| T05 | P2 | Profils, autosauvegarde et import/export JSON | T03 | 1 j | - | - | TODO | Reprise et import fiable |
+| T06 | P3 | Catalogue technologies et compatibilites | T02 | 2 j | - | - | TODO | Configs incompatibles detectees |
+| T07 | P3 | Moteur de regles et composition des templates | T06 | 2 j | - | - | TODO | Rendu deterministe et coherent |
+| T08 | P3 | AGENTS.md et documentation complete personnalisee | T07 | 2 j | - | - | TODO | Aucun contenu fictif cache |
+| T09 | P4 | Recuperer et selectionner les skills du depot my-skills | T07 | 1 j | - | - | TODO | Skills pertinents copies sans execution |
+| T10 | P4 | Recherche et validation de skills externes | T09 | 2 j | - | - | TODO | Sources verifiees, accord utilisateur |
+| T11 | P4 | Verifier packages, versions, compatibilites, API | T06 | 2 j | - | - | TODO | Packages inconnus rejetes |
+| T12 | P5 | GitHub Actions generees et verifiees | T07,T11 | 2 j | - | - | TODO | Pipelines reels pour stacks supportees |
+| T13 | P5 | Controles securite stricts et rapports | T11,T12 | 2 j | - | - | TODO | Scans applicables et blocage fiable |
+| T14 | P5 | Hooks Git et agents suivant leurs capacites | T07 | 1 j | - | - | TODO | Hooks activables et executes |
+| T15 | P5 | MCP optionnels verifies et valides | T10 | 1 j | - | - | TODO | Aucun MCP fictif ni secret |
+| T16 | P6 | Explorateur, apercu et edition des fichiers | T08 | 2 j | - | - | TODO | Modifications visibles avant ecriture |
+| T17 | P6 | Diff, fusion assistee, sauvegarde, ecriture locale | T16 | 2 j | - | - | TODO | Conflits et rollback testes |
+| T18 | P7 | Tests finaux, corrections, docs et rapport | T01-T17 | 3 j | - | - | TODO | Critères de finalisation valides |
+| **Total** | | | | **30 j** | **-** | **-** | | |
 
-| ID | Priorite | Tache | Depend de | Charge | Etat | Critere de fin |
-| --- | --- | --- | --- | ---: | --- | --- |
-| T01 | P0 | Tester serveur, generation ZIP, chemins/erreurs | - | 0.5 j | TODO | Tests automatises PASS |
-| T02 | P0 | Corriger profil JS/TypeScript et script npm | T01 | 1 j | TODO | npm test passe dans le ZIP |
-| T03 | P0 | Valider la CI du depot et ses preuves | T01 | 0.5 j | TODO | Run CI vert |
-| T04 | P0 | Definir schema JSON versionne | T01 | 1 j | TODO | Validation de tous les champs |
-| T05 | P0 | Formulaire guide conditionnel et recapitulatif | T04 | 2 j | TODO | Scenarios UI PASS |
-| T06 | P0 | Planner et matrice des stacks | T04 | 2 j | TODO | Choix incompatibles refuses |
-| T07 | P0 | Catalogue templates et code de base reel | T02,T06 | 3 j | TODO | Smoke tests sur toutes les stacks |
-| T08 | P0 | Verifier noms PyPI/npm, versions et API | T06 | 3 j | TODO | Package fictif rejete |
-| T09 | P0 | Lockfiles, licences et advisories | T08 | 2 j | TODO | Install reproductible + audit |
-| T10 | P0 | AGENTS.md, conventions et Definition of Done adaptes | T07 | 1 j | TODO | Contrat et commandes valides |
-| T11 | P0 | Skills conditionnels et hooks actives/valides | T10 | 1.5 j | TODO | Test des hooks et skills |
-| T12 | P0 | Catalogue MCP valide et permissions minimales | T08,T10 | 1.5 j | TODO | Aucun serveur invente ni token |
-| T13 | P0 | CI generee operationnelle pour chaque profil | T07,T09 | 2 j | TODO | Runs verts, echec sur regression |
-| T14 | P0 | Scans SAST/SCA/secrets, SBOM, rapport | T09,T13 | 3 j | TODO | Rapports et controles bloquants |
-| T15 | P1 | Apercu arbre/diff et export config | T05,T07 | 1.5 j | TODO | Recap et ZIP conformes |
-| T16 | P1 | Export GitHub explicite, branche/PR | T15,T14 | 2 j | TODO | Confirmation obligatoire |
-| T17 | P1 | Documentation Docker/S3NS/OUTSCALE verifiee | T13 | 2 j | TODO | Profils prouves ou NON VERIFIE |
-| T18 | P0 | Recette e2e, docs, bilan des risques | T11-T17 | 3 j | TODO | Gates G1-G10 satisfaites |
-| **TOTAL** | | **Charge indicative des taches** | | **30 j** | | **A reestimer selon choix** |
+## Ordre de travail
+Commencer par T01. Une seule PR ouverte et un seul agent de developpement a la fois. Actualiser les colonnes Reel/Ecart apres chaque tache et noter les preuves CI dans la PR.
 
-## Existant (a ne pas confondre avec fini)
-- [x] Serveur HTTP local et formulaire HTML initial.
-- [x] generateur ZIP basique et validation de certaines options.
-- [x] AGENTS.md du depot et six skills de developpement.
-- [x] Docs initiales architecture, securite et conventions.
-- [x] CI Python definie dans le depot.
-- [ ] Verifier resultat CI reel avant affirmation de PASS.
-- [ ] Verifier que tous les squelettes generes fonctionnent.
+## Etat existant
+Le serveur local, le formulaire initial, le ZIP, AGENTS.md, une bibliotheque initiale de skills, des docs et une CI du depot existent. Les fonctions cible non implementees ne doivent pas etre marquees DONE.
 
-## Prochain travail autorise
-Commencer T01, puis T02 et T03. Conserver une seule PR de developpement ouverte. Ne pas attaquer les MCP ou le cloud avant la validation du socle.
-
-## Bilan par changement
-A chaque PR, ajouter: ID des taches, temps passe, commandes et resultats, liens CI, fichiers modifies, risques, gates PASS/FAIL/NON VERIFIE. Si une tache est bloquee, renseigner la cause et la condition de reprise.
+## Notes de suivi
+Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impact securite, fichiers modifies, temps reel, blocages et risque residuel. Aucune tache DONE sans preuve.
