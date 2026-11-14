@@ -7,6 +7,7 @@ import tempfile
 import unittest
 import zipfile
 from generator import validate, build, generate
+from forge.generator.legacy import TEMPLATES_DIR, render_template
 
 CONFIG = {"name": "test-projet", "description": "Example", "language": "python", "agent": "codex", "deployment": "none", "security": "strict"}
 
@@ -38,6 +39,15 @@ class Tests(unittest.TestCase):
         data = build(CONFIG)
         self.assertIn("AGENTS.md", data)
         self.assertIn(".agents/skills/package-verification/SKILL.md", data)
+
+    def test_templates_are_external_and_values_are_not_reinterpreted(self):
+        self.assertTrue((TEMPLATES_DIR / "README.md.tmpl").is_file())
+        data = build(dict(CONFIG, description="Keep {{ command }} as data"))
+        self.assertIn("Keep {{ command }} as data", data["README.md"])
+
+    def test_template_paths_cannot_escape_library(self):
+        with self.assertRaisesRegex(ValueError, "Chemin de template invalide"):
+            render_template("../README.md")
 
     def test_javascript_package_uses_es_modules(self):
         data = build(dict(CONFIG, language="typescript"))

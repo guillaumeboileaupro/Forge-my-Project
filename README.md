@@ -18,6 +18,10 @@ Ouvrir http://127.0.0.1:8765, repondre au formulaire et telecharger l'archive ZI
 python3 -m unittest discover -s tests -v
 ```
 
+## Architecture
+
+`generator.py` reste la facade compatible. La validation et la generation historiques sont isolees sous `forge/`, le formulaire sous `ui/` et ses textes generes sous `templates/legacy/`. Les interfaces stables et les zones reservees au developpement parallele sont documentees dans `docs/CONTRACTS.md`.
+
 ## Moteur technique (apercu, sans ecriture)
 
 ```bash

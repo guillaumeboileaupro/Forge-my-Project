@@ -1,0 +1,14 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notice
+        run: |
+          echo 'CI template: configure actions pinned by full SHA and stack-specific scans before activation'
+          exit 1

@@ -5,7 +5,12 @@ from generator import generate, validate
 import json
 import re
 
-INDEX = (Path(__file__).parent / "index.html").read_bytes()
+ROOT = Path(__file__).parent
+STATIC = {
+    "/": (ROOT / "ui" / "index.html", "text/html; charset=utf-8"),
+    "/css/app.css": (ROOT / "ui" / "css" / "app.css", "text/css; charset=utf-8"),
+    "/js/app.js": (ROOT / "ui" / "js" / "app.js", "text/javascript; charset=utf-8"),
+}
 LOCAL_HOST = re.compile(r"^(?:127\.0\.0\.1|localhost)(?::[0-9]{1,5})?$")
 
 
@@ -18,16 +23,18 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("X-Frame-Options", "DENY")
         self.send_header("Referrer-Policy", "no-referrer")
         self.send_header("Cache-Control", "no-store")
-        self.send_header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'")
+        self.send_header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'; style-src 'self'; script-src 'self'; connect-src 'self'")
         if download:
             self.send_header("Content-Disposition", 'attachment; filename="' + download + '"')
         self.end_headers()
         self.wfile.write(content)
 
     def do_GET(self):
-        if self.path != "/":
+        resource = STATIC.get(self.path)
+        if resource is None:
             return self.reply(404, b"Not found")
-        self.reply(200, INDEX, "text/html; charset=utf-8")
+        path, media = resource
+        self.reply(200, path.read_bytes(), media)
 
     def do_POST(self):
         if self.path != "/generate":
