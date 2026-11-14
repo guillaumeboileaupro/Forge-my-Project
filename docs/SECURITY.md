@@ -18,3 +18,10 @@
 
 ## Vulnerabilites
 Bloquer severites critiques/hautes quand des outils d'audit fiables sont configures. Les outils ne garantissent jamais zero vulnerabilite. Suivre les exceptions motivees et datees; ne pas masquer les alertes.
+
+## Donnees locales du questionnaire (T05)
+- Brouillon: `localStorage` du navigateur (cle `forge-my-project.draft.v1`), revalide par le serveur avant restauration; un brouillon incompatible est supprime, jamais applique.
+- Profils personnels: `$FORGE_PROFILES_FILE`, sinon `$XDG_CONFIG_HOME/forge-my-project/profiles.json`, sinon `~/.config/forge-my-project/profiles.json`; dossier 0700, fichier 0600, ecriture atomique, liens symboliques et fichiers illisibles refuses sans ecrasement. Aucun nom ni description de projet n'y est stocke.
+- Import JSON: 64 Kio maximum, `JSON.parse` uniquement, validation serveur integrale avant application; affichage par `textContent`.
+- Ne pas stocker de secret dans les reponses: elles sont enregistrees en clair.
+

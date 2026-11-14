@@ -21,7 +21,7 @@ Le graphe est indicatif: la colonne Depend de fait foi.
 | T02 | P1 | Reorganiser modules et modeles externes sans casser l'existant | T01 | 1 j | - | - | DONE | Contrats clairs, tests verts |
 | T03 | P2 | Formulaire hybride, navigation et progression | T02 | 2 j | en cours | - | IN PROGRESS | Parcours UI valides |
 | T04 | P2 | Questions conditionnelles et validation | T03 | 1 j | en cours | - | IN PROGRESS | Questions coherentes selon reponses |
-| T05 | P2 | Profils, autosauvegarde et import/export JSON | T03 | 1 j | - | - | TODO | Reprise et import fiable |
+| T05 | P2 | Profils, autosauvegarde et import/export JSON | T03 | 1 j | 0 h 09 | -7 h 51 (base 8 h/j) | DONE | Reprise et import fiable |
 | T06 | P3 | Catalogue technologies et compatibilites | T02 | 2 j | 0 h 13 | -15 h 47 (base 8 h/j) | DONE | Configs incompatibles detectees |
 | T07 | P3 | Moteur de regles et composition des templates | T06 | 2 j | 0 h 02 | -15 h 58 (base 8 h/j) | DONE | Rendu deterministe et coherent |
 | T08 | P3 | AGENTS.md et documentation complete personnalisee | T07 | 2 j | 0 h 03 | -15 h 57 (base 8 h/j) | DONE | Aucun contenu fictif cache |
@@ -66,3 +66,16 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 - Verifications reelles: package fictif rejete; django 3.0.0 et lodash 4.17.15 bloques (GHSA haute/critique); Node 20 et Python 3.9 bloques (fin de vie); 6 skills my-skills copies au commit 16cddc53, scripts ignores.
 - T10 reste IN PROGRESS: recherche et approbation disponibles dans le moteur et la CLI, pas encore dans l'interface.
 - NON VERIFIE: API des packages (pas d'installation); licence PyPI = derniere version publiee.
+
+### Integration moteur/formulaire - 14 novembre 2026 (Claude Code, PR #8)
+- Formulaire hybride sur `/`, API locale `/api/catalog|plan|archive`, formulaire historique sur `/legacy`; recette Firefox headless en CI.
+- Temps reel: 11 h 28 (fusion PR #6) -> 11 h 35 (CI verte), fusion par l'utilisateur a 11 h 43.
+- T03/T04 restent IN PROGRESS: la liste des 40 choix valides n'est pas dans le depot, couverture complete non verifiable.
+
+### T05 - 14 novembre 2026 (Claude Code)
+- Temps reel: 11 h 44 -> 11 h 53 (0 h 09) jusqu'a la PR; CI et fusion notees dans la PR.
+- Profils predefinis (6, chacun genere un plan valide), profils personnels CRUD dans un fichier local 0600 a ecriture atomique, sauvegarde automatique (`localStorage`, ecriture immediate a la fermeture) revalidee avant restauration, import/export JSON valide par le serveur.
+- Tests: unitaires et HTTP (`tests/test_profiles.py`), recette Firefox (`FORGE_E2E=1`): restauration des choix conditionnels, brouillon incompatible ignore, cycle de vie des profils, export puis import, JSON invalide et configuration incompatible refuses. Recette executee 3 fois de suite sans echec.
+- Defaut corrige pendant la recette: une modification suivie d'un rechargement en moins de 300 ms etait perdue; sauvegarde forcee sur `pagehide`.
+- Limites: les approbations de skills externes importees ne sont pas conservees par l'interface (avertissement affiche); le brouillon est propre au navigateur.
+

@@ -3,7 +3,7 @@
 ## Etat actuel
 Prototype en Python standard library: server.py expose le formulaire ui/index.html et ses assets; generator.py conserve la facade publique historique. La validation et la generation historiques sont isolees dans forge/config/legacy.py et forge/generator/legacy.py; leurs textes sont dans templates/legacy/. Le prototype ne satisfait pas encore toutes les specifications. Conserver son fonctionnement pendant la migration et ne pas annoncer les modules cibles comme implementes.
 
-Moteur technique (T06-T11) disponible dans forge/ avec catalogs/ et templates/ : schema d'entree, catalogue et compatibilites, regles, rendu des documents, verification des packages et skills. Il alimente le formulaire hybride servi sur / (API locale /api/catalog, /api/plan, /api/archive dans forge/web.py) ; le formulaire historique reste sur /legacy via generator.py. Contrat et limites : docs/ENGINE.md et docs/CONTRACTS.md.
+Moteur technique (T06-T11) disponible dans forge/ avec catalogs/ et templates/ : schema d'entree, catalogue et compatibilites, regles, rendu des documents, verification des packages et skills. Il alimente le formulaire hybride servi sur / (API locale /api/catalog, /api/plan, /api/archive dans forge/web.py) ; le formulaire historique reste sur /legacy via generator.py. Profils predefinis dans catalogs/profiles/, profils personnels et reponses partielles geres par forge/config/profiles.py et forge/config/answers.py (T05). Contrat et limites : docs/ENGINE.md et docs/CONTRACTS.md.
 
 ## Flux cible
 ```text
