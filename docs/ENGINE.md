@@ -72,11 +72,22 @@ Uniquement sur demande (`verify`, `skills`, `skills-search`), en HTTPS vers une 
 - Lecture a un commit epingle ; copie des seuls fichiers texte (.md, .yaml, .yml, .json, .txt) dans `.agents/skills/` (Codex) et `.claude/skills/` (Claude Code). Scripts, executables, liens et binaires ne sont jamais telecharges et sont listes dans `docs/SKILLS.md`.
 - Skills externes : candidats de catalogues reconnus (et recherche GitHub si gh est authentifie, marques « source non reconnue ») ; copie uniquement apres approbation explicite enregistree dans `external_skills`, au commit approuve.
 
+## Fichiers de pile et CI generee (T12)
+
+- Regles `scaffold-*` : `pyproject.toml` (extras `dev`, pytest, couverture, Ruff, mypy strict), `package.json` (scripts, `engines`), `tsconfig.json` strict, `eslint.config.js`, `vitest.config.js` (seuils), `.gitignore`, package vide `src/{package}/__init__.py` ou `src/index.(js|ts)` et un test de fumee. Aucun code metier.
+- `.github/workflows/ci.yml` : actions officielles epinglees par SHA complet (`catalogs/ci/actions.json`), `permissions: contents: read`, `persist-credentials: false`, une etape par commande du catalogue (installation, formatage, lint, typage, tests avec seuil de couverture 80 %, audit, build). Le deploiement n'est jamais execute.
+- Versions : sans verification, manifestes non contraints (`latest` pour npm) et dependances NON VERIFIE ; avec `verify`, versions verifiees (`>=` PyPI, `^` npm).
+- Compatibilite npm : les `peerDependencies` entre packages retenus sont resolues (versions stables les plus recentes compatibles, ex. TypeScript abaisse si typescript-eslint ne le supporte pas) ; impossible = FAIL bloquant, plage illisible = NON VERIFIE.
+- Actions : avec `verify`, chaque tag est relu sur l'API GitHub ; un tag deplace = FAIL bloquant.
+- Preuve : `python3 tests/smoke_generated.py --verify` genere chaque profil predefini dans un dossier temporaire et execute toutes les etapes du workflow genere (job CI `generated-projects`).
+
 ## Limites connues
 
 - Les API des packages ne sont pas verifiees automatiquement (etat NON VERIFIE explicite).
 - La licence PyPI est celle de la derniere version publiee.
 - La recherche de skills externes lit chaque SKILL.md des catalogues reconnus : plusieurs dizaines de secondes.
 - Le catalogue couvre Python et Node.js/TypeScript ; toute autre pile est refusee comme inconnue.
+- Pas de lockfile genere (il exige d'executer l'installateur) : la CI generee utilise `npm install` tant que `package-lock.json` n'est pas versionne, puis `npm ci`.
+- Django : pas de squelette `manage.py` genere ; les tests passent par pytest.
 - Le moteur est branche sur le formulaire hybride (`/`, API `/api/*`, voir docs/CONTRACTS.md) ; `generator.py` et `/legacy` restent l'ancien parcours, inchange.
 - L'interface ne propose pas encore la recherche/approbation des skills externes (CLI uniquement), ni l'edition des fichiers avant ecriture (T16) ni l'ecriture locale (T17) : la sortie est un ZIP.

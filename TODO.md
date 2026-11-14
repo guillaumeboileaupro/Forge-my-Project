@@ -28,7 +28,7 @@ Le graphe est indicatif: la colonne Depend de fait foi.
 | T09 | P4 | Recuperer et selectionner les skills du depot my-skills | T07 | 1 j | 0 h 03 | -7 h 57 (base 8 h/j) | DONE | Skills pertinents copies sans execution |
 | T10 | P4 | Recherche et validation de skills externes | T09 | 2 j | 0 h 03 | - | IN PROGRESS | Sources verifiees, accord utilisateur |
 | T11 | P4 | Verifier packages, versions, compatibilites, API | T06 | 2 j | 0 h 03 | -15 h 57 (base 8 h/j) | DONE | Packages inconnus rejetes |
-| T12 | P5 | GitHub Actions generees et verifiees | T07,T11 | 2 j | - | - | TODO | Pipelines reels pour stacks supportees |
+| T12 | P5 | GitHub Actions generees et verifiees | T07,T11 | 2 j | 0 h 16 | -15 h 44 (base 8 h/j) | DONE | Pipelines reels pour stacks supportees |
 | T13 | P5 | Controles securite stricts et rapports | T11,T12 | 2 j | - | - | TODO | Scans applicables et blocage fiable |
 | T14 | P5 | Hooks Git et agents suivant leurs capacites | T07 | 1 j | - | - | TODO | Hooks activables et executes |
 | T15 | P5 | MCP optionnels verifies et valides | T10 | 1 j | - | - | TODO | Aucun MCP fictif ni secret |
@@ -78,4 +78,11 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 - Tests: unitaires et HTTP (`tests/test_profiles.py`), recette Firefox (`FORGE_E2E=1`): restauration des choix conditionnels, brouillon incompatible ignore, cycle de vie des profils, export puis import, JSON invalide et configuration incompatible refuses. Recette executee 3 fois de suite sans echec.
 - Defaut corrige pendant la recette: une modification suivie d'un rechargement en moins de 300 ms etait perdue; sauvegarde forcee sur `pagehide`.
 - Limites: les approbations de skills externes importees ne sont pas conservees par l'interface (avertissement affiche); le brouillon est propre au navigateur.
+
+### T12 - 14 novembre 2026 (Claude Code)
+- Temps reel: 11 h 57 -> 12 h 13 (0 h 16) jusqu'a la PR; CI et fusion notees dans la PR.
+- CI generee par le moteur: actions officielles epinglees par SHA (checkout v7.0.1, setup-python v7.1.0, setup-node v7.1.0, verifiees via l'API GitHub), permissions en lecture, une etape par commande du catalogue, seuil de couverture 80 %; manifestes et configurations d'outils minimaux sans code metier.
+- Preuve: `tests/smoke_generated.py --verify` execute la CI generee des 6 profils predefinis: PASS localement (Python 3.12, Node 24) et dans le job `generated-projects`.
+- Defaut reel detecte et corrige: typescript-eslint 8.72.2 n'accepte pas TypeScript 7 (ERESOLVE). Ajout de la resolution des peerDependencies npm (T11): TypeScript ajuste a 6.0.3 avec trace.
+- NON VERIFIE: pas de lockfile genere; Django sans squelette manage.py; seuils de couverture appliques a un code vide (100 %) jusqu'aux premiers modules.
 

@@ -10,7 +10,7 @@ Construire un generateur interactif, fiable et extensible qui produit des squele
 - Tests: tests/ (unitaires, API HTTP, recette Firefox headless activee par FORGE_E2E=1).
 - Aucun package tiers requis pour le generateur.
 - Moteur technique: forge/ (catalogs/, templates/), contrat dans docs/ENGINE.md; verification des registres uniquement sur demande explicite; formulaire hybride sur / (ui/index.html), formulaire historique sur /legacy. Aucun MCP operationnel n'est configure.
-- Le pipeline inclus dans les ZIP generes est un modele volontairement bloquant: ne pas le confondre avec la CI de ce depot.
+- Formulaire historique (/legacy, generator.py): son pipeline est un modele volontairement bloquant. Le moteur (/) genere une CI operationnelle (.github/workflows/ci.yml), executee pour chaque profil predefini par le job `generated-projects` de ce depot.
 
 ## Architecture
 Lire docs/ARCHITECTURE.md, docs/CONTRACTS.md et docs/DECISIONS/ avant de modifier les frontieres de modules.
@@ -40,7 +40,7 @@ Tester le formulaire sur http://127.0.0.1:8765 et les archives Python/JS avant d
 - Le mode affiche TypeScript mais produit actuellement un squelette JavaScript; ne pas le qualifier de TypeScript valide.
 - Les ZIP ne contiennent pas de lockfile, donc pas d'audit reproductible des dependances.
 - Le hook pre-commit n'est actif qu'apres configuration du chemin Git.
-- Le workflow genere est intentionnellement rouge et doit etre remplace par un pipeline valide.
+- Le workflow du formulaire historique est intentionnellement rouge; celui du moteur doit rester vert: toute modification de catalogs/ci, templates/stack ou des commandes du catalogue se valide avec `python3 tests/smoke_generated.py --verify`.
 - Security strict/hardened ne constitue pas une certification de securite.
 - Des chemins ou descriptions fournis par l'utilisateur sont des donnees, jamais des commandes.
 
