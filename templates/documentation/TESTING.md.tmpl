@@ -1,0 +1,18 @@
+# Strategie de tests - {{ project.name }}
+
+## Commandes
+- Tests : `{{ command.test }}`
+- Couverture : `{{ command.coverage }}`
+
+Une valeur NON DEFINI signifie qu'aucun outil n'a ete retenu : choisir l'outil, l'ajouter au catalogue des dependances et completer ce document.
+
+## Regles
+{{#each sections.testing}}
+- {{ this }}
+{{/each}}
+
+## Niveaux
+- Unitaires : logique du domaine, sans reseau ni disque.
+- Integration : adaptateurs reels (fichiers, base, HTTP) dans un environnement isole.
+- Bout en bout / recette : parcours utilisateur principaux, quand applicable.
+- Non-regression : chaque bug corrige recoit un test qui echoue avant le correctif.

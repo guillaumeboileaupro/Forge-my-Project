@@ -9,7 +9,7 @@ Construire un generateur interactif, fiable et extensible qui produit des squele
 - Validation / creation ZIP: facade generator.py; implementation historique dans forge/config/legacy.py et forge/generator/legacy.py.
 - Tests: tests/test_generator.py.
 - Aucun package tiers requis pour le generateur.
-- Le moteur ne verifie pas encore les registres de packages en direct et ne configure pas des MCP operationnels.
+- Moteur technique: forge/ (catalogs/, templates/), contrat dans docs/ENGINE.md; verification des registres uniquement sur demande explicite; pas encore branche sur l'UI. Aucun MCP operationnel n'est configure.
 - Le pipeline inclus dans les ZIP generes est un modele volontairement bloquant: ne pas le confondre avec la CI de ce depot.
 
 ## Architecture

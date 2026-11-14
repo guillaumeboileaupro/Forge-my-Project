@@ -1,0 +1,17 @@
+# Contribuer a {{ project.name }}
+
+## Workflow
+{{#each sections.workflow}}
+- {{ this }}
+{{/each}}
+
+## Avant d'ouvrir une PR
+{{#each commands}}
+- {{ this.label }} : {{#each this.commands}}`{{ this }}` {{/each}}
+{{/each}}
+- Mettre a jour la documentation, TODO.md (temps reel et ecart) et les ADR concernes.
+
+## Definition of Done
+{{#each sections.dod}}
+- [ ] {{ this }}
+{{/each}}

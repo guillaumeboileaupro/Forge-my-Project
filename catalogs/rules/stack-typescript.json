@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "id": "stack-typescript",
+  "description": "Regles specifiques a TypeScript.",
+  "priority": 25,
+  "when": {"technologies_any": ["typescript"]},
+  "sections": {
+    "conventions": ["Mode strict de TypeScript active ; aucun any explicite ou implicite."],
+    "pitfalls": ["Contourner le typage avec des assertions ou des commentaires de desactivation."]
+  },
+  "skills": ["typescript-no-any"]
+}

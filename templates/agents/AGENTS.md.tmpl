@@ -1,0 +1,107 @@
+{{! Instructions principales des agents. Contenu rendu par Forge-my-Project, sans IA. }}
+# {{ project.name }} - instructions pour les agents
+
+## Mission
+{{#each project.description_lines}}
+{{ this }}
+{{/each}}
+
+Type de projet : {{ project.type_label }}.
+Ce depot a ete initialise par Forge-my-Project : aucun code metier n'a ete genere. Toute fonctionnalite reste a concevoir, implementer et tester.
+
+## Agents et responsabilites
+{{#each agents}}
+- {{ this.name }} : instructions lues depuis {{ this.instructions }} ; skills dans {{ this.skills_dir }}.
+{{/each}}
+- Un seul agent developpeur actif a la fois sur une tache. Un second agent ne peut intervenir qu'en revue, sans modifier la branche en cours.
+- L'utilisateur reste responsable des decisions d'architecture, des fusions et de la configuration des acces GitHub.
+
+## Architecture
+Lire docs/ARCHITECTURE.md avant toute modification de structure ou de frontiere de module.
+{{#if architecture.is_manual}}
+Architecture definie par l'utilisateur (prioritaire) :
+{{#each architecture.manual}}
+> {{ this }}
+{{/each}}
+{{/if}}
+{{#if architecture.is_undefined}}
+Architecture NON DEFINIE : la preciser avec l'utilisateur avant d'implementer.
+{{/if}}
+{{#each sections.architecture}}
+- {{ this }}
+{{/each}}
+
+## Technologies retenues
+| Technologie | Categorie | Version | Documentation officielle |
+| --- | --- | --- | --- |
+{{#each technologies}}
+| {{ this.name }} | {{ this.category }} | {{#if this.version}}{{ this.version }}{{else}}a verifier (docs/DEPENDENCIES.md){{/if}} | {{ this.docs }} |
+{{/each}}
+
+## Commandes
+{{#each commands}}
+- {{ this.label }} :
+{{#each this.commands}}
+  - `{{ this }}`
+{{/each}}
+{{/each}}
+Une commande absente de cette liste est NON DEFINIE : ne pas l'inventer, la proposer dans une PR et la documenter.
+
+## Conventions
+{{#each sections.conventions}}
+- {{ this }}
+{{/each}}
+
+## Tests
+{{#each sections.testing}}
+- {{ this }}
+{{/each}}
+Voir docs/TESTING.md.
+
+## Dependances
+{{#each sections.dependencies}}
+- {{ this }}
+{{/each}}
+Voir docs/DEPENDENCIES.md : chaque dependance y figure avec son statut de verification.
+
+## Securite
+Niveau de securite demande : {{ project.security }}.
+{{#each sections.security}}
+- {{ this }}
+{{/each}}
+Voir SECURITY.md.
+{{#if has.docker}}
+
+## Deploiement
+{{#each sections.deployment}}
+- {{ this }}
+{{/each}}
+Voir docs/DEPLOYMENT.md.
+{{/if}}
+
+## Skills
+{{#if skills}}
+Skills recommandes pour ce projet (copie soumise a verification de provenance et validation de l'utilisateur) :
+{{#each skills}}
+- {{ this }}
+{{/each}}
+{{else}}
+Aucun skill recommande par les regles locales.
+{{/if}}
+Ne jamais executer un script fourni par un skill sans l'avoir lu et approuve.
+
+## Workflow Git
+{{#each sections.workflow}}
+- {{ this }}
+{{/each}}
+
+## Erreurs frequentes a eviter
+{{#each sections.pitfalls}}
+- {{ this }}
+{{/each}}
+
+## Definition of Done
+Une tache n'est terminee que si chaque point est verifie et prouve dans la PR :
+{{#each sections.dod}}
+- [ ] {{ this }}
+{{/each}}

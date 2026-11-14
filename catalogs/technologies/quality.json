@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "category": "quality",
+  "technologies": [
+    {
+      "id": "ruff",
+      "name": "Ruff",
+      "description": "Linter et formateur Python.",
+      "ecosystem": "pypi",
+      "package": "ruff",
+      "dev": true,
+      "requires": ["python"],
+      "commands": {"lint": "ruff check .", "format": "ruff format --check ."},
+      "docs": "https://docs.astral.sh/ruff/"
+    },
+    {
+      "id": "mypy",
+      "name": "mypy",
+      "description": "Verificateur de types statique pour Python.",
+      "ecosystem": "pypi",
+      "package": "mypy",
+      "dev": true,
+      "requires": ["python"],
+      "commands": {"typecheck": "mypy ."},
+      "docs": "https://mypy.readthedocs.io/"
+    },
+    {
+      "id": "eslint",
+      "name": "ESLint",
+      "description": "Linter JavaScript et TypeScript.",
+      "ecosystem": "npm",
+      "package": "eslint",
+      "dev": true,
+      "requires": ["node"],
+      "commands": {"lint": "npx eslint ."},
+      "docs": "https://eslint.org/docs/latest/"
+    },
+    {
+      "id": "prettier",
+      "name": "Prettier",
+      "description": "Formateur de code.",
+      "ecosystem": "npm",
+      "package": "prettier",
+      "dev": true,
+      "requires": ["node"],
+      "commands": {"format": "npx prettier --check ."},
+      "docs": "https://prettier.io/docs/"
+    }
+  ]
+}

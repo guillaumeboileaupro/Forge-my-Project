@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "type-cli",
+  "description": "Architecture suggeree pour un outil en ligne de commande.",
+  "priority": 10,
+  "when": {"project_types": ["cli"]},
+  "sections": {
+    "architecture": [
+      "Couche d'entree : analyse des arguments et codes de sortie explicites.",
+      "Couche domaine : logique independante de la console, testable unitairement.",
+      "Couche adaptateurs : fichiers, reseau et processus externes isoles."
+    ],
+    "security": ["Ne jamais construire une commande shell par concatenation d'arguments utilisateur."]
+  }
+}

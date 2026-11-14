@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "category": "runtime",
+  "technologies": [
+    {
+      "id": "node",
+      "name": "Node.js",
+      "description": "Environnement d'execution JavaScript (versions LTS uniquement).",
+      "ecosystem": null,
+      "versions": {"preferred": "24", "supported": ["22", "24"], "eol_product": "nodejs"},
+      "commands": {"install": "npm ci"},
+      "docs": "https://nodejs.org/en/about/previous-releases"
+    }
+  ]
+}

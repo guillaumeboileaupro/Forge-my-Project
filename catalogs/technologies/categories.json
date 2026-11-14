@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "categories": {
+    "language": {"label": "Langage", "min": 1, "max": 2},
+    "runtime": {"label": "Environnement d'execution", "min": 0, "max": 2},
+    "framework": {"label": "Framework", "min": 0, "max": 3},
+    "testing": {"label": "Tests", "min": 0, "max": 3},
+    "quality": {"label": "Qualite", "min": 0, "max": 6},
+    "security": {"label": "Audit securite", "min": 0, "max": 3},
+    "deployment": {"label": "Deploiement", "min": 0, "max": 1}
+  },
+  "required_commands": ["test"],
+  "command_kinds": ["install", "test", "coverage", "lint", "format", "typecheck", "audit", "build"]
+}

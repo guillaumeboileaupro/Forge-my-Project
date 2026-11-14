@@ -3,6 +3,8 @@
 ## Etat actuel
 Prototype en Python standard library: server.py expose le formulaire ui/index.html et ses assets; generator.py conserve la facade publique historique. La validation et la generation historiques sont isolees dans forge/config/legacy.py et forge/generator/legacy.py; leurs textes sont dans templates/legacy/. Le prototype ne satisfait pas encore toutes les specifications. Conserver son fonctionnement pendant la migration et ne pas annoncer les modules cibles comme implementes.
 
+Moteur technique (T06-T11) disponible dans forge/ avec catalogs/ et templates/ : schema d'entree, catalogue et compatibilites, regles, rendu des documents, verification des packages et skills. Il n'est pas encore branche sur l'interface ni sur generator.py. Contrat et limites : docs/ENGINE.md.
+
 ## Flux cible
 ```text
 UI locale (Firefox) -> questionnaire conditionnel / profils

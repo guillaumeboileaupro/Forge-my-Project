@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "category": "framework",
+  "technologies": [
+    {
+      "id": "fastapi",
+      "name": "FastAPI",
+      "description": "Framework d'API HTTP asynchrone pour Python.",
+      "ecosystem": "pypi",
+      "package": "fastapi",
+      "requires": ["python"],
+      "conflicts": ["flask", "django"],
+      "constraints": {"python": ">=3.8"},
+      "docs": "https://fastapi.tiangolo.com/"
+    },
+    {
+      "id": "flask",
+      "name": "Flask",
+      "description": "Micro-framework web pour Python.",
+      "ecosystem": "pypi",
+      "package": "flask",
+      "requires": ["python"],
+      "conflicts": ["fastapi", "django"],
+      "constraints": {"python": ">=3.9"},
+      "docs": "https://flask.palletsprojects.com/"
+    },
+    {
+      "id": "django",
+      "name": "Django",
+      "description": "Framework web complet pour Python.",
+      "ecosystem": "pypi",
+      "package": "django",
+      "requires": ["python"],
+      "conflicts": ["fastapi", "flask"],
+      "constraints": {"python": ">=3.10"},
+      "commands": {"test": "python manage.py test"},
+      "docs": "https://docs.djangoproject.com/"
+    },
+    {
+      "id": "express",
+      "name": "Express",
+      "description": "Framework HTTP minimaliste pour Node.js.",
+      "ecosystem": "npm",
+      "package": "express",
+      "requires": [["javascript", "typescript"]],
+      "docs": "https://expressjs.com/"
+    },
+    {
+      "id": "react",
+      "name": "React",
+      "description": "Bibliotheque d'interface utilisateur.",
+      "ecosystem": "npm",
+      "package": "react",
+      "requires": [["javascript", "typescript"]],
+      "docs": "https://react.dev/"
+    }
+  ]
+}

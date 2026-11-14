@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "type-web",
+  "description": "Architecture suggeree pour une application web.",
+  "priority": 10,
+  "when": {"project_types": ["web"]},
+  "sections": {
+    "architecture": [
+      "Composants d'interface sans logique metier, alimentes par une couche d'etat.",
+      "Couche d'acces aux donnees isolee (clients HTTP, stockage local).",
+      "Accessibilite et responsive traites comme exigences, pas comme finitions."
+    ],
+    "testing": ["Verifier la navigation clavier, le focus et les etats d'erreur des formulaires."],
+    "security": ["Echapper toute donnee affichee ; aucune insertion HTML non controlee."]
+  },
+  "skills": ["ui-ux-accessibility", "responsive-accessibility-review"]
+}

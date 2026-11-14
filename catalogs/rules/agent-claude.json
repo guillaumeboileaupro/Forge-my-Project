@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "id": "agent-claude",
+  "description": "Fichier d'instructions Claude Code important AGENTS.md.",
+  "priority": 30,
+  "when": {"agents_any": ["claude"]},
+  "files": [{"path": "CLAUDE.md", "template": "agents/CLAUDE.md.tmpl"}]
+}

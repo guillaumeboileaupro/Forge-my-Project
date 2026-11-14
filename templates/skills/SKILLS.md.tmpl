@@ -1,0 +1,18 @@
+# Skills du projet - provenance
+
+Skills recuperes en lecture seule, epingles sur un commit. Aucun script n'a ete execute ni copie : les fichiers ignores sont listes ci-dessous et doivent etre relus avant tout ajout manuel.
+
+| Skill | Source | Commit | Statut | Destinations |
+| --- | --- | --- | --- | --- |
+{{#each records}}
+| {{ this.name }} | {{ this.source }} | {{ this.commit }} | {{ this.status }} | {{ this.destinations }} |
+{{/each}}
+{{#each records}}
+{{#if this.notes}}
+
+## {{ this.name }}
+{{#each this.notes}}
+- {{ this }}
+{{/each}}
+{{/if}}
+{{/each}}

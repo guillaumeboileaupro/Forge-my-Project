@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "type-library",
+  "description": "Architecture suggeree pour une bibliotheque.",
+  "priority": 10,
+  "when": {"project_types": ["library"]},
+  "sections": {
+    "architecture": [
+      "API publique minimale et documentee, exposee par un module d'entree unique.",
+      "Modules internes prives, sans effet de bord a l'import.",
+      "Versionnement semantique et journal des changements."
+    ]
+  }
+}

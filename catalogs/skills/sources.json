@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "my_skills": {
+    "repository": "guillaumeboileaupro/my-skills",
+    "ref": "main",
+    "path": "skills"
+  },
+  "copy": {
+    "extensions": [
+      ".md",
+      ".yaml",
+      ".yml",
+      ".json",
+      ".txt"
+    ],
+    "max_file_bytes": 262144,
+    "max_skill_bytes": 1048576
+  },
+  "external_catalogs": [
+    {
+      "label": "Anthropic",
+      "repository": "anthropics/skills",
+      "ref": "main",
+      "path": "skills"
+    },
+    {
+      "label": "OpenAI (curated)",
+      "repository": "openai/skills",
+      "ref": "main",
+      "path": "skills/.curated"
+    }
+  ],
+  "search": {
+    "github_code_search": true,
+    "max_candidates": 20
+  }
+}

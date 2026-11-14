@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "security-hardened",
+  "description": "Controles supplementaires pour le niveau de securite renforce.",
+  "priority": 40,
+  "when": {"security": ["hardened"]},
+  "sections": {
+    "security": [
+      "Revue de securite independante obligatoire pour toute modification d'authentification, de cryptographie ou de gestion de secrets.",
+      "Generation d'un SBOM a chaque version publiee.",
+      "Actions GitHub epinglees par SHA complet et permissions minimales par job."
+    ],
+    "dod": ["Revue de securite independante documentee dans la PR."]
+  }
+}

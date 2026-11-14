@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "deployment-docker",
+  "description": "Regles de deploiement par conteneur Docker.",
+  "priority": 30,
+  "when": {"technologies_any": ["docker"]},
+  "files": [{"path": "docs/DEPLOYMENT.md", "template": "documentation/DEPLOYMENT.md.tmpl"}],
+  "sections": {
+    "deployment": [
+      "Image de base officielle epinglee par digest et mise a jour reguliere.",
+      "Execution sous un utilisateur non root ; aucun secret dans l'image.",
+      "Le deploiement n'est ni configure ni execute automatiquement."
+    ]
+  },
+  "skills": ["docker-compose-operations"]
+}

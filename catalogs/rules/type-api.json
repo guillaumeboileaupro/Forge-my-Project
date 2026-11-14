@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "type-api",
+  "description": "Architecture suggeree pour une API ou un service HTTP.",
+  "priority": 10,
+  "when": {"project_types": ["api"]},
+  "sections": {
+    "architecture": [
+      "Couche HTTP : routes, schemas de requete et de reponse, codes d'erreur documentes.",
+      "Couche domaine : regles metier independantes du framework web.",
+      "Couche persistance et integrations : adaptateurs derriere des interfaces.",
+      "Configuration par variables d'environnement validees au demarrage."
+    ],
+    "testing": ["Tester le contrat HTTP : schemas, codes de statut et erreurs."],
+    "security": [
+      "Authentification et autorisation verifiees pour chaque route non publique.",
+      "Limiter la taille des requetes et ne jamais renvoyer de trace d'erreur interne au client."
+    ]
+  },
+  "skills": ["api-contract-testing"]
+}
