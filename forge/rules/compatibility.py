@@ -49,13 +49,14 @@ def _check_cardinality(selected, catalog, out):
 
 def _check_relations(selected, out):
     ids = {t.id for t in selected}
+    conflicts = set()
     for tech in selected:
         for options in tech.requires:
             if not ids.intersection(options):
                 out.append(d.error("missing-requirement", "%s requiert %s" % (tech.name, " ou ".join(options)), tech.id))
-        for other in tech.conflicts:
-            if other in ids and tech.id < other:
-                out.append(d.error("conflict", "%s est incompatible avec %s" % (tech.id, other), tech.id))
+        conflicts.update(tuple(sorted((tech.id, other))) for other in tech.conflicts if other in ids)
+    for first, second in sorted(conflicts):
+        out.append(d.error("conflict", "%s est incompatible avec %s" % (first, second), first))
 
 
 def _resolve_versions(spec, selected, out):

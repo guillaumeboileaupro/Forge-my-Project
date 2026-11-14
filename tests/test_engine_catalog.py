@@ -125,6 +125,13 @@ class CompatibilityTests(unittest.TestCase):
         self.assertIn("conflict", codes(result))
         self.assertIn("category-min", codes(resolve(spec(technologies=["node", "node-test"]), self.catalog)))
 
+    def test_one_way_conflict_is_detected(self):
+        catalog = load_catalog()
+        object.__setattr__(catalog.get("ruff"), "conflicts", ("mypy",))
+        object.__setattr__(catalog.get("mypy"), "conflicts", ())
+        result = resolve(spec(technologies=["python", "ruff", "mypy"]), catalog)
+        self.assertEqual([x.code for x in result.diagnostics if x.code == "conflict"], ["conflict"])
+
     def test_versions(self):
         unsupported = resolve(spec(versions={"python": "3.9"}), self.catalog)
         self.assertIn("version-unsupported", codes(unsupported))
