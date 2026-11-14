@@ -17,7 +17,7 @@ Le graphe est indicatif: la colonne Depend de fait foi.
 ## Taches
 | ID | Phase | Travail | Depend de | Estime | Reel | Ecart | Statut | Critere de fin |
 | --- | --- | --- | --- | ---: | ---: | ---: | --- | --- |
-| T01 | P1 | Auditer le prototype et corriger ses defauts | - | 1 j | - | - | TODO | Tests serveur/ZIP et JS reproductibles |
+| T01 | P1 | Auditer le prototype et corriger ses defauts | - | 1 j | 0 h 05 | -7 h 55 (base 8 h/j) | DONE | Tests serveur/ZIP et JS reproductibles |
 | T02 | P1 | Reorganiser modules et modeles externes sans casser l'existant | T01 | 1 j | - | - | TODO | Contrats clairs, tests verts |
 | T03 | P2 | Formulaire hybride, navigation et progression | T02 | 2 j | - | - | TODO | Parcours UI valides |
 | T04 | P2 | Questions conditionnelles et validation | T03 | 1 j | - | - | TODO | Questions coherentes selon reponses |
@@ -45,3 +45,13 @@ Le serveur local, le formulaire initial, le ZIP, AGENTS.md, une bibliotheque ini
 
 ## Notes de suivi
 Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impact securite, fichiers modifies, temps reel, blocages et risque residuel. Aucune tache DONE sans preuve.
+
+### T01 - 14 novembre 2026
+- Temps reel mesure: 0 h 05, de la creation de la branche dediee a la premiere CI de PR verte.
+- Tests: `python3 -m unittest discover -s tests -v` PASS, 20 tests; `python3 -m compileall -q generator.py server.py tests` PASS.
+- Archives: 64 combinaisons supportees controlees, chemins ZIP bornes a la racine, tests generes Python et `npm test` executes avec succes.
+- Serveur et formulaire: integration HTTP loopback PASS; rendu Firefox headless PASS; contrat des champs et options PASS.
+- Securite: validation stricte des champs, de `Host` et du type JSON; en-tetes navigateur durcis; recherche ciblee de secrets sans correspondance.
+- CI: [push PASS](https://github.com/guillaumeboileaupro/Forge-my-Project/actions/runs/43583433146) et [PR PASS](https://github.com/guillaumeboileaupro/Forge-my-Project/actions/runs/43583453284).
+- NON VERIFIE: Bandit, Semgrep et Gitleaks absents. `pip check` signale des incoherences de l'environnement Anaconda global, sans dependance tierce du projet.
+- Risques restants hors T01: profil nomme TypeScript mais base JavaScript, workflow genere volontairement bloquant, absence de lockfiles et fonctions T02-T18 non implementees.

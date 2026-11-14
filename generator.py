@@ -10,11 +10,16 @@ OPTIONS = {
     "deployment": {"none", "docker", "s3ns", "outscale"},
     "security": {"strict", "hardened"},
 }
+FIELDS = {"name", "description", "one_pr", *OPTIONS}
 NAME = re.compile(r"^[a-z][a-z0-9-]{1,48}[a-z0-9]$")
+
 
 def validate(data):
     if not isinstance(data, dict):
         raise ValueError("Configuration JSON attendue")
+    unknown = set(data) - FIELDS
+    if unknown:
+        raise ValueError("Champ inconnu : " + sorted(unknown)[0])
     name = data.get("name")
     if not isinstance(name, str) or not NAME.fullmatch(name):
         raise ValueError("Nom de projet invalide (3-50 caracteres, minuscules, chiffres, tirets)")
@@ -27,9 +32,13 @@ def validate(data):
     description = data.get("description", "")
     if not isinstance(description, str) or len(description) > 500:
         raise ValueError("Description invalide")
-    config["description"] = description.strip().replace("\n", " ")
-    config["one_pr"] = data.get("one_pr", True) is True
+    config["description"] = " ".join(description.split())
+    one_pr = data.get("one_pr", True)
+    if not isinstance(one_pr, bool):
+        raise ValueError("Option invalide : one_pr")
+    config["one_pr"] = one_pr
     return config
+
 
 def skill(name, description, rules):
     return "---\nname: " + name + "\ndescription: " + description + "\n---\n\n# " + name + "\n\n" + rules + "\n"
@@ -101,7 +110,7 @@ jobs:
         add("src/" + c["name"].replace("-", "_") + "/__init__.py", '"""Package principal."""')
         add("tests/test_smoke.py", "import unittest\n\nclass SmokeTest(unittest.TestCase):\n    def test_smoke(self):\n        self.assertTrue(True)\n\nif __name__ == '__main__':\n    unittest.main()\n")
     else:
-        add("package.json", json.dumps({"name": c["name"], "version": "0.1.0", "private": True, "scripts": {"test": "node --test"}, "devDependencies": {}}, indent=2))
+        add("package.json", json.dumps({"name": c["name"], "version": "0.1.0", "private": True, "type": "module", "scripts": {"test": "node --test"}, "devDependencies": {}}, indent=2))
         add("src/index.js", "export function health() { return 'ok'; }")
         add("tests/index.test.js", "import { test } from 'node:test';\nimport { strict as assert } from 'node:assert';\nimport { health } from '../src/index.js';\ntest('health', () => assert.equal(health(), 'ok'));")
     if c["deployment"] != "none":
