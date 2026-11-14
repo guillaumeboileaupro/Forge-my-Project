@@ -47,6 +47,15 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(headers["X-Content-Type-Options"], "nosniff")
         self.assertEqual(headers["Referrer-Policy"], "no-referrer")
 
+    def test_static_assets_are_served_with_strict_csp(self):
+        for path, media in (("/css/app.css", "text/css"), ("/js/app.js", "text/javascript")):
+            with self.subTest(path=path):
+                status, headers, body = self.request("GET", path)
+                self.assertEqual(status, 200)
+                self.assertTrue(headers["Content-Type"].startswith(media))
+                self.assertTrue(body)
+                self.assertNotIn("'unsafe-inline'", headers["Content-Security-Policy"])
+
     def test_unknown_route_returns_not_found(self):
         status, _, _ = self.request("GET", "/missing")
         self.assertEqual(status, 404)

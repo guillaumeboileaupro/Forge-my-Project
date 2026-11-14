@@ -32,7 +32,8 @@ class FormTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         parser = FormParser()
-        parser.feed(Path("index.html").read_text(encoding="utf-8"))
+        cls.source = Path("ui/index.html").read_text(encoding="utf-8")
+        parser.feed(cls.source)
         cls.form = parser
 
     def test_form_fields_have_unique_matching_ids(self):
@@ -47,6 +48,13 @@ class FormTests(unittest.TestCase):
     def test_select_values_match_server_contract(self):
         for name, allowed in OPTIONS.items():
             self.assertEqual(self.form.controls[name]["values"], allowed)
+
+    def test_ui_uses_external_assets(self):
+        self.assertIn('href="/css/app.css"', self.source)
+        self.assertIn('src="/js/app.js"', self.source)
+        self.assertNotIn("<style", self.source)
+        self.assertNotIn("<script>", self.source)
+        self.assertNotIn(" style=", self.source)
 
 
 if __name__ == "__main__":

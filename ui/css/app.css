@@ -1,0 +1,8 @@
+body{font:16px system-ui,sans-serif;max-width:770px;margin:35px auto;padding:0 20px;background:#f6f7fb;color:#1c2435}
+main{padding:28px;border-radius:14px;background:white;box-shadow:0 4px 18px #0001}
+label{display:block;margin:15px 0 6px;font-weight:600}
+input,select,textarea,button{box-sizing:border-box;width:100%;padding:12px;border:1px solid #bfc9d8;border-radius:7px;font:inherit}
+input[type=checkbox]{width:auto}
+button{background:#1a4bb0;color:white;font-weight:700;margin-top:24px;cursor:pointer}
+small{color:#57657a}
+#status{white-space:pre-wrap}
