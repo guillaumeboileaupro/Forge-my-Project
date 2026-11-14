@@ -3,6 +3,8 @@
 ## Etat actuel
 Prototype en Python standard library: server.py expose un formulaire local index.html; generator.py valide une configuration limitee, produit une arborescence et l'export ZIP. Le prototype ne satisfait pas encore les specifications. Conserver son fonctionnement pendant la migration et ne pas annoncer les modules cibles comme implementes.
 
+Moteur technique (T06-T11) disponible dans forge/ avec catalogs/ et templates/ : schema d'entree, catalogue et compatibilites, regles, rendu des documents, verification des packages et skills. Il n'est pas encore branche sur l'interface ni sur generator.py. Contrat et limites : docs/ENGINE.md.
+
 ## Flux cible
 ```text
 UI locale (Firefox) -> questionnaire conditionnel / profils

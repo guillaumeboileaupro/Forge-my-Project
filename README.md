@@ -18,6 +18,16 @@ Ouvrir http://127.0.0.1:8765, repondre au formulaire et telecharger l'archive ZI
 python3 -m unittest discover -s tests -v
 ```
 
+## Moteur technique (apercu, sans ecriture)
+
+```bash
+python3 -m forge plan spec.json             # diagnostics et fichiers prevus
+python3 -m forge plan spec.json --verify    # + verification registres/OSV (reseau)
+python3 -m forge show spec.json AGENTS.md   # contenu d'un document rendu
+```
+
+Voir docs/ENGINE.md.
+
 ## Portee de cette version
 
 Genere un AGENTS.md, des skills, de la documentation d'architecture, des regles de securite et un squelette de CI en fonction du langage, de l'agent et du deploiement. Les packages et integrations MCP sont des recommandations a valider et ne sont pas installes automatiquement. Ne garantit pas qu'un projet genere est exempt de vulnerabilites.
