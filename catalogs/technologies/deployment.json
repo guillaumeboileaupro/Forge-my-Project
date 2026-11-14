@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "category": "deployment",
+  "technologies": [
+    {
+      "id": "docker",
+      "name": "Docker",
+      "description": "Conteneurisation par image Docker.",
+      "ecosystem": null,
+      "commands": {"build": "docker build ."},
+      "docs": "https://docs.docker.com/"
+    }
+  ]
+}

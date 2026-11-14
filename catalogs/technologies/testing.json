@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "category": "testing",
+  "technologies": [
+    {
+      "id": "unittest",
+      "name": "unittest (bibliotheque standard)",
+      "description": "Framework de tests integre a Python.",
+      "ecosystem": null,
+      "requires": ["python"],
+      "commands": {"test": "python -m unittest discover -s tests -v"},
+      "docs": "https://docs.python.org/3/library/unittest.html"
+    },
+    {
+      "id": "pytest",
+      "name": "pytest",
+      "description": "Framework de tests Python.",
+      "ecosystem": "pypi",
+      "package": "pytest",
+      "dev": true,
+      "requires": ["python"],
+      "commands": {"test": "python -m pytest"},
+      "docs": "https://docs.pytest.org/"
+    },
+    {
+      "id": "pytest-cov",
+      "name": "pytest-cov",
+      "description": "Mesure de couverture pour pytest.",
+      "ecosystem": "pypi",
+      "package": "pytest-cov",
+      "dev": true,
+      "requires": ["pytest"],
+      "commands": {"coverage": "python -m pytest --cov --cov-report=term-missing"},
+      "docs": "https://pytest-cov.readthedocs.io/"
+    },
+    {
+      "id": "node-test",
+      "name": "node:test (integre a Node.js)",
+      "description": "Lanceur de tests integre a Node.js.",
+      "ecosystem": null,
+      "requires": ["node"],
+      "conflicts": ["vitest"],
+      "commands": {"test": "node --test"},
+      "docs": "https://nodejs.org/api/test.html"
+    },
+    {
+      "id": "vitest",
+      "name": "Vitest",
+      "description": "Framework de tests pour JavaScript et TypeScript.",
+      "ecosystem": "npm",
+      "package": "vitest",
+      "dev": true,
+      "requires": ["node"],
+      "conflicts": ["node-test"],
+      "commands": {"test": "npx vitest run"},
+      "docs": "https://vitest.dev/"
+    },
+    {
+      "id": "vitest-coverage-v8",
+      "name": "@vitest/coverage-v8",
+      "description": "Fournisseur de couverture V8 pour Vitest.",
+      "ecosystem": "npm",
+      "package": "@vitest/coverage-v8",
+      "dev": true,
+      "requires": ["vitest"],
+      "commands": {"coverage": "npx vitest run --coverage"},
+      "docs": "https://vitest.dev/guide/coverage"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "category": "security",
+  "technologies": [
+    {
+      "id": "pip-audit",
+      "name": "pip-audit",
+      "description": "Audit des dependances Python contre les bases de vulnerabilites.",
+      "ecosystem": "pypi",
+      "package": "pip-audit",
+      "dev": true,
+      "requires": ["python"],
+      "commands": {"audit": "pip-audit"},
+      "docs": "https://github.com/pypa/pip-audit"
+    },
+    {
+      "id": "npm-audit",
+      "name": "npm audit",
+      "description": "Audit des dependances npm integre a npm.",
+      "ecosystem": null,
+      "requires": ["node"],
+      "commands": {"audit": "npm audit --audit-level=high"},
+      "docs": "https://docs.npmjs.com/cli/commands/npm-audit"
+    }
+  ]
+}
