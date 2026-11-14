@@ -18,6 +18,10 @@ Ouvrir http://127.0.0.1:8765, repondre au formulaire et telecharger l'archive ZI
 python3 -m unittest discover -s tests -v
 ```
 
+## Architecture
+
+`generator.py` reste la facade compatible. La validation et la generation historiques sont isolees sous `forge/`, le formulaire sous `ui/` et ses textes generes sous `templates/legacy/`. Les interfaces stables et les zones reservees au developpement parallele sont documentees dans `docs/CONTRACTS.md`.
+
 ## Portee de cette version
 
 Genere un AGENTS.md, des skills, de la documentation d'architecture, des regles de securite et un squelette de CI en fonction du langage, de l'agent et du deploiement. Les packages et integrations MCP sont des recommandations a valider et ne sont pas installes automatiquement. Ne garantit pas qu'un projet genere est exempt de vulnerabilites.

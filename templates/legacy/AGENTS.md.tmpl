@@ -1,0 +1,28 @@
+# Instructions agent
+
+## Objectif
+{{ objective_or_default }}
+
+## Architecture
+Lire docs/ARCHITECTURE.md. Preferer des modules petits et des interfaces explicites.
+
+## Conventions
+Changements minimaux, tests de non-regression, pas de code mort.
+Une seule PR ouverte a la fois : {{ one_pr_label }}.
+Ne jamais inventer une API, un nom de package ou une commande.
+
+## Commandes
+Tests : `{{ command }}`
+
+## Pieges communs
+- Ne jamais exposer de secret ou de token.
+- Ne pas contourner les audits de securite.
+- Ne pas installer de dependance non verifiee.
+- Ne pas annoncer des tests passes sans les avoir executes.
+
+## Definition of Done
+- Fonctionnalite verifiee et documentee.
+- Tests applicables passes.
+- Dependencies et licences verifiees.
+- Scans de vulnerabilites sans alerte critique/haute non resolue.
+- CI verte et revue de la PR terminee.

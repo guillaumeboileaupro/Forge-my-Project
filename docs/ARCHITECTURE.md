@@ -1,7 +1,7 @@
 # Architecture cible - Forge-my-Project
 
 ## Etat actuel
-Prototype en Python standard library: server.py expose un formulaire local index.html; generator.py valide une configuration limitee, produit une arborescence et l'export ZIP. Le prototype ne satisfait pas encore les specifications. Conserver son fonctionnement pendant la migration et ne pas annoncer les modules cibles comme implementes.
+Prototype en Python standard library: server.py expose le formulaire ui/index.html et ses assets; generator.py conserve la facade publique historique. La validation et la generation historiques sont isolees dans forge/config/legacy.py et forge/generator/legacy.py; leurs textes sont dans templates/legacy/. Le prototype ne satisfait pas encore toutes les specifications. Conserver son fonctionnement pendant la migration et ne pas annoncer les modules cibles comme implementes.
 
 ## Flux cible
 ```text
@@ -68,6 +68,14 @@ Forge-my-Project/
 - verification/security: controle des dependances, API, licences, vulnérabilites, CI et hooks; etat PASS/FAIL/NON VERIFIE.
 - filesystem: simulation/diff, protection contre sorties de repertoire, sauvegarde et ecriture controlee, jamais de remplacement implicite.
 - UI: ne detient pas la logique de confiance; toute requete est revalidee cote serveur.
+
+Les signatures, formats et responsabilites applicables sont definis dans [CONTRACTS.md](CONTRACTS.md). `generator.py`, `server.py`, `GET /` et `POST /generate` sont les points de compatibilite pendant la migration.
+
+## Mise en place progressive
+- Operationnel apres T02: ui/, forge/config/legacy.py, forge/generator/legacy.py et templates/legacy/.
+- Reserve aux taches T06-T11 de Claude: forge/rules/, forge/planner/, catalogues, moteur de rendu moderne, skills et verification des dependances. T02 ne cree pas de coquilles vides pour ces composants.
+- Reserve aux taches ulterieures: forge/security/ et forge/filesystem/ au-dela des controles minimaux deja presents. Les dossiers seront crees avec leur premiere responsabilite concrete.
+- La bibliotheque templates/legacy preserve strictement les sorties actuelles. Les futurs templates structures peuvent coexister puis remplacer la facade par migration testee.
 
 ## Frontieres de securite
 Serveur borne a 127.0.0.1. Les champs, modeles, depots distants et fichiers existants sont non fiables. Refuser la traversee de chemins, l'injection de commandes, les scripts non approuves et la divulgation d'identifiants. Les acces reseau aux registres, skills et MCP sont explicites, journalises et soumis aux regles d'autorisation. Aucun acces distant aux dossiers utilisateur sans validation.
