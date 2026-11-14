@@ -1,0 +1,9 @@
+# TODO - {{ project.name }}
+
+Statuts : TODO, IN PROGRESS, BLOCKED, DONE. Aucune tache DONE sans preuve (commande, resultat, lien CI).
+
+| ID | Tache | Depend de | Priorite | Estime | Reel | Ecart | Statut |
+| --- | --- | --- | --- | ---: | ---: | ---: | --- |
+{{#each tasks}}
+| {{ this.id }} | {{ this.title }} | {{ this.depends }} | {{ this.priority }} | a estimer | - | - | TODO |
+{{/each}}

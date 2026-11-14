@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "id": "option-mcp",
+  "description": "Documentation des serveurs MCP, uniquement sur demande explicite.",
+  "priority": 40,
+  "when": {"options": {"mcp": true}},
+  "files": [{"path": "docs/MCP.md", "template": "documentation/MCP.md.tmpl"}],
+  "sections": {
+    "security": ["Aucun serveur MCP n'est active sans verification de sa source, permissions minimales et accord de l'utilisateur."]
+  }
+}

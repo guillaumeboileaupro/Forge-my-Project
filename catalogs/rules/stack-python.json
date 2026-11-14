@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "stack-python",
+  "description": "Regles specifiques a Python.",
+  "priority": 20,
+  "when": {"technologies_any": ["python"]},
+  "sections": {
+    "conventions": [
+      "Code Python conforme a PEP 8, noms en snake_case, annotations de type sur les fonctions publiques.",
+      "Code source dans src/, tests dans tests/.",
+      "Configuration du projet et des outils centralisee dans pyproject.toml."
+    ],
+    "dependencies": ["Dependances Python declarees dans pyproject.toml et verrouillees (fichier de verrouillage versionne)."],
+    "pitfalls": [
+      "Installer des packages dans l'interpreteur systeme au lieu d'un environnement virtuel.",
+      "Confondre le nom du package PyPI et le nom du module importe."
+    ]
+  },
+  "skills": ["python-project-quality", "code-solid"]
+}

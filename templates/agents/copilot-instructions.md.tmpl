@@ -1,0 +1,11 @@
+# {{ project.name }} - instructions GitHub Copilot
+
+Les regles completes du projet sont dans AGENTS.md a la racine du depot : les lire et les appliquer.
+
+Rappels essentiels :
+- Ne jamais inventer de package, d'API ou de commande ; verifier sur le registre et la documentation officiels.
+- Ne pas generer de secret ni de configuration contenant des identifiants.
+{{#each commands}}
+- {{ this.label }} : {{#each this.commands}}`{{ this }}` {{/each}}
+{{/each}}
+- Respecter la Definition of Done de AGENTS.md avant toute proposition de fusion.

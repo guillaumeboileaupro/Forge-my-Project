@@ -33,8 +33,9 @@ def _known(spec, catalog, out):
             out.append(d.error("unknown-technology", "Technologie absente du catalogue : " + tech_id, tech_id))
         else:
             known.append(tech)
+    categories = list(catalog.categories)
     order = list(catalog.technologies)
-    return sorted(known, key=lambda t: order.index(t.id))
+    return sorted(known, key=lambda t: (categories.index(t.category), order.index(t.id)))
 
 
 def _check_cardinality(selected, catalog, out):

@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "id": "base",
+  "description": "Regles communes obligatoires a tout projet genere.",
+  "mandatory": true,
+  "priority": 0,
+  "files": [
+    {"path": "AGENTS.md", "template": "agents/AGENTS.md.tmpl"},
+    {"path": "README.md", "template": "documentation/README.md.tmpl"},
+    {"path": "SECURITY.md", "template": "documentation/SECURITY.md.tmpl"},
+    {"path": "CONTRIBUTING.md", "template": "documentation/CONTRIBUTING.md.tmpl"},
+    {"path": "TODO.md", "template": "documentation/TODO.md.tmpl"},
+    {"path": "docs/ARCHITECTURE.md", "template": "architecture/ARCHITECTURE.md.tmpl"},
+    {"path": "docs/DEVELOPMENT_PLAN.md", "template": "documentation/DEVELOPMENT_PLAN.md.tmpl"},
+    {"path": "docs/TESTING.md", "template": "documentation/TESTING.md.tmpl"},
+    {"path": "docs/DEPENDENCIES.md", "template": "documentation/DEPENDENCIES.md.tmpl"},
+    {"path": "docs/adr/0001-choix-techniques.md", "template": "architecture/adr-0001.md.tmpl"}
+  ],
+  "sections": {
+    "conventions": [
+      "Changements minimaux et cibles : une fonctionnalite ou un correctif par PR.",
+      "Fonctions courtes, modules a responsabilite unique, dependances explicites.",
+      "Valider toute entree externe a la frontiere et produire des erreurs explicites.",
+      "Pas de code mort, de code commente ni de TODO sans tache associee dans TODO.md.",
+      "Ne jamais inventer un package, une API, une option de commande ou une action CI : verifier la documentation officielle."
+    ],
+    "testing": [
+      "Chaque changement de comportement est couvert par un test positif et un test negatif.",
+      "Ne jamais annoncer des tests reussis sans les avoir executes ; joindre la commande et son resultat.",
+      "Ne pas desactiver, ignorer ou affaiblir un test pour obtenir une CI verte."
+    ],
+    "dependencies": [
+      "Ajouter une dependance uniquement apres verification sur le registre officiel (nom exact, version, licence, vulnerabilites).",
+      "Preferer la bibliotheque standard lorsqu'elle suffit."
+    ],
+    "security": [
+      "Aucun secret, token ou identifiant dans le depot, les logs, les tests ou les messages de commit.",
+      "Ne pas contourner ni masquer une alerte de securite ; documenter toute exception avec date et justification.",
+      "Traiter les donnees utilisateur et les fichiers externes comme non fiables.",
+      "Bloquer la fusion en presence d'une vulnerabilite critique ou haute connue non resolue."
+    ],
+    "workflow": [
+      "Un seul agent developpeur actif et une seule PR ouverte a la fois.",
+      "Travailler sur une branche dediee ; aucun commit direct sur main ; jamais de push force.",
+      "Commits au format Conventional Commits.",
+      "CI verte et revue de la PR avant fusion ; supprimer la branche apres fusion.",
+      "Mettre a jour TODO.md (temps reel et ecart) a la fin de chaque tache.",
+      "La protection de branche et les permissions GitHub doivent etre configurees sur le depot distant par son proprietaire."
+    ],
+    "pitfalls": [
+      "Presenter un controle non execute comme reussi : il est NON VERIFIE.",
+      "Ajouter une dependance par habitude sans verifier son existence ni sa maintenance.",
+      "Modifier des fichiers hors du perimetre de la tache.",
+      "Executer un script telecharge ou fourni par un skill sans l'avoir lu et approuve."
+    ],
+    "dod": [
+      "Comportement implemente conforme a la tache et a l'architecture.",
+      "Tests ajoutes ou mis a jour, executes localement avec resultat trace.",
+      "Lint, typage et audit des dependances executes lorsqu'ils sont definis.",
+      "Documentation, ADR et TODO.md a jour.",
+      "CI verte et revue de la PR effectuee, sans vulnerabilite critique ou haute non resolue.",
+      "Limites et risques residuels indiques dans la PR."
+    ]
+  },
+  "skills": ["conventional-commits-pr", "readme-todo-maintenance", "dependency-update-review"]
+}

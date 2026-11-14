@@ -53,6 +53,21 @@ def _dependencies(technologies):
     ]
 
 
+def _tasks(plan, has_dependencies):
+    """Taches initiales deduites de la configuration ; les charges restent a estimer."""
+    tasks = [("Installer l'environnement et executer chaque commande documentee", "-", "P0")]
+    if has_dependencies:
+        tasks.append(("Verifier chaque dependance sur son registre officiel (lever les NON VERIFIE)", "T01", "P0"))
+    tasks.append(("Configurer la CI GitHub Actions, les hooks et la protection de branche", "T01", "P0"))
+    if plan.architecture["source"] == "manual":
+        tasks.append(("Decomposer l'architecture definie manuellement en taches verifiables", "T01", "P1"))
+    else:
+        tasks.extend(("Mettre en place : " + item, "T01", "P1") for item in plan.architecture["suggested"])
+    tasks.append(("Recette : tests, couverture, audits de securite et documentation a jour", "toutes", "P1"))
+    return [{"id": "T%02d" % index, "title": title, "depends": depends, "priority": priority}
+            for index, (title, depends, priority) in enumerate(tasks, start=1)]
+
+
 def build_context(plan):
     spec = plan.spec
     technologies = _technologies(plan)
@@ -85,6 +100,7 @@ def build_context(plan):
             "is_manual": plan.architecture["source"] == "manual",
             "is_undefined": plan.architecture["source"] == "undefined",
         },
+        "tasks": _tasks(plan, bool(_dependencies(technologies))),
         "skills": list(plan.composition.skills),
         "rules": list(plan.composition.rules),
         "warnings": [diag.message for diag in plan.diagnostics if diag.severity.value == "warning"],

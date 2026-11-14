@@ -1,0 +1,13 @@
+# Deploiement - {{ project.name }}
+
+Statut : a definir. Aucun deploiement n'est configure ni execute par Forge-my-Project.
+
+## Regles
+{{#each sections.deployment}}
+- {{ this }}
+{{/each}}
+
+## A completer
+- Cible d'hebergement, environnements et procedure de retour arriere.
+- Gestion des secrets (jamais dans l'image ni dans le depot).
+- Commande de build : `{{ command.build }}`

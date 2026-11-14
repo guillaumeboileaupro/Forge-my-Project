@@ -1,0 +1,50 @@
+# Architecture - {{ project.name }}
+
+Statut : initiale, a valider par l'utilisateur. Aucun module n'est implemente.
+
+## Contexte
+{{#each project.description_lines}}
+{{ this }}
+{{/each}}
+
+Type : {{ project.type_label }}.
+
+## Organisation retenue
+{{#if architecture.is_manual}}
+Definie manuellement par l'utilisateur :
+
+{{#each architecture.manual}}
+{{ this }}
+{{/each}}
+{{#if architecture.suggested}}
+
+### Suggestions des regles locales (non retenues automatiquement)
+{{#each architecture.suggested}}
+- {{ this }}
+{{/each}}
+{{/if}}
+{{else}}
+{{#if architecture.is_undefined}}
+NON DEFINIE. Aucune regle locale ne s'applique : decrire les modules avant d'implementer.
+{{else}}
+Suggestion issue des regles locales (modifiable) :
+{{#each architecture.suggested}}
+- {{ this }}
+{{/each}}
+{{/if}}
+{{/if}}
+
+## Pile technique
+| Technologie | Categorie | Version | Role |
+| --- | --- | --- | --- |
+{{#each technologies}}
+| {{ this.name }} | {{ this.category }} | {{#if this.version}}{{ this.version }}{{else}}-{{/if}} | {{ this.description }} |
+{{/each}}
+
+## Frontieres et regles
+- Les entrees externes (requetes, fichiers, variables d'environnement) sont validees a la frontiere.
+- Le domaine ne depend pas des details d'infrastructure.
+- Les secrets proviennent de l'environnement ou d'un gestionnaire dedie, jamais du depot.
+
+## Decisions
+Les decisions structurantes sont consignees dans docs/adr/. Voir docs/adr/0001-choix-techniques.md.

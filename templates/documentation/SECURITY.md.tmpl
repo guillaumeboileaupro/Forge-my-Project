@@ -1,0 +1,18 @@
+# Politique de securite - {{ project.name }}
+
+Niveau demande : {{ project.security }}. Ce niveau decrit des controles a appliquer ; il ne constitue ni une certification ni une garantie d'absence de vulnerabilite.
+
+## Signaler une vulnerabilite
+Utiliser un canal prive (GitHub Security Advisories du depot, a activer par le proprietaire). Ne jamais ouvrir d'issue publique contenant des details exploitables.
+
+## Regles
+{{#each sections.security}}
+- {{ this }}
+{{/each}}
+
+## Controles automatises
+{{#if command.audit}}
+- Audit des dependances : `{{ command.audit }}`
+{{/if}}
+- Etat de chaque controle : PASS, FAIL ou NON VERIFIE. Un controle non execute est NON VERIFIE, jamais PASS.
+- Une vulnerabilite critique ou haute connue bloque la fusion, sauf exception motivee, datee et approuvee.

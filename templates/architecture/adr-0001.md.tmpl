@@ -1,0 +1,17 @@
+# ADR-0001 - Choix techniques initiaux
+
+Statut : propose (a accepter par l'utilisateur).
+
+## Contexte
+Initialisation du projet {{ project.name }} ({{ project.type_label }}) par Forge-my-Project.
+
+## Decision
+{{#each technologies}}
+- {{ this.name }}{{#if this.version}} {{ this.version }}{{/if}} ({{ this.category }}).
+{{/each}}
+Agents de developpement : {{ agent_names }}.
+Niveau de securite : {{ project.security }}.
+
+## Consequences
+- Les versions et dependances doivent etre verifiees sur les sources officielles avant installation (voir docs/DEPENDENCIES.md).
+- Tout changement de pile technique fait l'objet d'un nouvel ADR.

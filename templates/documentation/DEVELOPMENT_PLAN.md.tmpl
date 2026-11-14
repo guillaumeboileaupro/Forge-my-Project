@@ -1,0 +1,21 @@
+# Plan de developpement - {{ project.name }}
+
+Les charges ne sont pas estimees automatiquement : Forge-my-Project ne connait pas le perimetre fonctionnel. Les estimer avec l'utilisateur avant de commencer, puis renseigner temps reel et ecart dans TODO.md.
+
+## Cartographie des taches
+| ID | Tache | Depend de | Priorite |
+| --- | --- | --- | --- |
+{{#each tasks}}
+| {{ this.id }} | {{ this.title }} | {{ this.depends }} | {{ this.priority }} |
+{{/each}}
+
+## Mode de travail
+{{#each sections.workflow}}
+- {{ this }}
+{{/each}}
+
+## Risques
+{{#each warnings}}
+- {{ this }}
+{{/each}}
+- Dependances et versions NON VERIFIEES tant que le controle n'est pas execute.

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "stack-node",
+  "description": "Regles specifiques a Node.js.",
+  "priority": 20,
+  "when": {"technologies_any": ["node"]},
+  "sections": {
+    "conventions": ["Modules ES, package.json comme reference des scripts du projet."],
+    "dependencies": [
+      "package-lock.json versionne ; installation reproductible par npm ci.",
+      "Distinguer dependencies et devDependencies."
+    ],
+    "pitfalls": ["Executer des scripts d'installation npm de packages non verifies."]
+  },
+  "skills": ["code-solid"]
+}

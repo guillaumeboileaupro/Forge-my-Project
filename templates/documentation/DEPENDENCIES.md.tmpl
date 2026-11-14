@@ -1,0 +1,20 @@
+# Dependances - {{ project.name }}
+
+Statuts : PASS (verifie sur le registre officiel), FAIL (inexistant, version absente ou vulnerabilite bloquante), NON VERIFIE (controle non effectue).
+
+{{#if dependencies}}
+| Package | Ecosysteme | Portee | Statut |
+| --- | --- | --- | --- |
+{{#each dependencies}}
+| {{ this.package }} | {{ this.ecosystem }} | {{ this.scope }} | {{ this.status }} |
+{{/each}}
+{{else}}
+Aucune dependance tierce retenue.
+{{/if}}
+
+## Regles
+{{#each sections.dependencies}}
+- {{ this }}
+{{/each}}
+- Tout ajout est verifie sur le registre officiel : nom exact, version, licence, mainteneurs, vulnerabilites connues.
+- Les versions sont verrouillees par un fichier de verrouillage versionne.

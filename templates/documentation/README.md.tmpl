@@ -1,0 +1,26 @@
+# {{ project.name }}
+
+{{#each project.description_lines}}
+{{ this }}
+{{/each}}
+
+Type : {{ project.type_label }}. Projet initialise par Forge-my-Project : aucune fonctionnalite metier n'est encore implementee.
+
+## Pile technique
+{{#each technologies}}
+- {{ this.name }}{{#if this.version}} {{ this.version }}{{/if}}
+{{/each}}
+
+## Commandes
+{{#each commands}}
+- {{ this.label }} : {{#each this.commands}}`{{ this }}` {{/each}}
+{{/each}}
+Les commandes absentes sont NON DEFINIES et doivent etre ajoutees au fur et a mesure.
+
+## Documentation
+- AGENTS.md : regles pour les agents de developpement ({{ agent_names }}).
+- docs/ARCHITECTURE.md, docs/DEVELOPMENT_PLAN.md, TODO.md
+- docs/TESTING.md, docs/DEPENDENCIES.md, SECURITY.md, CONTRIBUTING.md
+{{#if has.docker}}
+- docs/DEPLOYMENT.md
+{{/if}}

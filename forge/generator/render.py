@@ -4,6 +4,7 @@ from forge.diagnostics import ForgeError
 from forge.generator.context import build_context
 from forge.generator.paths import resolve_inside
 from forge.generator.template import TemplateError, render
+from forge.planner.plan import build_plan
 
 
 def render_plan(plan, templates_dir=TEMPLATES_DIR):
@@ -19,3 +20,9 @@ def render_plan(plan, templates_dir=TEMPLATES_DIR):
         except TemplateError as exc:
             raise ForgeError("Template %s (regle %s) : %s" % (template, rule_id, exc)) from exc
     return files
+
+
+def generate(data, catalog=None, rules=None, templates_dir=TEMPLATES_DIR):
+    """Facade : valide, planifie et rend. Retourne (plan, fichiers) sans ecrire sur disque."""
+    plan = build_plan(data, catalog, rules)
+    return plan, render_plan(plan, templates_dir)
