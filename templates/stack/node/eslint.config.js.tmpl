@@ -1,4 +1,5 @@
 import js from "@eslint/js";
+import pluginSecurity from "eslint-plugin-security";
 {{#if node.typescript}}
 import tseslint from "typescript-eslint";
 {{/if}}
@@ -6,6 +7,7 @@ import tseslint from "typescript-eslint";
 export default [
   { ignores: ["dist/", "coverage/"] },
   js.configs.recommended,
+  pluginSecurity.configs.recommended,
 {{#if node.typescript}}
   ...tseslint.configs.recommended,
 {{/if}}

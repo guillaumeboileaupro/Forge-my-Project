@@ -6,6 +6,7 @@ from forge.generator.render import generate
 from forge.pipeline import run
 from forge.planner.plan import build_plan
 from forge.generator.stack import load_ci_catalog
+from forge.security.controls import load_security_tools
 from forge.verification import checks, http
 from forge.verification.http import FetchError, Response
 from forge.verification.report import verify_plan
@@ -25,6 +26,14 @@ ACTIONS = {
     "https://api.github.com/repos/%s/git/ref/tags/%s" % (a["repository"], a["tag"]): {"object": {"type": "commit", "sha": a["sha"]}}
     for a in load_ci_catalog()["actions"].values()
 }
+TOOLS = load_security_tools()
+RELEASES = {
+    "https://api.github.com/repos/gitleaks/gitleaks/releases/tags/v%s" % TOOLS["gitleaks"]["version"]: {
+        "assets": [{"name": TOOLS["gitleaks"]["asset"], "digest": "sha256:" + TOOLS["gitleaks"]["sha256"]}]},
+}
+for _name, _version in TOOLS["pypi"].items():
+    PYPI["https://pypi.org/pypi/%s/json" % _name] = {"info": {"version": _version, "license": "Apache-2.0"},
+                                                     "releases": {_version: [{}]}}
 EOL = {"https://endoflife.date/api/python.json": [{"cycle": "3.13", "eol": "2029-10-31"}, {"cycle": "3.11", "eol": "2026-01-01"}]}
 
 
@@ -41,7 +50,7 @@ class FakeRegistry:
         if payload is not None:
             key = "%s@%s" % (payload["package"]["name"], payload["version"])
             return Response(200, {"vulns": self.vulns.get(key, [])})
-        data = {**PYPI, **NPM, **EOL, **ACTIONS}.get(url)
+        data = {**PYPI, **NPM, **EOL, **ACTIONS, **RELEASES}.get(url)
         return Response(404, None) if data is None else Response(200, data)
 
 
@@ -152,6 +161,29 @@ class ActionCheckTests(unittest.TestCase):
             with self.assertRaises(ForgeError) as ctx:
                 run(SPEC, verify=True, verifier=lambda p: verify_plan(p, registry, TODAY))
         self.assertIn("verification-action", {x.code for x in ctx.exception.diagnostics})
+
+
+class SecurityToolCheckTests(unittest.TestCase):
+    def test_release_asset_digest_policy(self):
+        tool = TOOLS["gitleaks"]
+        url = next(iter(RELEASES))
+
+        def check(data):
+            return checks.check_release_asset(tool["repository"], tool["version"], tool["asset"], tool["sha256"],
+                                              lambda u, payload=None: Response(200 if data else 404, data))
+        self.assertEqual(check(RELEASES[url]).status, Status.PASS)
+        self.assertEqual(check({"assets": [{"name": tool["asset"], "digest": "sha256:" + "0" * 64}]}).status, Status.FAIL)
+        self.assertEqual(check({"assets": []}).status, Status.FAIL)
+        self.assertEqual(check({"assets": [{"name": tool["asset"]}]}).status, Status.NON_VERIFIE)
+        self.assertEqual(check(None).status, Status.FAIL)
+
+    def test_tampered_gitleaks_digest_blocks_generation(self):
+        url = next(iter(RELEASES))
+        tampered = {"assets": [{"name": TOOLS["gitleaks"]["asset"], "digest": "sha256:" + "f" * 64}]}
+        with mock.patch.dict(RELEASES, {url: tampered}):
+            with self.assertRaises(ForgeError) as ctx:
+                run(SPEC, verify=True, verifier=lambda p: verify_plan(p, FakeRegistry(), TODAY))
+        self.assertIn("verification-tool", {x.code for x in ctx.exception.diagnostics})
 
 
 class HttpGuardTests(unittest.TestCase):

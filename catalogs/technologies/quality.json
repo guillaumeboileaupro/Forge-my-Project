@@ -44,12 +44,15 @@
         "node"
       ],
       "commands": {
-        "lint": "npx eslint ."
+        "lint": "npx eslint . --max-warnings 0"
       },
       "docs": "https://eslint.org/docs/latest/",
       "companions": [
         {
           "package": "@eslint/js"
+        },
+        {
+          "package": "eslint-plugin-security"
         },
         {
           "package": "typescript-eslint",

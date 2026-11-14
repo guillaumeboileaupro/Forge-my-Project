@@ -11,6 +11,7 @@ from forge import diagnostics as d
 from forge.diagnostics import Status
 from forge.verification import checks, npm_peers
 from forge.generator.stack import load_ci_catalog
+from forge.security.controls import load_security_tools
 from forge.verification.http import fetch_json
 
 
@@ -95,6 +96,20 @@ def _resolve_npm(plan, fetch):
     return npm_peers.resolve(requested, fetch)
 
 
+def _verify_security_tools(plan, fetch):
+    """Outils du job security : versions PyPI epinglees (+ OSV) et binaire Gitleaks."""
+    try:
+        tools = load_security_tools()
+    except (OSError, ValueError) as exc:
+        return [checks.Check("tool", "catalogs/security/tools.json", Status.FAIL, "Catalogue invalide : %s" % exc)]
+    gitleaks = tools["gitleaks"]
+    results = [checks.check_release_asset(gitleaks["repository"], gitleaks["version"], gitleaks["asset"], gitleaks["sha256"], fetch)]
+    if "python" in plan.resolution.ids():
+        for name, version in sorted(tools["pypi"].items()):
+            results.extend(_verify_package("pypi", name, version, fetch))
+    return results
+
+
 def _verify_actions(fetch):
     try:
         actions = load_ci_catalog()["actions"].values()
@@ -122,5 +137,6 @@ def verify_plan(plan, fetch=fetch_json, today=None):
         results.append(compatibility)
     if ".github/workflows/ci.yml" in plan.files:
         results.extend(_verify_actions(fetch))
+        results.extend(_verify_security_tools(plan, fetch))
     diagnostics = tuple(x for x in map(_diagnostic, results) if x is not None)
     return VerificationReport(tuple(results), diagnostics)

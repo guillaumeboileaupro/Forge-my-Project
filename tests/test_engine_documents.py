@@ -64,8 +64,11 @@ class ScaffoldTests(unittest.TestCase):
             if "uses:" in line:
                 self.assertRegex(line, r"uses: actions/[a-z-]+@[0-9a-f]{40} # v\d")
         self.assertIn('python-version: "3.13"', workflow)
-        for command in ('python -m pip install -e ".[dev]"', "ruff check .", "python -m pytest", "pip-audit"):
+        for command in ('python -m pip install -e ".[dev]"', "ruff check .", "python -m pytest"):
             self.assertIn("          " + command + "\n", workflow)
+        quality, security = workflow.split("\n  security:\n")
+        self.assertNotIn("pip-audit", quality)  # audit execute une seule fois, dans le job security
+        self.assertIn("pip-audit --strict --no-deps --disable-pip", security)
         self.assertNotIn("docker build", workflow)
 
     def test_manifests_follow_selection_and_verification(self):
