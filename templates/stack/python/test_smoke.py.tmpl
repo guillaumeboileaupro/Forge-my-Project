@@ -1,0 +1,10 @@
+"""Test de fumee : verifie que le package s'importe (a completer par de vrais tests)."""
+
+import importlib
+import unittest
+
+
+class SmokeTest(unittest.TestCase):
+    def test_package_imports(self) -> None:
+        module = importlib.import_module("{{ project.package_name }}")
+        self.assertIsNotNone(module.__doc__)

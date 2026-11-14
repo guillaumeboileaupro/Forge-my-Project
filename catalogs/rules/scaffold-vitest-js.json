@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "scaffold-vitest-js",
+  "description": "Test de fumee Vitest (JavaScript).",
+  "priority": 35,
+  "when": {
+    "technologies_any": [
+      "vitest"
+    ],
+    "technologies_none": [
+      "typescript"
+    ]
+  },
+  "files": [
+    {
+      "path": "tests/smoke.test.js",
+      "template": "stack/node/vitest.smoke.test.tmpl"
+    }
+  ]
+}

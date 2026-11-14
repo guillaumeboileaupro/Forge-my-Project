@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "scaffold-python",
+  "description": "Manifeste et package Python minimal (sans code metier).",
+  "priority": 35,
+  "when": {
+    "technologies_any": [
+      "python"
+    ]
+  },
+  "files": [
+    {
+      "path": "pyproject.toml",
+      "template": "stack/python/pyproject.toml.tmpl"
+    },
+    {
+      "path": "src/{package}/__init__.py",
+      "template": "stack/python/package_init.py.tmpl"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "scaffold-vitest-ts",
+  "description": "Test de fumee Vitest (TypeScript).",
+  "priority": 35,
+  "when": {
+    "technologies_all": [
+      "vitest",
+      "typescript"
+    ]
+  },
+  "files": [
+    {
+      "path": "tests/smoke.test.ts",
+      "template": "stack/node/vitest.smoke.test.tmpl"
+    }
+  ]
+}

@@ -3,14 +3,24 @@
   "id": "stack-node",
   "description": "Regles specifiques a Node.js.",
   "priority": 20,
-  "when": {"technologies_any": ["node"]},
+  "when": {
+    "technologies_any": [
+      "node"
+    ]
+  },
   "sections": {
-    "conventions": ["Modules ES, package.json comme reference des scripts du projet."],
+    "conventions": [
+      "Modules ES, package.json comme reference des scripts du projet."
+    ],
     "dependencies": [
-      "package-lock.json versionne ; installation reproductible par npm ci.",
+      "Versionner package-lock.json des la premiere installation : la CI utilise alors npm ci (installation reproductible).",
       "Distinguer dependencies et devDependencies."
     ],
-    "pitfalls": ["Executer des scripts d'installation npm de packages non verifies."]
+    "pitfalls": [
+      "Executer des scripts d'installation npm de packages non verifies."
+    ]
   },
-  "skills": ["code-solid"]
+  "skills": [
+    "code-solid"
+  ]
 }

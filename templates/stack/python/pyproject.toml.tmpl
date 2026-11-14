@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "{{ project.name }}"
+version = "0.1.0"
+description = {{ project.summary_toml }}
+readme = "README.md"
+requires-python = ">={{ python.version }}"
+dependencies = [
+{{#each python.runtime}}
+  "{{ this }}",
+{{/each}}
+]
+
+[project.optional-dependencies]
+dev = [
+{{#each python.dev}}
+  "{{ this }}",
+{{/each}}
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+{{#if python.has_tests}}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+{{#if python.coverage}}
+addopts = "--cov --cov-report=term-missing --cov-fail-under={{ python.threshold }}"
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+{{/if}}
+{{/if}}
+{{#if python.ruff}}
+
+[tool.ruff]
+line-length = 100
+target-version = "{{ python.target }}"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+{{/if}}
+{{#if python.mypy}}
+
+[tool.mypy]
+files = ["src", "tests"]
+strict = true
+{{/if}}

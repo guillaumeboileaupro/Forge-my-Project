@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "id": "scaffold-node",
+  "description": "Manifeste npm et point d'entree JavaScript vide.",
+  "priority": 35,
+  "when": {
+    "technologies_any": [
+      "node"
+    ],
+    "technologies_none": [
+      "typescript"
+    ]
+  },
+  "files": [
+    {
+      "path": "package.json",
+      "template": "stack/node/package.json.tmpl"
+    },
+    {
+      "path": "src/index.js",
+      "template": "stack/node/index.tmpl"
+    }
+  ]
+}

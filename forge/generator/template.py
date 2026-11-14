@@ -133,7 +133,7 @@ def render(source, context):
 
 
 def _tidy(text):
-    """Supprime les espaces de fin et les lignes vides multiples."""
+    """Supprime les espaces de fin ; au plus deux lignes vides consecutives (PEP 8)."""
     lines = [line.rstrip() for line in text.splitlines()]
-    text = re.sub(r"\n{3,}", "\n\n", "\n".join(lines))
+    text = re.sub(r"\n{4,}", "\n\n\n", "\n".join(lines))
     return text.strip("\n") + "\n"

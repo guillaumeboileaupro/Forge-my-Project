@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "scaffold-eslint",
+  "description": "Configuration ESLint (flat config).",
+  "priority": 35,
+  "when": {
+    "technologies_any": [
+      "eslint"
+    ]
+  },
+  "files": [
+    {
+      "path": "eslint.config.js",
+      "template": "stack/node/eslint.config.js.tmpl"
+    }
+  ]
+}

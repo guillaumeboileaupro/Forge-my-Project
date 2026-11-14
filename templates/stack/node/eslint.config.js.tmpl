@@ -1,0 +1,12 @@
+import js from "@eslint/js";
+{{#if node.typescript}}
+import tseslint from "typescript-eslint";
+{{/if}}
+
+export default [
+  { ignores: ["dist/", "coverage/"] },
+  js.configs.recommended,
+{{#if node.typescript}}
+  ...tseslint.configs.recommended,
+{{/if}}
+];

@@ -21,6 +21,11 @@ TS_WEB = {
     "name": "shop-web", "project_type": "web", "agents": ["copilot"],
     "description": "Boutique en ligne.", "technologies": ["typescript", "node", "react", "vitest", "eslint", "npm-audit"],
 }
+SCAFFOLD = {
+    ".github/workflows/ci.yml", ".gitignore", "pyproject.toml", "src/stock_api/__init__.py", "tests/test_smoke.py",
+    "package.json", "tsconfig.json", "src/index.ts", "src/index.js", "eslint.config.js", "vitest.config.js",
+    "tests/smoke.test.ts", "tests/smoke.test.js",
+}
 BASE_DOCS = {
     "AGENTS.md", "README.md", "SECURITY.md", "CONTRIBUTING.md", "TODO.md", "docs/ARCHITECTURE.md",
     "docs/DEVELOPMENT_PLAN.md", "docs/TESTING.md", "docs/DEPENDENCIES.md", "docs/adr/0001-choix-techniques.md",
@@ -37,9 +42,51 @@ class RepositoryRulesTests(unittest.TestCase):
             _, files = generate(spec)
             for path, content in files.items():
                 safe_relative_path(path)
-                self.assertTrue(path.endswith(".md"), path)
+                self.assertTrue(path.endswith(".md") or path in SCAFFOLD, path)
                 self.assertNotIn("{{", content.replace("{{ secret }}", ""), path)
                 self.assertTrue(content.endswith("\n") and content.strip(), path)
+
+
+class ScaffoldTests(unittest.TestCase):
+    def test_code_files_are_empty_entry_points_and_smoke_tests_only(self):
+        _, files = generate(PYTHON_API)
+        self.assertEqual(files["src/stock_api/__init__.py"].count("\n"), 1)
+        self.assertNotIn("def ", files["src/stock_api/__init__.py"])
+        _, ts = generate(TS_WEB)
+        self.assertEqual([l for l in ts["src/index.ts"].splitlines() if not l.startswith("//")], ["export {};"])
+
+    def test_workflow_is_pinned_and_least_privilege(self):
+        _, files = generate(PYTHON_API)
+        workflow = files[".github/workflows/ci.yml"]
+        self.assertIn("permissions:\n  contents: read", workflow)
+        self.assertIn("persist-credentials: false", workflow)
+        for line in workflow.splitlines():
+            if "uses:" in line:
+                self.assertRegex(line, r"uses: actions/[a-z-]+@[0-9a-f]{40} # v\d")
+        self.assertIn('python-version: "3.13"', workflow)
+        for command in ('python -m pip install -e ".[dev]"', "ruff check .", "python -m pytest", "pip-audit"):
+            self.assertIn("          " + command + "\n", workflow)
+        self.assertNotIn("docker build", workflow)
+
+    def test_manifests_follow_selection_and_verification(self):
+        _, files = generate(PYTHON_API)
+        pyproject = files["pyproject.toml"]
+        self.assertIn('requires-python = ">=3.13"', pyproject)
+        self.assertIn('  "fastapi",', pyproject)
+        self.assertIn("--cov-fail-under=80", pyproject)
+        _, ts = generate(TS_WEB)
+        package = json.loads(ts["package.json"])
+        self.assertEqual(package["scripts"]["test"], "vitest run")
+        self.assertEqual(package["devDependencies"]["typescript-eslint"], "latest")
+        self.assertIn("typescript-eslint", ts["docs/DEPENDENCIES.md"])
+
+    def test_javascript_only_stack(self):
+        _, files = generate(dict(TS_WEB, technologies=["javascript", "node", "node-test", "eslint"]))
+        self.assertIn("src/index.js", files)
+        self.assertIn("tests/smoke.test.js", files)
+        self.assertNotIn("tsconfig.json", files)
+        self.assertNotIn("typescript-eslint", files["eslint.config.js"])
+        self.assertEqual(json.loads(files["package.json"])["scripts"]["test"], "node --test")
 
 
 class PythonApiDocumentsTests(unittest.TestCase):
@@ -48,7 +95,9 @@ class PythonApiDocumentsTests(unittest.TestCase):
         cls.plan, cls.files = generate(PYTHON_API)
 
     def test_expected_files(self):
-        self.assertEqual(set(self.files), BASE_DOCS | {"CLAUDE.md", "docs/DEPLOYMENT.md"})
+        self.assertEqual(set(self.files), BASE_DOCS | {"CLAUDE.md", "docs/DEPLOYMENT.md", ".github/workflows/ci.yml",
+                                                       ".gitignore", "pyproject.toml", "src/stock_api/__init__.py",
+                                                       "tests/test_smoke.py"})
 
     def test_agents_md_is_specific(self):
         agents = self.files["AGENTS.md"]
@@ -83,7 +132,8 @@ class PythonApiDocumentsTests(unittest.TestCase):
 class TypeScriptWebDocumentsTests(unittest.TestCase):
     def test_typescript_web_documents(self):
         _, files = generate(TS_WEB)
-        self.assertEqual(set(files), BASE_DOCS | {".github/copilot-instructions.md"})
+        self.assertEqual(set(files) - SCAFFOLD, BASE_DOCS | {".github/copilot-instructions.md"})
+        self.assertTrue({"package.json", "tsconfig.json", "src/index.ts", "tests/smoke.test.ts"} <= set(files))
         agents = files["AGENTS.md"]
         self.assertIn("`npx vitest run`", agents)
         self.assertIn("aucun any", agents)
