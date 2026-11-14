@@ -42,3 +42,32 @@ jobs:
           node-version: '24'
       - name: Generate and run each generated pipeline (online verification)
         run: python3 tests/smoke_generated.py --verify
+      - name: Prove generated security controls detect injected issues
+        run: python3 tests/smoke_security.py
+
+  security:
+    name: Securite du depot (secrets, SAST)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout (full history for secret scanning)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Setup Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+      # Versions et empreinte alignees sur catalogs/security/tools.json (verifie par tests/test_repo_ci.py).
+      - name: Secrets (Gitleaks)
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tar.gz" https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $RUNNER_TEMP/gitleaks.tar.gz" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" git --redact --exit-code 1 --no-banner .
+      - name: SAST (Bandit)
+        run: |
+          python -m pip install "bandit==1.9.4"
+          bandit -r forge server.py generator.py -q --severity-level medium --confidence-level medium
+

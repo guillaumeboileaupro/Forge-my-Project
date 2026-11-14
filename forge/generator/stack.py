@@ -10,9 +10,11 @@ from pathlib import Path
 
 from forge import CATALOGS_DIR
 from forge.diagnostics import Status
+from forge.security.controls import security_context
 
 ACTION_SHA = re.compile(r"^[0-9a-f]{40}$")
-CI_KINDS = ("install", "format", "lint", "typecheck", "test", "audit", "build")
+# L'audit des dependances est execute par le job security (forge/security) : pas de doublon.
+CI_KINDS = ("install", "format", "lint", "typecheck", "test", "build")
 CI_LABELS = {
     "install": "Installation des dependances", "format": "Formatage", "lint": "Lint", "typecheck": "Typage",
     "test": "Tests et couverture", "audit": "Audit des dependances", "build": "Build",
@@ -137,7 +139,7 @@ def _ci_steps(plan):
                 continue
             if kind == "install" and tech.id == "node":
                 command = NODE_CI_INSTALL
-            steps.append({"name": "%s (%s)" % (CI_LABELS[kind], tech.name), "run": command})
+            steps.append({"name": "%s (%s)" % (CI_LABELS[kind], tech.name), "lines": [command]})
     return steps
 
 
@@ -152,4 +154,5 @@ def stack_context(plan, verification=None, ci_catalog=None):
             "verified_at": ci_catalog["verified_at"],
             "steps": _ci_steps(plan),
         },
+        "security": security_context(plan),
     }

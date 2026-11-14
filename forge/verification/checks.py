@@ -174,3 +174,24 @@ def check_action(repository, tag, sha, fetch=fetch_json):
                      {"actual": str(target.get("sha", ""))})
     return Check("action", subject, Status.PASS, "Tag et SHA epingle concordants", url, {"sha": sha})
 
+
+def check_release_asset(repository, version, asset, sha256, fetch=fetch_json):
+    """Verifie qu'un binaire de release GitHub a l'empreinte SHA-256 epinglee."""
+    subject = "%s v%s" % (repository, version)
+    url = "https://api.github.com/repos/%s/releases/tags/v%s" % (repository, quote(version, safe=""))
+    try:
+        response = fetch(url)
+    except FetchError as exc:
+        return Check("tool", subject, Status.NON_VERIFIE, "API GitHub indisponible : %s" % exc, url)
+    if response.status == 404 or not isinstance(response.data, dict):
+        return Check("tool", subject, Status.FAIL, "Release introuvable", url)
+    found = next((a for a in response.data.get("assets", []) if a.get("name") == asset), None)
+    if found is None:
+        return Check("tool", subject, Status.FAIL, "Archive %s absente de la release" % asset, url)
+    digest = found.get("digest") or ""
+    if not digest.startswith("sha256:"):
+        return Check("tool", subject, Status.NON_VERIFIE, "Empreinte non publiee par l'API GitHub", url)
+    if digest != "sha256:" + sha256:
+        return Check("tool", subject, Status.FAIL, "Empreinte differente de la valeur epinglee", url, {"actual": digest})
+    return Check("tool", subject, Status.PASS, "Archive et empreinte SHA-256 concordantes", url, {"sha256": sha256})
+

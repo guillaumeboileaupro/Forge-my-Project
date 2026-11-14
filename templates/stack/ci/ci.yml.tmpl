@@ -1,5 +1,6 @@
 # Genere par Forge-my-Project. Actions officielles epinglees par SHA de commit
 # (verifiees le {{ ci.verified_at }}). Mettre a jour via une PR dediee.
+# Tout echec de controle bloque la CI : aucun controle n'est ignore ni rendu facultatif.
 name: CI
 
 on:
@@ -12,7 +13,7 @@ permissions:
 
 jobs:
   quality:
-    name: Qualite, tests et audit
+    name: Qualite et tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -35,5 +36,49 @@ jobs:
 {{#each ci.steps}}
       - name: {{ this.name }}
         run: |
-          {{ this.run }}
+{{#each this.lines}}
+          {{ this }}
 {{/each}}
+{{/each}}
+
+  security:
+    name: Securite (secrets, SAST, dependances, SBOM)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout (historique complet pour la recherche de secrets)
+        uses: {{ ci.actions.checkout.repository }}@{{ ci.actions.checkout.sha }} # {{ ci.actions.checkout.tag }}
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+{{#if python}}
+      - name: Python {{ python.version }}
+        uses: {{ ci.actions.setup_python.repository }}@{{ ci.actions.setup_python.sha }} # {{ ci.actions.setup_python.tag }}
+        with:
+          python-version: "{{ python.version }}"
+{{/if}}
+{{#if node}}
+      - name: Node.js {{ node.version }}
+        uses: {{ ci.actions.setup_node.repository }}@{{ ci.actions.setup_node.sha }} # {{ ci.actions.setup_node.tag }}
+        with:
+          node-version: "{{ node.version }}"
+{{/if}}
+{{#each security.steps}}
+      - name: {{ this.name }}
+        run: |
+{{#each this.lines}}
+          {{ this }}
+{{/each}}
+{{/each}}
+{{#if security.sboms}}
+      - name: Publication des SBOM
+        uses: {{ ci.actions.upload_artifact.repository }}@{{ ci.actions.upload_artifact.sha }} # {{ ci.actions.upload_artifact.tag }}
+        with:
+          name: sbom
+          path: |
+{{#each security.sboms}}
+            {{ this }}
+{{/each}}
+          if-no-files-found: error
+          retention-days: 30
+{{/if}}

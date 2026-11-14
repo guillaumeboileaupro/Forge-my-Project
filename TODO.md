@@ -29,7 +29,7 @@ Le graphe est indicatif: la colonne Depend de fait foi.
 | T10 | P4 | Recherche et validation de skills externes | T09 | 2 j | 0 h 03 | - | IN PROGRESS | Sources verifiees, accord utilisateur |
 | T11 | P4 | Verifier packages, versions, compatibilites, API | T06 | 2 j | 0 h 03 | -15 h 57 (base 8 h/j) | DONE | Packages inconnus rejetes |
 | T12 | P5 | GitHub Actions generees et verifiees | T07,T11 | 2 j | 0 h 16 | -15 h 44 (base 8 h/j) | DONE | Pipelines reels pour stacks supportees |
-| T13 | P5 | Controles securite stricts et rapports | T11,T12 | 2 j | - | - | TODO | Scans applicables et blocage fiable |
+| T13 | P5 | Controles securite stricts et rapports | T11,T12 | 2 j | 0 h 12 | -15 h 48 (base 8 h/j) | DONE | Scans applicables et blocage fiable |
 | T14 | P5 | Hooks Git et agents suivant leurs capacites | T07 | 1 j | - | - | TODO | Hooks activables et executes |
 | T15 | P5 | MCP optionnels verifies et valides | T10 | 1 j | - | - | TODO | Aucun MCP fictif ni secret |
 | T16 | P6 | Explorateur, apercu et edition des fichiers | T08 | 2 j | - | - | TODO | Modifications visibles avant ecriture |
@@ -85,4 +85,11 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 - Preuve: `tests/smoke_generated.py --verify` execute la CI generee des 6 profils predefinis: PASS localement (Python 3.12, Node 24) et dans le job `generated-projects`.
 - Defaut reel detecte et corrige: typescript-eslint 8.72.2 n'accepte pas TypeScript 7 (ERESOLVE). Ajout de la resolution des peerDependencies npm (T11): TypeScript ajuste a 6.0.3 avec trace.
 - NON VERIFIE: pas de lockfile genere; Django sans squelette manage.py; seuils de couverture appliques a un code vide (100 %) jusqu'aux premiers modules.
+
+### T13 - 14 novembre 2026 (Claude Code)
+- Temps reel: 12 h 19 -> 12 h 31 (0 h 12) jusqu'a la PR; CI et fusion notees dans la PR.
+- Outils verifies sur leurs sources officielles le 14 novembre 2026: Gitleaks 8.30.1 (empreinte SHA-256 identique dans le fichier de sommes publie et le digest GitHub), Bandit 1.9.4, pip-audit 2.10.1, cyclonedx-bom 8.0.1 (PyPI), eslint-plugin-security 4.2.1 (npm), actions/upload-artifact v7.0.2 (SHA via l'API GitHub).
+- Preuves: `tests/smoke_security.py` (secret, injection shell, urllib3 1.24.1, lodash 4.17.15, eval) -> chaque controle echoue comme attendu, temoins PASS; `tests/smoke_generated.py --verify` -> 6/6 profils PASS sur les jobs quality et security.
+- Ce depot: Gitleaks (historique) et Bandit sans alerte; jobs CI `security` et preuve de detection ajoutes.
+- Limites: pip-audit ne filtre pas par severite (toute vulnerabilite connue bloque); pas de scanner d'image conteneur (NON VERIFIE); Semgrep non retenu (regles telechargees a l'execution), SAST JS limite a eslint-plugin-security.
 

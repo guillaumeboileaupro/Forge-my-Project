@@ -6,6 +6,7 @@ from forge.config.catalog import load_catalog
 from forge.config.spec import ProjectSpec, parse_spec
 from forge.rules.compatibility import resolve
 from forge.rules.engine import compose, load_rules
+from forge.security.controls import security_diagnostics
 
 
 @dataclass(frozen=True)
@@ -23,6 +24,11 @@ class Plan:
     @property
     def files(self):
         return dict(sorted(self.composition.files.items()))
+
+
+def plan_probe(spec, resolution):
+    """Vue minimale (spec + resolution) pour les controles qui ne dependent pas des fichiers."""
+    return Plan(spec, resolution, None, {}, ())
 
 
 def _architecture(spec, composition, out):
@@ -46,6 +52,7 @@ def build_plan(data, catalog=None, rules=None):
     resolution = resolve(spec, catalog)
     composition = compose(rules, spec, resolution.ids())
     out = list(resolution.diagnostics) + list(composition.diagnostics)
+    out.extend(security_diagnostics(plan_probe(spec, resolution)))
     if not spec.description:
         out.append(d.warning("description-empty", "Description vide : les documents resteront generiques"))
     architecture = _architecture(spec, composition, out)

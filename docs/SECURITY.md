@@ -25,3 +25,7 @@ Bloquer severites critiques/hautes quand des outils d'audit fiables sont configu
 - Import JSON: 64 Kio maximum, `JSON.parse` uniquement, validation serveur integrale avant application; affichage par `textContent`.
 - Ne pas stocker de secret dans les reponses: elles sont enregistrees en clair.
 
+## Controles de ce depot (T13)
+- Job CI `security`: Gitleaks sur tout l'historique et Bandit (severite >= medium) sur forge/, server.py et generator.py, avec les memes versions epinglees que les projets generes (alignement verifie par tests/test_repo_ci.py).
+- Job CI `generated-projects`: CI generee des profils predefinis executee, puis preuve de detection des controles de securite (tests/smoke_security.py).
+

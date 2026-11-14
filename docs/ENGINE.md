@@ -81,6 +81,14 @@ Uniquement sur demande (`verify`, `skills`, `skills-search`), en HTTPS vers une 
 - Actions : avec `verify`, chaque tag est relu sur l'API GitHub ; un tag deplace = FAIL bloquant.
 - Preuve : `python3 tests/smoke_generated.py --verify` genere chaque profil predefini dans un dossier temporaire et execute toutes les etapes du workflow genere (job CI `generated-projects`).
 
+## Securite stricte des projets generes (T13)
+
+- Job CI `security` genere pour chaque projet : Gitleaks (binaire de release epingle, empreinte SHA-256 controlee par `sha256sum --check`, historique Git complet), Bandit (Python, severite >= medium en strict, >= low en hardened), pip-audit (toute vulnerabilite connue), `npm audit` (>= high en strict, >= moderate en hardened), SBOM CycloneDX (cyclonedx-bom pour Python, `npm sbom` pour npm) publiees en artefact.
+- SAST JavaScript/TypeScript : eslint-plugin-security dans le lint (`--max-warnings 0`, job quality). Sans ESLint, ou pour une image Docker : diagnostic NON VERIFIE et ligne NON VERIFIE dans SECURITY.md.
+- Outils dans un environnement isole, versions epinglees dans `catalogs/security/tools.json` ; avec `verify`, versions PyPI (+ OSV) et empreinte Gitleaks (digest de la release GitHub) sont recontrolees, une divergence bloque.
+- Aucun contournement genere (`continue-on-error`, `|| true`...) ; les exceptions sont explicites et documentees dans SECURITY.md.
+- Preuve de detection : `python3 tests/smoke_security.py` injecte un secret, une injection shell, une dependance Python vulnerable, une dependance npm vulnerable et un `eval` ; chaque controle doit echouer, le temoin doit passer (job CI `generated-projects`).
+
 ## Limites connues
 
 - Les API des packages ne sont pas verifiees automatiquement (etat NON VERIFIE explicite).
