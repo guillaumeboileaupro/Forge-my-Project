@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "python-cli",
+  "label": "Outil en ligne de commande Python",
+  "description": "CLI Python avec pytest, Ruff, mypy et pip-audit.",
+  "answers": {
+    "project_type": "cli",
+    "technologies": ["python", "pytest", "ruff", "mypy", "pip-audit"],
+    "versions": {"python": "3.13"},
+    "agents": ["codex", "claude"],
+    "security": "strict"
+  }
+}

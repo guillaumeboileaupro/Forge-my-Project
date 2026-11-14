@@ -50,3 +50,9 @@ body.forge{max-width:none;margin:0;padding:0}
   .forge .preview{grid-template-columns:1fr}
 }
 .forge input[type=radio]{width:auto}
+.forge .tools{border-top:1px solid #d6dde8;margin-top:16px;padding-top:8px}
+.forge .tools h2{font-size:1rem;margin:8px 0}
+.forge .tools button,.forge .tools input[type=file]{width:100%;margin:6px 0;font-size:.9rem;padding:8px}
+.forge .file-label{font-size:.9rem;margin:10px 0 2px}
+.forge .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.forge #alert:empty{display:none}

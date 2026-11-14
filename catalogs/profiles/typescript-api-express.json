@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "typescript-api-express",
+  "label": "API Node.js Express (TypeScript)",
+  "description": "API Express en TypeScript sur Node.js LTS, Vitest, ESLint et npm audit.",
+  "answers": {
+    "project_type": "api",
+    "technologies": ["typescript", "node", "express", "vitest", "eslint", "npm-audit"],
+    "versions": {"node": "24"},
+    "agents": ["codex", "claude"],
+    "security": "strict"
+  }
+}

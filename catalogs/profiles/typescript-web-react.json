@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "typescript-web-react",
+  "label": "Application web React (TypeScript)",
+  "description": "React en TypeScript sur Node.js LTS, Vitest et couverture, ESLint, Prettier, npm audit.",
+  "answers": {
+    "project_type": "web",
+    "technologies": ["typescript", "node", "react", "vitest", "vitest-coverage-v8", "eslint", "prettier", "npm-audit"],
+    "versions": {"node": "24"},
+    "agents": ["codex", "claude"],
+    "security": "strict"
+  }
+}

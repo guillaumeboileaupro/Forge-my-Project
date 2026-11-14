@@ -8,7 +8,9 @@ confiance. Le reseau n'est utilise que si `verify` ou `skills` est demande.
 import json
 
 from forge import diagnostics as d
+from forge.config.answers import envelope, parse_answers, unwrap
 from forge.config.catalog import load_catalog
+from forge.config.profiles import PROFILE_FIELDS, ProfileNotFound, ProfileStore, load_predefined
 from forge.config.spec import AGENTS, OPTIONS, PROJECT_TYPES, SECURITY_LEVELS, SpecError
 from forge.diagnostics import ForgeError
 from forge.generator.archive import build_zip
@@ -90,3 +92,68 @@ def archive_payload(raw):
     except (ForgeError, ValueError) as exc:
         return _failure(exc)
     return 200, content, "application/zip", name + ".zip"
+
+
+# --- Reponses (brouillon, import) et profils (T05) ---------------------------
+def _body(raw, fields):
+    try:
+        body = json.loads(raw)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("JSON invalide : le fichier ou la requete n'est pas un JSON valide") from exc
+    if not isinstance(body, dict) or set(body) != fields:
+        raise ValueError("Requete invalide : champs attendus " + ", ".join(sorted(fields)))
+    return body
+
+
+def answers_validate_payload(raw):
+    """Valide un export JSON ou un brouillon ; retourne les reponses normalisees."""
+    try:
+        document = _body(raw, {"document"})["document"]
+        normalised = parse_answers(unwrap(document), load_catalog())
+    except ValueError as exc:
+        return _json(400, {"ok": False, "error": str(exc)})
+    return _json(200, {"ok": True, "answers": normalised, "export": envelope(normalised)})
+
+
+def _store(catalog):
+    predefined = load_predefined(catalog)
+    return predefined, ProfileStore(catalog, reserved={p["id"] for p in predefined})
+
+
+def _profile_call(action):
+    try:
+        return action()
+    except ProfileNotFound as exc:
+        return _json(404, {"ok": False, "error": str(exc)})
+    except (ValueError, OSError) as exc:
+        message = str(exc) if isinstance(exc, ValueError) else "Ecriture du fichier de profils impossible"
+        return _json(400 if isinstance(exc, ValueError) else 500, {"ok": False, "error": message})
+
+
+def profiles_payload():
+    def action():
+        predefined, store = _store(load_catalog())
+        return _json(200, {"ok": True, "predefined": predefined, "custom": store.list(), "storage": str(store.path)})
+    return _profile_call(action)
+
+
+def profile_create_payload(raw):
+    def action():
+        _, store = _store(load_catalog())
+        return _json(201, {"ok": True, "profile": store.create(_body(raw, PROFILE_FIELDS))})
+    return _profile_call(action)
+
+
+def profile_update_payload(profile_id, raw):
+    def action():
+        _, store = _store(load_catalog())
+        return _json(200, {"ok": True, "profile": store.update(profile_id, _body(raw, PROFILE_FIELDS))})
+    return _profile_call(action)
+
+
+def profile_delete_payload(profile_id):
+    def action():
+        _, store = _store(load_catalog())
+        store.delete(profile_id)
+        return _json(200, {"ok": True})
+    return _profile_call(action)

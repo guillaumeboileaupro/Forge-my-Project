@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "python-api-fastapi",
+  "label": "API Python (FastAPI)",
+  "description": "Service HTTP FastAPI, pytest et couverture, Ruff, mypy, audit pip-audit.",
+  "answers": {
+    "project_type": "api",
+    "technologies": ["python", "fastapi", "pytest", "pytest-cov", "ruff", "mypy", "pip-audit"],
+    "versions": {"python": "3.13"},
+    "agents": ["codex", "claude"],
+    "security": "strict"
+  }
+}

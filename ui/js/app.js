@@ -4,7 +4,10 @@
 
 const $ = selector => document.querySelector(selector);
 const NAME = /^[a-z][a-z0-9-]{1,48}[a-z0-9]$/;
-const state = {catalog: null, step: 0, lastConfig: null};
+const state = {catalog: null, step: 0, lastConfig: null, ready: false, profiles: {}, saveTimer: null};
+const DRAFT_KEY = 'forge-my-project.draft.v1';
+const ANSWERS_FORMAT = 'forge-my-project/answers';
+const MAX_IMPORT_BYTES = 65536;
 
 function element(tag, attributes = {}, text = '') {
   const node = document.createElement(tag);
@@ -155,6 +158,10 @@ function showStep(index) {
 
 // --- Configuration et appels serveur ---------------------------------------
 function buildConfig() {
+  return Object.assign({schema_version: 1}, collectAnswers(), {name: $('#name').value.trim()});
+}
+
+function collectAnswers() {
   const technologies = selectedTech();
   const versions = {};
   for (const id of technologies) {
@@ -162,7 +169,6 @@ function buildConfig() {
     if (select) versions[id] = select.value;
   }
   return {
-    schema_version: 1,
     name: $('#name').value.trim(),
     description: $('#description').value,
     project_type: $('#project_type').value,
@@ -274,6 +280,222 @@ async function download() {
   }
 }
 
+// --- Application de reponses validees (brouillon, import, profil) ---------
+function applyAnswers(answers) {
+  if ('name' in answers) $('#name').value = answers.name;
+  if ('description' in answers) $('#description').value = answers.description;
+  $('#project_type').value = answers.project_type;
+  $('#architecture').value = answers.architecture;
+  document.querySelectorAll('input[name="tech"]').forEach(input => { input.checked = false; });
+  // Coche les technologies dans l'ordre des prerequis pour conserver les choix conditionnels.
+  const wanted = new Set(answers.technologies), selected = new Set();
+  let progress = true;
+  while (progress) {
+    progress = false;
+    for (const id of wanted) {
+      const tech = techById(id);
+      if (tech && !selected.has(id) && requirementsMet(tech, selected)) {
+        document.getElementById(`tech-${id}`).checked = true;
+        selected.add(id);
+        progress = true;
+      }
+    }
+  }
+  updateConditional();
+  for (const [id, version] of Object.entries(answers.versions)) {
+    const select = document.querySelector(`[data-version="${id}"]`);
+    if (select) select.value = version;
+  }
+  document.querySelectorAll('input[name="agent"]').forEach(input => { input.checked = answers.agents.includes(input.value); });
+  document.querySelectorAll('input[name="security"]').forEach(input => { input.checked = input.value === answers.security; });
+  $('#opt-mcp').checked = Boolean(answers.options.mcp);
+  if (answers.external_skills && answers.external_skills.length) {
+    showAlert('Les approbations de skills externes ne sont pas encore gerees par l\'interface : elles ne seront pas conservees.');
+  }
+  $('#download').disabled = true;
+  updateBadges();
+}
+
+function showAlert(message) {
+  $('#alert').textContent = message;
+}
+
+async function validateDocument(documentValue) {
+  const response = await post('/api/answers/validate', JSON.stringify({document: documentValue}));
+  const payload = await response.json();
+  if (!response.ok || !payload.ok) throw new Error(payload.error || 'reponses invalides');
+  return payload;
+}
+
+// --- Sauvegarde automatique --------------------------------------------------
+function storage() {
+  try { return window.localStorage; } catch (error) { return null; }
+}
+
+function saveDraft() {
+  if (!state.ready) return;
+  const store = storage();
+  if (!store) return;
+  try {
+    store.setItem(DRAFT_KEY, JSON.stringify({format: ANSWERS_FORMAT, schema_version: 1, answers: collectAnswers()}));
+    $('#autosave-status').textContent = `Reponses sauvegardees automatiquement a ${new Date().toLocaleTimeString()}.`;
+  } catch (error) {
+    $('#autosave-status').textContent = 'Sauvegarde automatique indisponible dans ce navigateur.';
+  }
+}
+
+function scheduleSave() {
+  clearTimeout(state.saveTimer);
+  state.saveTimer = setTimeout(saveDraft, 300);
+}
+
+async function restoreDraft() {
+  const store = storage();
+  const raw = store && store.getItem(DRAFT_KEY);
+  if (!raw) return;
+  try {
+    const payload = await validateDocument(JSON.parse(raw));
+    applyAnswers(payload.answers);
+    $('#autosave-status').textContent = 'Reponses precedentes restaurees.';
+  } catch (error) {
+    store.removeItem(DRAFT_KEY);
+    showAlert(`Brouillon precedent ignore car incompatible : ${error.message}`);
+  }
+}
+
+function resetForm() {
+  const store = storage();
+  if (store) store.removeItem(DRAFT_KEY);
+  state.ready = false;
+  $('#forge').reset();
+  updateConditional();
+  updateBadges();
+  $('#download').disabled = true;
+  $('#preview').hidden = true;
+  $('#report').replaceChildren();
+  state.ready = true;
+  $('#autosave-status').textContent = 'Questionnaire reinitialise.';
+  showStep(0);
+}
+
+// --- Import / export JSON ------------------------------------------------------
+async function exportAnswers() {
+  showAlert('');
+  try {
+    const payload = await validateDocument({format: ANSWERS_FORMAT, schema_version: 1, answers: collectAnswers()});
+    const blob = new Blob([JSON.stringify(payload.export, null, 2) + '\n'], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const link = element('a', {href: url, download: `${payload.answers.name || 'reponses'}.forge.json`});
+    link.click();
+    URL.revokeObjectURL(url);
+    $('#status').textContent = 'Reponses exportees.';
+  } catch (error) {
+    showAlert(`Export impossible : ${error.message}`);
+  }
+}
+
+async function importAnswers(event) {
+  const input = event.currentTarget;
+  const file = input.files[0];
+  input.value = '';
+  if (!file) return;
+  showAlert('');
+  if (file.size > MAX_IMPORT_BYTES) return showAlert('Import refuse : fichier trop volumineux (64 Kio maximum).');
+  let parsed;
+  try {
+    parsed = JSON.parse(await file.text());
+  } catch (error) {
+    return showAlert('Import refuse : le fichier n\'est pas un JSON valide.');
+  }
+  try {
+    const payload = await validateDocument(parsed);
+    applyAnswers(payload.answers);
+    saveDraft();
+    $('#status').textContent = `Configuration importee depuis ${file.name}.`;
+  } catch (error) {
+    showAlert(`Import refuse : ${error.message}`);
+  }
+}
+
+// --- Profils -------------------------------------------------------------------
+async function refreshProfiles(selectId = '') {
+  const select = $('#profile-select');
+  try {
+    const response = await fetch('/api/profiles');
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error);
+    state.profiles = {};
+    select.replaceChildren(element('option', {value: ''}, 'Choisir un profil...'));
+    for (const [label, list] of [['Profils predefinis', payload.predefined], ['Profils personnels', payload.custom]]) {
+      if (!list.length) continue;
+      const group = element('optgroup', {label});
+      for (const profile of list) {
+        state.profiles[profile.id] = profile;
+        group.append(element('option', {value: profile.id}, profile.label));
+      }
+      select.append(group);
+    }
+    select.value = selectId in state.profiles ? selectId : '';
+    $('#profile-storage').textContent = `Profils personnels enregistres localement dans ${payload.storage}.`;
+  } catch (error) {
+    showAlert(`Profils indisponibles : ${error.message}`);
+  }
+  profileSelected();
+}
+
+function profileSelected() {
+  const profile = state.profiles[$('#profile-select').value];
+  const custom = Boolean(profile) && profile.kind === 'personnalise';
+  $('#profile-load').disabled = !profile;
+  $('#profile-update').disabled = !custom;
+  $('#profile-delete').disabled = !custom;
+  $('#profile-info').textContent = profile ? profile.description : '';
+  if (custom) {
+    $('#profile-label').value = profile.label;
+    $('#profile-description').value = profile.description;
+  }
+}
+
+function loadProfile() {
+  const profile = state.profiles[$('#profile-select').value];
+  if (!profile) return;
+  applyAnswers(profile.answers);
+  saveDraft();
+  $('#status').textContent = `Profil « ${profile.label} » charge : les reponses restent modifiables.`;
+}
+
+async function saveProfile(method) {
+  showAlert('');
+  const id = $('#profile-select').value;
+  const body = JSON.stringify({label: $('#profile-label').value, description: $('#profile-description').value, answers: collectAnswers()});
+  const path = method === 'PUT' ? `/api/profiles/${encodeURIComponent(id)}` : '/api/profiles';
+  try {
+    const response = await fetch(path, {method, headers: {'Content-Type': 'application/json'}, body});
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error);
+    await refreshProfiles(payload.profile.id);
+    $('#status').textContent = `Profil « ${payload.profile.label} » enregistre.`;
+  } catch (error) {
+    showAlert(`Profil non enregistre : ${error.message}`);
+  }
+}
+
+async function deleteProfile() {
+  const profile = state.profiles[$('#profile-select').value];
+  if (!profile || !window.confirm(`Supprimer le profil « ${profile.label} » ?`)) return;
+  try {
+    const response = await fetch(`/api/profiles/${encodeURIComponent(profile.id)}`, {method: 'DELETE'});
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error);
+    $('#profile-label').value = '';
+    $('#profile-description').value = '';
+    await refreshProfiles();
+    $('#status').textContent = `Profil « ${profile.label} » supprime.`;
+  } catch (error) {
+    showAlert(`Suppression impossible : ${error.message}`);
+  }
+}
+
 async function init() {
   try {
     const response = await fetch('/api/catalog');
@@ -285,9 +507,10 @@ async function init() {
   renderCatalog();
   document.querySelectorAll('.step h2').forEach(h => h.setAttribute('tabindex', '-1'));
   const form = $('#forge');
-  form.addEventListener('change', () => { updateConditional(); updateBadges(); });
+  form.addEventListener('change', () => { updateConditional(); updateBadges(); scheduleSave(); });
   form.addEventListener('input', () => {
     updateBadges();
+    scheduleSave();
     if (state.lastConfig !== null && state.lastConfig !== requestBody()) $('#download').disabled = true;
   });
   form.addEventListener('submit', event => event.preventDefault());
@@ -297,8 +520,20 @@ async function init() {
     button.addEventListener('click', () => showStep(Number(button.dataset.goto))));
   $('#check').addEventListener('click', check);
   $('#download').addEventListener('click', download);
+  $('#export').addEventListener('click', exportAnswers);
+  $('#import').addEventListener('change', importAnswers);
+  $('#reset').addEventListener('click', resetForm);
+  // Fermeture ou rechargement : enregistre immediatement la derniere saisie.
+  window.addEventListener('pagehide', () => { clearTimeout(state.saveTimer); saveDraft(); });
+  $('#profile-select').addEventListener('change', profileSelected);
+  $('#profile-load').addEventListener('click', loadProfile);
+  $('#profile-create').addEventListener('click', () => saveProfile('POST'));
+  $('#profile-update').addEventListener('click', () => saveProfile('PUT'));
+  $('#profile-delete').addEventListener('click', deleteProfile);
   updateConditional();
   updateBadges();
+  await Promise.all([restoreDraft(), refreshProfiles()]);
+  state.ready = true;
   showStep(0);
 }
 
