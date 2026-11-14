@@ -101,7 +101,7 @@ jobs:
         add("src/" + c["name"].replace("-", "_") + "/__init__.py", '"""Package principal."""')
         add("tests/test_smoke.py", "import unittest\n\nclass SmokeTest(unittest.TestCase):\n    def test_smoke(self):\n        self.assertTrue(True)\n\nif __name__ == '__main__':\n    unittest.main()\n")
     else:
-        add("package.json", json.dumps({"name": c["name"], "version": "0.1.0", "private": True, "scripts": {"test": "node --test"}, "devDependencies": {}}, indent=2))
+        add("package.json", json.dumps({"name": c["name"], "version": "0.1.0", "private": True, "type": "module", "scripts": {"test": "node --test"}, "devDependencies": {}}, indent=2))
         add("src/index.js", "export function health() { return 'ok'; }")
         add("tests/index.test.js", "import { test } from 'node:test';\nimport { strict as assert } from 'node:assert';\nimport { health } from '../src/index.js';\ntest('health', () => assert.equal(health(), 'ok'));")
     if c["deployment"] != "none":

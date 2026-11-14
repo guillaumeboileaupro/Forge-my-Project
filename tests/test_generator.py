@@ -1,4 +1,5 @@
 import io
+import json
 import unittest
 import zipfile
 from generator import validate, build, generate
@@ -17,6 +18,9 @@ class Tests(unittest.TestCase):
         data = build(CONFIG)
         self.assertIn("AGENTS.md", data)
         self.assertIn(".agents/skills/package-verification/SKILL.md", data)
+    def test_javascript_package_uses_es_modules(self):
+        data = build(dict(CONFIG, language="typescript"))
+        self.assertEqual(json.loads(data["package.json"])["type"], "module")
     def test_zip(self):
         with zipfile.ZipFile(io.BytesIO(generate(CONFIG))) as z:
             self.assertIn("test-projet/AGENTS.md", z.namelist())
