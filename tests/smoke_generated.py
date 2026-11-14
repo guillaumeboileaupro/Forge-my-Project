@@ -68,6 +68,8 @@ def write_project(files, root):
         target = resolve_inside(root, path)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(content, encoding="utf-8")
+        if path.startswith((".githooks/", "scripts/hooks/")):
+            target.chmod(0o755)
 
 
 def commit_all(root, message="smoke"):
@@ -117,6 +119,10 @@ def smoke(profile, verify):
             failed = run_steps(steps, root, env, "%s/%s" % (profile["id"], job))
             if failed:
                 raise SystemExit("Echec de l'etape '%s' (job %s) pour %s" % (failed, job, profile["id"]))
+        for hook in ("pre-commit", "pre-push"):  # hooks Git generes, avec les outils reels installes
+            print("[%s] hook %s" % (profile["id"], hook), flush=True)
+            if subprocess.run([str(root / ".githooks" / hook)], cwd=root, env=env, check=False).returncode:
+                raise SystemExit("Echec du hook %s pour %s" % (hook, profile["id"]))
         print("[%s] PASS" % profile["id"], flush=True)
     finally:
         shutil.rmtree(root, ignore_errors=True)

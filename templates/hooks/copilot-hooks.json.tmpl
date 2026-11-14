@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "matcher": "bash|edit|create",
+        "bash": "python3 scripts/hooks/agent_guard.py",
+        "cwd": ".",
+        "timeoutSec": 30
+      }
+    ]
+  }
+}

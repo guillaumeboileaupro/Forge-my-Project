@@ -89,6 +89,13 @@ Uniquement sur demande (`verify`, `skills`, `skills-search`), en HTTPS vers une 
 - Aucun contournement genere (`continue-on-error`, `|| true`...) ; les exceptions sont explicites et documentees dans SECURITY.md.
 - Preuve de detection : `python3 tests/smoke_security.py` injecte un secret, une injection shell, une dependance Python vulnerable, une dependance npm vulnerable et un `eval` ; chaque controle doit echouer, le temoin doit passer (job CI `generated-projects`).
 
+## Hooks Git et hooks d'agents (T14)
+
+- Hooks Git (`.githooks/`, activation `git config core.hooksPath .githooks`, archive en 0755) sans redondance : pre-commit = secrets des fichiers indexes (gitleaks si installe, sinon controle reduit annonce NON VERIFIE), formatage, lint ; commit-msg = Conventional Commits ; pre-push = typage et tests. Audits, SBOM et historique complet restent dans la CI. Un outil absent fait echouer le hook avec une explication (aucun saut silencieux).
+- Garde-fou PreToolUse commun (`scripts/hooks/agent_guard.py`, Python 3) : refuse `--no-verify`, `commit -n`, push force, modification de `core.hooksPath`, ecriture de `.env` (sauf `.env.example`) et de cles privees ; code 2 + raison sur stderr ; entree illisible refusee.
+- Branchement selon les capacites documentees de chaque agent (verifiees le 14 novembre 2026) : Claude Code `.claude/settings.json` (`PreToolUse`) ; Codex `.codex/hooks.json` (`PreToolUse`, matcher `Bash|apply_patch`, hooks de projet actifs seulement apres revue `/hooks` et projet approuve) ; GitHub Copilot `.github/hooks/forge-guard.json` (`version: 1`, `preToolUse`, Copilot CLI et agent cloud, fichier requis sur la branche par defaut pour l'agent cloud). Aucun autre evenement n'est genere.
+- Preuves : tests fonctionnels sur de vrais depots Git (`tests/test_engine_hooks.py`) et execution des hooks generes avec les outils reels pour chaque profil (`tests/smoke_generated.py`).
+
 ## Limites connues
 
 - Les API des packages ne sont pas verifiees automatiquement (etat NON VERIFIE explicite).

@@ -30,7 +30,7 @@ Le graphe est indicatif: la colonne Depend de fait foi.
 | T11 | P4 | Verifier packages, versions, compatibilites, API | T06 | 2 j | 0 h 03 | -15 h 57 (base 8 h/j) | DONE | Packages inconnus rejetes |
 | T12 | P5 | GitHub Actions generees et verifiees | T07,T11 | 2 j | 0 h 16 | -15 h 44 (base 8 h/j) | DONE | Pipelines reels pour stacks supportees |
 | T13 | P5 | Controles securite stricts et rapports | T11,T12 | 2 j | 0 h 12 | -15 h 48 (base 8 h/j) | DONE | Scans applicables et blocage fiable |
-| T14 | P5 | Hooks Git et agents suivant leurs capacites | T07 | 1 j | - | - | TODO | Hooks activables et executes |
+| T14 | P5 | Hooks Git et agents suivant leurs capacites | T07 | 1 j | 0 h 11 | -7 h 49 (base 8 h/j) | DONE | Hooks activables et executes |
 | T15 | P5 | MCP optionnels verifies et valides | T10 | 1 j | - | - | TODO | Aucun MCP fictif ni secret |
 | T16 | P6 | Explorateur, apercu et edition des fichiers | T08 | 2 j | - | - | TODO | Modifications visibles avant ecriture |
 | T17 | P6 | Diff, fusion assistee, sauvegarde, ecriture locale | T16 | 2 j | - | - | TODO | Conflits et rollback testes |
@@ -92,4 +92,14 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 - Preuves: `tests/smoke_security.py` (secret, injection shell, urllib3 1.24.1, lodash 4.17.15, eval) -> chaque controle echoue comme attendu, temoins PASS; `tests/smoke_generated.py --verify` -> 6/6 profils PASS sur les jobs quality et security.
 - Ce depot: Gitleaks (historique) et Bandit sans alerte; jobs CI `security` et preuve de detection ajoutes.
 - Limites: pip-audit ne filtre pas par severite (toute vulnerabilite connue bloque); pas de scanner d'image conteneur (NON VERIFIE); Semgrep non retenu (regles telechargees a l'execution), SAST JS limite a eslint-plugin-security.
+
+### T13 - suivi
+- PR #11 fusionnee le 14 novembre 2026 a 12 h 40 apres CI verte (6 jobs, dont generated-projects : 6/6 profils et 5/5 problemes injectes detectes sur les runners GitHub).
+
+### T14 - 14 novembre 2026 (Claude Code)
+- Temps reel: 12 h 40 -> 12 h 51 (0 h 11) jusqu'a la PR; CI et fusion notees dans la PR.
+- Capacites des agents verifiees dans leur documentation officielle: Claude Code (hooks PreToolUse, code 2 bloquant), Codex (learn.chatgpt.com/docs/hooks et source openai/codex: `.codex/hooks.json`, PreToolUse sur Bash/apply_patch, code 2 + stderr, revue `/hooks` requise), GitHub Copilot (docs.github.com hooks-configuration: `.github/hooks/*.json`, version 1, preToolUse, code 2 = refus, fail-closed).
+- Tests: `tests/test_engine_hooks.py` (garde-fou sur les 3 formats d'evenements, configurations, droits 0755, commits reels: message non conforme, `.env` force, motif de secret, outil absent, pre-push tests OK/KO, branche gitleaks); `tests/smoke_generated.py`: hooks pre-commit et pre-push generes executes avec les outils reels, 6/6 profils PASS.
+- Defaut detecte et corrige: le garde-fou genere ne respectait pas `ruff format`/`ruff check` du projet cible.
+- Limites: le garde-fou exige Python 3 (y compris pour les projets Node); detection par motifs (pas d'analyse complete du shell); les hooks Codex doivent etre approuves via `/hooks`; activation des hooks Git manuelle (`core.hooksPath`), aucun hook n'est installe automatiquement.
 

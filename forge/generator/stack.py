@@ -143,6 +143,35 @@ def _ci_steps(plan):
     return steps
 
 
+HOOK_KINDS = {"pre_commit": ("format", "lint"), "pre_push": ("typecheck", "test")}
+
+
+def _hook_steps(plan, kinds):
+    """Etapes des hooks Git : outils Python directs, scripts npm pour Node (une etape par type)."""
+    steps, npm_kinds = [], []
+    for kind in kinds:
+        for tech in plan.resolution.technologies:
+            command = tech.commands.get(kind, "")
+            if not command or tech.category in EXCLUDED_CATEGORIES:
+                continue
+            if command.startswith(("npx ", "node ")):
+                if kind not in npm_kinds:
+                    npm_kinds.append(kind)
+                    steps.append({
+                        "label": "%s (npm run %s)" % (CI_LABELS[kind], kind),
+                        "guard": '[ -d node_modules ] || fail "dependances npm absentes : executer npm install"',
+                        "command": "npm run --silent %s" % kind,
+                    })
+                continue
+            tool = command.split()[0]
+            steps.append({
+                "label": "%s (%s)" % (CI_LABELS[kind], tech.name),
+                "guard": 'command -v %s >/dev/null 2>&1 || fail "%s introuvable : activer l\'environnement du projet"' % (tool, tool),
+                "command": command,
+            })
+    return steps
+
+
 def stack_context(plan, verification=None, ci_catalog=None):
     ci_catalog = ci_catalog or load_ci_catalog()
     threshold = ci_catalog["coverage_threshold"]
@@ -155,4 +184,5 @@ def stack_context(plan, verification=None, ci_catalog=None):
             "steps": _ci_steps(plan),
         },
         "security": security_context(plan),
+        "hooks": {stage: _hook_steps(plan, kinds) for stage, kinds in HOOK_KINDS.items()},
     }

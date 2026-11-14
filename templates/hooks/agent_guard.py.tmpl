@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+"""Garde-fou PreToolUse commun a Claude Code, Codex et GitHub Copilot.
+
+Genere par Forge-my-Project. Lit l'evenement JSON sur l'entree standard et
+refuse l'action (code de sortie 2, raison sur la sortie d'erreur) si elle :
+- contourne les controles Git : --no-verify, commit -n, push force,
+  modification de core.hooksPath ;
+- ecrit un fichier de secrets : .env (sauf .env.example), cle privee.
+Toute autre action est autorisee (code 0). Une entree illisible est refusee.
+Les controles de qualite restent dans les hooks Git et la CI : pas de doublon.
+"""
+
+import json
+import re
+import sys
+from collections.abc import Iterator
+
+PROJECT = "{{ project.name }}"
+SHELL_TOOLS = {"bash", "powershell", "shell", "exec_command"}
+EDIT_TOOLS = {
+    "edit",
+    "write",
+    "multiedit",
+    "notebookedit",
+    "apply_patch",
+    "create",
+    "str_replace_editor",
+}
+GIT = r"\bgit\b[^\n;&|]*"
+FORCE = r"(\s--force(?!-with-lease)\b|\s-[A-Za-z]*f[A-Za-z]*(\s|$)|\s\+\S)"
+GIT_BYPASS = [
+    (re.compile(GIT + r"\s--no-verify\b"), "contournement des hooks Git (--no-verify)"),
+    (
+        re.compile(GIT + r"\bcommit\b[^\n;&|]*\s-[A-Za-z]*n[A-Za-z]*(\s|$)"),
+        "contournement des hooks Git (commit -n)",
+    ),
+    (re.compile(GIT + r"\bpush\b[^\n;&|]*" + FORCE), "push force interdit"),
+    (re.compile(r"\bcore\.hooksPath\b"), "modification de core.hooksPath interdite"),
+]
+SECRET_FILE = re.compile(
+    r"(^|[\\/])(\.env(\.(?!example$)[\w.-]+)?|id_(rsa|dsa|ecdsa|ed25519)|[^\\/]+\.(pem|key|p12|pfx))$"
+)
+PATCH_FILE = re.compile(r"^\*\*\* (?:Add|Update|Delete) File: (.+)$|^\*\*\* Move to: (.+)$", re.M)
+
+
+def strings(value: object) -> Iterator[str]:
+    """Toutes les chaines d'une structure JSON ; les chaines JSON imbriquees sont decodees."""
+    if isinstance(value, dict):
+        for item in value.values():
+            yield from strings(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from strings(item)
+    elif isinstance(value, str):
+        yield value
+        if value.lstrip().startswith(("{", "[")):
+            try:
+                yield from strings(json.loads(value))
+            except ValueError:
+                pass
+
+
+def tool(event: dict[str, object]) -> tuple[str, list[str]]:
+    name = str(event.get("tool_name") or event.get("toolName") or "")
+    payload = event.get("tool_input") if "tool_input" in event else event.get("toolArgs")
+    return name.lower(), list(strings(payload))
+
+
+def reason(event: dict[str, object]) -> str | None:
+    name, values = tool(event)
+    if name in SHELL_TOOLS:
+        for value in values:
+            for pattern, message in GIT_BYPASS:
+                if pattern.search(value):
+                    return message
+    if name in EDIT_TOOLS:
+        paths = [p.strip() for v in values for m in PATCH_FILE.finditer(v) for p in m.groups() if p]
+        for path in paths + [v.strip() for v in values]:
+            if SECRET_FILE.search(path):
+                return f"ecriture d'un fichier de secrets ({path})"
+    return None
+
+
+def main() -> int:
+    try:
+        event = json.loads(sys.stdin.read() or "null")
+        if not isinstance(event, dict):
+            raise ValueError("objet JSON attendu")
+    except ValueError as exc:
+        print(f"Garde-fou : evenement illisible, action refusee ({exc})", file=sys.stderr)
+        return 2
+    refused = reason(event)
+    if refused:
+        print(f"Garde-fou {PROJECT} : action refusee - {refused}. Voir AGENTS.md.", file=sys.stderr)
+        return 2
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

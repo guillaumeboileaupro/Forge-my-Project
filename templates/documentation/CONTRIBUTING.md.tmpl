@@ -1,5 +1,9 @@
 # Contribuer a {{ project.name }}
 
+## Mise en place
+- Activer les hooks Git : `git config core.hooksPath .githooks`
+- Les hooks verifient les secrets, le formatage et le lint (pre-commit), le message de commit (commit-msg), le typage et les tests (pre-push).
+
 ## Workflow
 {{#each sections.workflow}}
 - {{ this }}

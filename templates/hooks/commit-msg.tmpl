@@ -1,0 +1,13 @@
+#!/bin/sh
+# Genere par Forge-my-Project. Activation : git config core.hooksPath .githooks
+# commit-msg : format Conventional Commits 1.0.0 (type(portee)!: description).
+set -eu
+first=$(head -n 1 "$1")
+case "$first" in
+  "Merge "*|"Revert "*|"fixup! "*|"squash! "*) exit 0 ;;
+esac
+if ! printf '%s\n' "$first" | grep -Eq '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._/-]+\))?!?: .+'; then
+  echo "commit-msg: message non conforme a Conventional Commits : $first" >&2
+  echo "commit-msg: exemple : feat(api): ajouter la route de sante" >&2
+  exit 1
+fi

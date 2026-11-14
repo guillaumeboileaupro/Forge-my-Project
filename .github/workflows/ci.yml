@@ -66,6 +66,8 @@ jobs:
           echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $RUNNER_TEMP/gitleaks.tar.gz" | sha256sum --check --strict
           tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP" gitleaks
           "$RUNNER_TEMP/gitleaks" git --redact --exit-code 1 --no-banner .
+      - name: Generated Git hooks with gitleaks installed
+        run: PATH="$RUNNER_TEMP:$PATH" python -m unittest tests.test_engine_hooks -v
       - name: SAST (Bandit)
         run: |
           python -m pip install "bandit==1.9.4"

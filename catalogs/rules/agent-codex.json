@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "agent-codex",
+  "description": "Hook PreToolUse Codex (garde-fou commun).",
+  "priority": 30,
+  "when": {
+    "agents_any": [
+      "codex"
+    ]
+  },
+  "files": [
+    {
+      "path": ".codex/hooks.json",
+      "template": "hooks/codex-hooks.json.tmpl"
+    }
+  ]
+}

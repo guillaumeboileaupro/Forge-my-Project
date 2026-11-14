@@ -3,6 +3,19 @@
   "id": "agent-copilot",
   "description": "Instructions de depot pour GitHub Copilot.",
   "priority": 30,
-  "when": {"agents_any": ["copilot"]},
-  "files": [{"path": ".github/copilot-instructions.md", "template": "agents/copilot-instructions.md.tmpl"}]
+  "when": {
+    "agents_any": [
+      "copilot"
+    ]
+  },
+  "files": [
+    {
+      "path": ".github/copilot-instructions.md",
+      "template": "agents/copilot-instructions.md.tmpl"
+    },
+    {
+      "path": ".github/hooks/forge-guard.json",
+      "template": "hooks/copilot-hooks.json.tmpl"
+    }
+  ]
 }
