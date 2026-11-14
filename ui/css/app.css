@@ -6,3 +6,47 @@ input[type=checkbox]{width:auto}
 button{background:#1a4bb0;color:white;font-weight:700;margin-top:24px;cursor:pointer}
 small{color:#57657a}
 #status{white-space:pre-wrap}
+
+/* Formulaire hybride du moteur (page /) */
+body.forge{max-width:none;margin:0;padding:0}
+.forge .layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:24px;max-width:1180px;margin:0 auto;padding:24px 16px}
+.forge .sidebar{position:sticky;top:24px;align-self:start}
+.forge .sidebar h1{font-size:1.35rem;margin:0 0 8px}
+.forge .muted,.forge .help{color:#57657a;font-size:.9rem;margin:4px 0}
+.forge progress{width:100%;margin:12px 0}
+.forge nav ol{list-style:none;padding:0;margin:0}
+.forge nav button{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;background:transparent;color:#1c2435;border:1px solid transparent;margin:2px 0;padding:9px 10px;font-weight:600}
+.forge nav button[aria-current=step]{background:#e8eefb;border-color:#1a4bb0}
+.forge .badge{background:#b3261e;color:white;border-radius:10px;padding:0 8px;font-size:.8rem}
+.forge main{min-width:0}
+.forge fieldset{border:1px solid #d6dde8;border-radius:8px;margin:14px 0;padding:10px 14px}
+.forge legend{font-weight:700;padding:0 4px}
+.forge label.check{display:inline-flex;gap:8px;align-items:center;font-weight:600;margin:8px 16px 4px 0}
+.forge .tech{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;padding:4px 0;border-bottom:1px solid #eef1f6}
+.forge .tech .help{flex:1 1 220px}
+.forge .version{display:inline-flex;gap:6px;align-items:center}
+.forge .version label{margin:0;font-weight:400}
+.forge .version select{width:auto;padding:4px 8px}
+.forge .hints li,.forge .diagnostics li{margin:4px 0}
+.forge .hints{color:#8a4b00}
+.forge .error{color:#b3261e}
+.forge .warning{color:#8a4b00}
+.forge .ok{color:#1d6b35}
+.forge .info{color:#57657a}
+.forge button{width:auto;background:#fff;color:#1a4bb0;border-color:#1a4bb0;margin-top:0}
+.forge button.primary{background:#1a4bb0;color:#fff;margin:14px 0}
+.forge button:disabled{opacity:.5;cursor:not-allowed}
+.forge :focus-visible{outline:3px solid #f0a500;outline-offset:2px}
+.forge .actions{display:flex;justify-content:space-between;margin-top:20px}
+.forge .preview{display:grid;grid-template-columns:minmax(180px,280px) minmax(0,1fr);gap:12px;margin-top:12px}
+.forge .files{list-style:none;padding:0;margin:0;max-height:480px;overflow:auto}
+.forge .files button{width:100%;text-align:left;font-size:.85rem;padding:6px 8px;margin:2px 0;border-color:#d6dde8;color:#1c2435;overflow-wrap:anywhere}
+.forge .files button[aria-pressed=true]{background:#e8eefb;border-color:#1a4bb0}
+.forge pre{margin:0;padding:12px;background:#0f172a;color:#e2e8f0;border-radius:8px;max-height:480px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.85rem}
+.forge [hidden]{display:none !important}
+@media (max-width:760px){
+  .forge .layout{grid-template-columns:1fr;padding:12px 16px}
+  .forge .sidebar{position:static}
+  .forge .preview{grid-template-columns:1fr}
+}
+.forge input[type=radio]{width:auto}

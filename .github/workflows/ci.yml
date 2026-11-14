@@ -18,3 +18,7 @@ jobs:
         run: python3 -m compileall -q generator.py server.py forge tests
       - name: Unit tests
         run: python3 -m unittest discover -s tests -v
+      - name: Browser E2E (Firefox headless)
+        env:
+          FORGE_E2E: '1'
+        run: python3 -m unittest tests.test_e2e_firefox -v

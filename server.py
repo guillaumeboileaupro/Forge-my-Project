@@ -2,16 +2,23 @@
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from generator import generate, validate
+from forge import web
 import json
 import re
 
 ROOT = Path(__file__).parent
 STATIC = {
     "/": (ROOT / "ui" / "index.html", "text/html; charset=utf-8"),
+    "/legacy": (ROOT / "ui" / "legacy.html", "text/html; charset=utf-8"),
     "/css/app.css": (ROOT / "ui" / "css" / "app.css", "text/css; charset=utf-8"),
     "/js/app.js": (ROOT / "ui" / "js" / "app.js", "text/javascript; charset=utf-8"),
+    "/js/legacy.js": (ROOT / "ui" / "js" / "legacy.js", "text/javascript; charset=utf-8"),
 }
 LOCAL_HOST = re.compile(r"^(?:127\.0\.0\.1|localhost)(?::[0-9]{1,5})?$")
+LOCAL_ORIGIN = re.compile(r"^http://(?:127\.0\.0\.1|localhost)(?::[0-9]{1,5})?$")
+LEGACY_LIMIT = 16384
+API_LIMIT = 65536
+API_POST = {"/api/plan": web.plan_payload, "/api/archive": web.archive_payload}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -30,30 +37,58 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(content)
 
     def do_GET(self):
+        if self.path == "/api/catalog":
+            return self.reply(*web.catalog_payload())
         resource = STATIC.get(self.path)
         if resource is None:
             return self.reply(404, b"Not found")
         path, media = resource
         self.reply(200, path.read_bytes(), media)
 
+    def read_json_body(self, limit):
+        """Controles communs : hote et origine locaux, JSON, taille bornee. Retourne le corps ou None."""
+        if not LOCAL_HOST.fullmatch(self.headers.get("Host", "")):
+            self.reply(403, b"Hote interdit")
+            return None
+        origin = self.headers.get("Origin")
+        if origin is not None and not LOCAL_ORIGIN.fullmatch(origin):
+            self.reply(403, b"Origine interdite")
+            return None
+        if self.headers.get_content_type() != "application/json":
+            self.reply(415, b"Content-Type application/json requis")
+            return None
+        try:
+            size = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            size = 0
+        if not 0 < size <= limit:
+            self.reply(400, b"Taille de requete invalide")
+            return None
+        return self.rfile.read(size)
+
     def do_POST(self):
+        if self.path in API_POST:
+            raw = self.read_json_body(API_LIMIT)
+            if raw is None:
+                return None
+            try:
+                response = API_POST[self.path](raw)
+            except Exception:  # erreur imprevue : journal local, reponse sans detail
+                self.log_error("Erreur interne sur %s", self.path)
+                return self.reply(500, b"Erreur interne")
+            return self.reply(*response)
         if self.path != "/generate":
             return self.reply(404, b"Not found")
+        raw = self.read_json_body(LEGACY_LIMIT)
+        if raw is None:
+            return None
         try:
-            if not LOCAL_HOST.fullmatch(self.headers.get("Host", "")):
-                return self.reply(403, b"Hote interdit")
-            media = self.headers.get_content_type()
-            if media != "application/json":
-                return self.reply(415, b"Content-Type application/json requis")
-            size = int(self.headers.get("Content-Length", "0"))
-            if not 0 < size <= 16384:
-                raise ValueError("Taille de requete invalide")
-            params = json.loads(self.rfile.read(size))
-            config = validate(params)
+            config = validate(json.loads(raw))
             result = generate(config)
         except (ValueError, TypeError, UnicodeError, json.JSONDecodeError) as exc:
             return self.reply(400, str(exc).encode("utf-8"))
         self.reply(200, result, "application/zip", config["name"] + ".zip")
+
 
 if __name__ == "__main__":
     print("http://127.0.0.1:8765")

@@ -10,12 +10,13 @@ Python 3.11+ uniquement, sans dependances externes.
 python3 server.py
 ```
 
-Ouvrir http://127.0.0.1:8765, repondre au formulaire et telecharger l'archive ZIP du projet.
+Ouvrir http://127.0.0.1:8765 dans Firefox : formulaire par sections (projet, technologies, agents, securite, verification), apercu des fichiers generes puis telechargement de l'archive ZIP. Les controles en ligne (registres, my-skills) sont des cases a cocher explicites. L'ancien formulaire reste disponible sur http://127.0.0.1:8765/legacy.
 
 ## Tests
 
 ```bash
 python3 -m unittest discover -s tests -v
+FORGE_E2E=1 python3 -m unittest tests.test_e2e_firefox -v   # recette Firefox headless (geckodriver requis)
 ```
 
 ## Architecture

@@ -1,13 +1,94 @@
 <!doctype html>
-<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Forge-my-Project</title>
-<link rel="stylesheet" href="/css/app.css"><script src="/js/app.js" defer></script></head>
-<body><main><h1>Forge-my-Project</h1><p>Configure ton projet puis genere une archive avec des bases d'architecture, de securite et de CI/CD a verifier avant utilisation.</p>
-<form id="config"><label for="name">Nom du projet</label><input id="name" name="name" required pattern="[a-z][a-z0-9-]{1,48}[a-z0-9]" placeholder="mon-projet">
-<label for="description">Description et objectifs</label><textarea id="description" name="description" maxlength="500" rows="3"></textarea>
-<label for="language">Langage</label><select id="language" name="language"><option value="python">Python</option><option value="typescript">JavaScript / TypeScript (base JS)</option></select>
-<label for="agent">Agent</label><select id="agent" name="agent"><option value="codex">Codex</option><option value="claude">Claude</option><option value="copilot">Copilot</option><option value="agnostic">Agnostique</option></select>
-<label for="deployment">Deploiement</label><select id="deployment" name="deployment"><option value="none">Aucun</option><option value="docker">Docker</option><option value="s3ns">S3NS</option><option value="outscale">OUTSCALE</option></select>
-<label for="security">Niveau de securite</label><select id="security" name="security"><option value="strict">Strict</option><option value="hardened">Renforce</option></select>
-<label><input id="one_pr" type="checkbox" name="one_pr" checked> Une seule PR ouverte a la fois</label>
-<button type="submit">Generer le ZIP</button></form><p id="status" role="status"></p>
-<small>Les integrations MCP, scans externes, lockfiles et deploiements doivent encore etre configures et verifies.</small></main></body></html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forge-my-Project</title>
+<link rel="stylesheet" href="/css/app.css">
+<script src="/js/app.js" defer></script>
+</head>
+<body class="forge">
+<div class="layout">
+  <aside class="sidebar">
+    <h1>Forge-my-Project</h1>
+    <p class="muted">Preparation locale de l'environnement d'un projet. Aucune IA, aucun code metier, aucune publication.</p>
+    <progress id="progress" max="5" value="1" aria-label="Progression du questionnaire"></progress>
+    <nav aria-label="Sections du questionnaire">
+      <ol id="steps">
+        <li><button type="button" data-goto="0">Projet <span class="badge" hidden></span></button></li>
+        <li><button type="button" data-goto="1">Technologies <span class="badge" hidden></span></button></li>
+        <li><button type="button" data-goto="2">Agents <span class="badge" hidden></span></button></li>
+        <li><button type="button" data-goto="3">Securite et options <span class="badge" hidden></span></button></li>
+        <li><button type="button" data-goto="4">Verification et apercu <span class="badge" hidden></span></button></li>
+      </ol>
+    </nav>
+    <p><a href="/legacy">Formulaire historique (archive ZIP initiale)</a></p>
+  </aside>
+
+  <main>
+    <form id="forge" novalidate>
+      <section class="step" aria-labelledby="h-projet">
+        <h2 id="h-projet">1. Projet</h2>
+        <label for="name">Nom du projet</label>
+        <input id="name" name="name" required pattern="[a-z][a-z0-9\-]{1,48}[a-z0-9]" placeholder="mon-projet" autocomplete="off" aria-describedby="name-help">
+        <p id="name-help" class="help">3 a 50 caracteres : minuscules, chiffres et tirets.</p>
+        <label for="project_type">Type de projet</label>
+        <select id="project_type" name="project_type"></select>
+        <label for="description">Description et objectifs</label>
+        <textarea id="description" name="description" maxlength="2000" rows="4" aria-describedby="description-help"></textarea>
+        <p id="description-help" class="help">Recopiee telle quelle dans les documents ; jamais interpretee.</p>
+        <details>
+          <summary>Architecture definie manuellement (optionnel)</summary>
+          <label for="architecture">Architecture</label>
+          <textarea id="architecture" name="architecture" maxlength="4000" rows="5" aria-describedby="architecture-help"></textarea>
+          <p id="architecture-help" class="help">Si renseignee, elle remplace la suggestion des regles locales.</p>
+        </details>
+      </section>
+
+      <section class="step" aria-labelledby="h-tech" hidden>
+        <h2 id="h-tech">2. Technologies</h2>
+        <p class="help">Les choix dependants apparaissent quand leurs prerequis sont selectionnes.</p>
+        <div id="tech-groups"></div>
+        <ul id="tech-hints" class="hints" aria-live="polite"></ul>
+      </section>
+
+      <section class="step" aria-labelledby="h-agents" hidden>
+        <h2 id="h-agents">3. Agents de developpement</h2>
+        <fieldset id="agents"><legend>Agents utilises sur le projet</legend></fieldset>
+      </section>
+
+      <section class="step" aria-labelledby="h-security" hidden>
+        <h2 id="h-security">4. Securite et options</h2>
+        <fieldset id="security"><legend>Niveau de securite</legend></fieldset>
+        <fieldset>
+          <legend>Options</legend>
+          <label class="check"><input type="checkbox" id="opt-mcp" name="mcp"> Documenter des serveurs MCP (aucun n'est installe)</label>
+        </fieldset>
+      </section>
+
+      <section class="step" aria-labelledby="h-verify" hidden>
+        <h2 id="h-verify">5. Verification et apercu</h2>
+        <fieldset>
+          <legend>Controles en ligne (optionnels, explicites)</legend>
+          <label class="check"><input type="checkbox" id="net-verify"> Verifier packages, versions et vulnerabilites (PyPI, npm, OSV, endoflife.date)</label>
+          <label class="check"><input type="checkbox" id="net-skills"> Recuperer les skills du depot my-skills (GitHub)</label>
+        </fieldset>
+        <button type="button" id="check" class="primary">Verifier la configuration</button>
+        <div id="report" aria-live="polite"></div>
+        <div class="preview" id="preview" hidden>
+          <ul id="files" class="files" aria-label="Fichiers prevus"></ul>
+          <pre id="content" tabindex="0" aria-label="Contenu du fichier selectionne"></pre>
+        </div>
+        <button type="button" id="download" class="primary" disabled>Telecharger l'archive ZIP</button>
+      </section>
+
+      <div class="actions">
+        <button type="button" id="prev">Precedent</button>
+        <button type="button" id="next">Suivant</button>
+      </div>
+    </form>
+    <p id="status" role="status"></p>
+  </main>
+</div>
+</body>
+</html>

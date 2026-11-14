@@ -1,15 +1,305 @@
 'use strict';
+// Formulaire hybride du moteur Forge-my-Project. Aucune donnee n'est inseree
+// en HTML brut : tout passe par textContent. Le serveur revalide tout.
 
-document.querySelector('#config').addEventListener('submit', async event => {
- event.preventDefault();
- const form=event.currentTarget, data=Object.fromEntries(new FormData(form).entries());
- data.one_pr=!!form.elements.one_pr.checked;
- const status=document.querySelector('#status'); status.textContent='Generation...';
- try {
-  const response=await fetch('/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  if(!response.ok) throw new Error(await response.text());
-  const blob=await response.blob(), url=URL.createObjectURL(blob), link=document.createElement('a');
-  link.href=url; link.download=data.name+'.zip'; link.click(); URL.revokeObjectURL(url);
-  status.textContent='Archive generee.';
- } catch(error) {status.textContent='Erreur : '+error.message;}
-});
+const $ = selector => document.querySelector(selector);
+const NAME = /^[a-z][a-z0-9-]{1,48}[a-z0-9]$/;
+const state = {catalog: null, step: 0, lastConfig: null};
+
+function element(tag, attributes = {}, text = '') {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(attributes)) node.setAttribute(key, value);
+  if (text) node.textContent = text;
+  return node;
+}
+
+function techById(id) {
+  return state.catalog.technologies.find(t => t.id === id);
+}
+
+function selectedTech() {
+  return [...document.querySelectorAll('input[name="tech"]:checked')].map(input => input.value);
+}
+
+// --- Rendu a partir du catalogue -----------------------------------------
+function renderCatalog() {
+  const catalog = state.catalog;
+  const type = $('#project_type');
+  for (const item of catalog.project_types) type.append(element('option', {value: item.id}, item.label));
+  const groups = $('#tech-groups');
+  for (const category of catalog.categories) {
+    const fieldset = element('fieldset', {'data-category': category.id});
+    const bounds = category.max === category.min ? `${category.min}` : `${category.min} a ${category.max}`;
+    fieldset.append(element('legend', {}, `${category.label} (${bounds})`));
+    for (const tech of catalog.technologies.filter(t => t.category === category.id)) fieldset.append(techRow(tech));
+    groups.append(fieldset);
+  }
+  const agents = $('#agents');
+  for (const agent of catalog.agents) {
+    const label = element('label', {class: 'check'});
+    label.append(element('input', {type: 'checkbox', name: 'agent', value: agent.id}), ` ${agent.name}`);
+    agents.append(label);
+  }
+  const security = $('#security');
+  const labels = {strict: 'Strict (defaut)', hardened: 'Renforce : revue de securite, SBOM, actions epinglees'};
+  catalog.security_levels.forEach((level, index) => {
+    const label = element('label', {class: 'check'});
+    const input = element('input', {type: 'radio', name: 'security', value: level});
+    if (index === 0) input.checked = true;
+    label.append(input, ` ${labels[level] || level}`);
+    security.append(label);
+  });
+}
+
+function techRow(tech) {
+  const row = element('div', {class: 'tech', 'data-tech': tech.id});
+  const id = `tech-${tech.id}`;
+  const label = element('label', {class: 'check', for: id});
+  label.append(element('input', {type: 'checkbox', name: 'tech', value: tech.id, id}), ` ${tech.name}`);
+  row.append(label, element('span', {class: 'help'}, tech.description));
+  if (tech.versions.length) {
+    const versionId = `version-${tech.id}`;
+    const wrap = element('span', {class: 'version', hidden: ''});
+    wrap.append(element('label', {for: versionId}, 'Version'));
+    const select = element('select', {id: versionId, 'data-version': tech.id});
+    for (const version of tech.versions) {
+      const option = element('option', {value: version}, version + (version === tech.preferred ? ' (preferee)' : ''));
+      if (version === tech.preferred) option.selected = true;
+      select.append(option);
+    }
+    wrap.append(select);
+    row.append(wrap);
+  }
+  return row;
+}
+
+// --- Questions conditionnelles -------------------------------------------
+function requirementsMet(tech, selected) {
+  return tech.requires.every(options => options.some(id => selected.has(id)));
+}
+
+function updateConditional() {
+  let selected = new Set(selectedTech());
+  let changed = true;
+  // Retire en cascade les choix dont les prerequis ont disparu.
+  while (changed) {
+    changed = false;
+    for (const id of [...selected]) {
+      if (!requirementsMet(techById(id), selected)) {
+        document.getElementById(`tech-${id}`).checked = false;
+        selected.delete(id);
+        changed = true;
+      }
+    }
+  }
+  const hints = [];
+  for (const tech of state.catalog.technologies) {
+    const row = document.querySelector(`[data-tech="${tech.id}"]`);
+    const input = row.querySelector('input[name="tech"]');
+    row.hidden = !requirementsMet(tech, selected);
+    const conflict = tech.conflicts.find(id => selected.has(id)) ||
+      state.catalog.technologies.find(other => selected.has(other.id) && other.conflicts.includes(tech.id));
+    input.disabled = Boolean(conflict) && !input.checked;
+    if (input.disabled) hints.push(`${tech.name} indisponible : incompatible avec ${techById(conflict.id || conflict).name}`);
+    const version = row.querySelector('.version');
+    if (version) version.hidden = !input.checked;
+  }
+  for (const category of state.catalog.categories) {
+    const count = state.catalog.technologies.filter(t => t.category === category.id && selected.has(t.id)).length;
+    if (count < category.min) hints.push(`${category.label} : au moins ${category.min} choix`);
+    if (count > category.max) hints.push(`${category.label} : au plus ${category.max} choix`);
+    const fieldset = document.querySelector(`[data-category="${category.id}"]`);
+    fieldset.hidden = [...fieldset.querySelectorAll('.tech')].every(row => row.hidden);
+  }
+  const list = $('#tech-hints');
+  list.replaceChildren(...hints.map(text => element('li', {}, text)));
+}
+
+// --- Validation et navigation ---------------------------------------------
+function stepErrors() {
+  const errors = [[], [], [], [], []];
+  if (!NAME.test($('#name').value)) errors[0].push('Nom de projet invalide');
+  const selected = new Set(selectedTech());
+  for (const category of state.catalog.categories) {
+    const count = state.catalog.technologies.filter(t => t.category === category.id && selected.has(t.id)).length;
+    if (count < category.min || count > category.max) errors[1].push(category.label);
+  }
+  if (!document.querySelector('input[name="agent"]:checked')) errors[2].push('Au moins un agent');
+  return errors;
+}
+
+function updateBadges() {
+  const errors = stepErrors();
+  document.querySelectorAll('#steps button').forEach((button, index) => {
+    const badge = button.querySelector('.badge');
+    badge.hidden = errors[index].length === 0;
+    badge.textContent = String(errors[index].length);
+    badge.title = errors[index].join(', ');
+    button.setAttribute('aria-label', `${button.firstChild.textContent.trim()}${errors[index].length ? ` : ${errors[index].length} erreur(s)` : ''}`);
+  });
+  return errors;
+}
+
+function showStep(index) {
+  const steps = document.querySelectorAll('.step');
+  state.step = Math.max(0, Math.min(steps.length - 1, index));
+  steps.forEach((step, i) => { step.hidden = i !== state.step; });
+  document.querySelectorAll('#steps button').forEach((button, i) => {
+    if (i === state.step) button.setAttribute('aria-current', 'step'); else button.removeAttribute('aria-current');
+  });
+  $('#progress').value = state.step + 1;
+  $('#prev').disabled = state.step === 0;
+  $('#next').disabled = state.step === steps.length - 1;
+  steps[state.step].querySelector('h2').focus({preventScroll: false});
+}
+
+// --- Configuration et appels serveur ---------------------------------------
+function buildConfig() {
+  const technologies = selectedTech();
+  const versions = {};
+  for (const id of technologies) {
+    const select = document.querySelector(`[data-version="${id}"]`);
+    if (select) versions[id] = select.value;
+  }
+  return {
+    schema_version: 1,
+    name: $('#name').value.trim(),
+    description: $('#description').value,
+    project_type: $('#project_type').value,
+    architecture: $('#architecture').value,
+    technologies,
+    versions,
+    agents: [...document.querySelectorAll('input[name="agent"]:checked')].map(input => input.value),
+    security: document.querySelector('input[name="security"]:checked').value,
+    options: {mcp: $('#opt-mcp').checked},
+  };
+}
+
+function requestBody() {
+  return JSON.stringify({config: buildConfig(), verify: $('#net-verify').checked, skills: $('#net-skills').checked});
+}
+
+async function post(path, body) {
+  return fetch(path, {method: 'POST', headers: {'Content-Type': 'application/json'}, body});
+}
+
+function renderReport(payload) {
+  const report = $('#report');
+  report.replaceChildren();
+  const blocking = payload.diagnostics.filter(d => d.severity === 'error').length;
+  report.append(element('p', {class: blocking ? 'error' : 'ok'},
+    blocking ? `${blocking} erreur(s) bloquante(s) : generation impossible.` : 'Configuration valide. Relire les avertissements avant de telecharger.'));
+  if (payload.error && !payload.diagnostics.length) report.append(element('p', {class: 'error'}, payload.error));
+  const list = element('ul', {class: 'diagnostics'});
+  for (const diag of payload.diagnostics) {
+    list.append(element('li', {class: diag.severity}, `[${diag.severity}] ${diag.message}`));
+  }
+  report.append(list);
+  if (payload.verification) {
+    const table = element('ul', {class: 'diagnostics'});
+    for (const check of payload.verification) {
+      table.append(element('li', {class: check.status === 'PASS' ? 'ok' : check.status === 'FAIL' ? 'error' : 'warning'},
+        `${check.status} - ${check.kind} ${check.subject} : ${check.message}`));
+    }
+    report.append(element('h3', {}, 'Verification en ligne'), table);
+  }
+}
+
+function renderFiles(contents) {
+  const files = $('#files');
+  files.replaceChildren();
+  for (const path of Object.keys(contents).sort()) {
+    const item = element('li');
+    const button = element('button', {type: 'button'}, path);
+    button.addEventListener('click', () => {
+      files.querySelectorAll('button').forEach(b => b.removeAttribute('aria-pressed'));
+      button.setAttribute('aria-pressed', 'true');
+      $('#content').textContent = contents[path];
+    });
+    item.append(button);
+    files.append(item);
+  }
+  $('#preview').hidden = false;
+  const first = files.querySelector('button');
+  if (first) first.click();
+}
+
+async function check() {
+  const errors = updateBadges();
+  const first = errors.findIndex(list => list.length);
+  if (first >= 0 && first < 4) {
+    $('#status').textContent = `Section ${first + 1} incomplete : ${errors[first].join(', ')}`;
+    return showStep(first);
+  }
+  $('#status').textContent = 'Verification en cours...';
+  $('#download').disabled = true;
+  try {
+    const body = requestBody();
+    const response = await post('/api/plan', body);
+    const payload = await response.json();
+    renderReport(payload);
+    if (response.ok && payload.ok) {
+      renderFiles(payload.contents);
+      state.lastConfig = body;
+      $('#download').disabled = false;
+    } else {
+      $('#preview').hidden = true;
+    }
+    $('#status').textContent = response.ok ? 'Verification terminee.' : 'Configuration refusee.';
+  } catch (error) {
+    $('#status').textContent = `Erreur : ${error.message}`;
+  }
+}
+
+async function download() {
+  if (state.lastConfig !== requestBody()) {
+    $('#download').disabled = true;
+    $('#status').textContent = 'La configuration a change : relancer la verification.';
+    return;
+  }
+  $('#status').textContent = 'Controles repetes avant generation...';
+  try {
+    const response = await post('/api/archive', state.lastConfig);
+    if (!response.ok) {
+      renderReport(await response.json());
+      throw new Error('archive refusee');
+    }
+    const url = URL.createObjectURL(await response.blob());
+    const link = element('a', {href: url, download: `${buildConfig().name}.zip`});
+    link.click();
+    URL.revokeObjectURL(url);
+    $('#status').textContent = 'Archive generee.';
+  } catch (error) {
+    $('#status').textContent = `Erreur : ${error.message}`;
+  }
+}
+
+async function init() {
+  try {
+    const response = await fetch('/api/catalog');
+    state.catalog = await response.json();
+  } catch (error) {
+    $('#status').textContent = `Catalogue indisponible : ${error.message}`;
+    return;
+  }
+  renderCatalog();
+  document.querySelectorAll('.step h2').forEach(h => h.setAttribute('tabindex', '-1'));
+  const form = $('#forge');
+  form.addEventListener('change', () => { updateConditional(); updateBadges(); });
+  form.addEventListener('input', () => {
+    updateBadges();
+    if (state.lastConfig !== null && state.lastConfig !== requestBody()) $('#download').disabled = true;
+  });
+  form.addEventListener('submit', event => event.preventDefault());
+  $('#prev').addEventListener('click', () => showStep(state.step - 1));
+  $('#next').addEventListener('click', () => showStep(state.step + 1));
+  document.querySelectorAll('#steps button').forEach(button =>
+    button.addEventListener('click', () => showStep(Number(button.dataset.goto))));
+  $('#check').addEventListener('click', check);
+  $('#download').addEventListener('click', download);
+  updateConditional();
+  updateBadges();
+  showStep(0);
+}
+
+document.addEventListener('DOMContentLoaded', init);

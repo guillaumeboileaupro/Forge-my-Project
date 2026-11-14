@@ -9,8 +9,10 @@ Statut: contrats de transition etablis par T02. Ils preservent le prototype T01 
 - Un changement incompatible exige un ADR, des tests de migration et une mise a jour de ce document.
 
 ## Interface utilisateur -> serveur
-- `GET /` retourne `ui/index.html`; `GET /css/app.css` et `GET /js/app.js` servent uniquement les deux assets connus.
-- `POST /generate` accepte `Content-Type: application/json`, 1 a 16 384 octets, depuis un `Host` loopback autorise.
+- `GET /` retourne le formulaire hybride `ui/index.html` (moteur `forge/`); `GET /legacy` retourne le formulaire historique `ui/legacy.html`. Seuls les assets connus sont servis: `/css/app.css`, `/js/app.js`, `/js/legacy.js`.
+- `GET /api/catalog` retourne categories, technologies, agents, types de projet, niveaux de securite et options (lecture seule).
+- `POST /api/plan` et `POST /api/archive` acceptent `{"config": <schema moteur v1>, "verify": bool, "skills": bool}` (1 a 65 536 octets, `Host` et `Origin` loopback). `plan` retourne diagnostics, rapports et contenu des fichiers; `archive` repete tous les controles puis retourne le ZIP, ou 422 avec les diagnostics bloquants. Erreur de schema: 400; erreur imprevue: 500 sans detail. Voir docs/ENGINE.md.
+- `POST /generate` (historique) accepte `Content-Type: application/json`, 1 a 16 384 octets, depuis un `Host` (et un `Origin` s'il est present) loopback autorise.
 - Corps historique: objet avec `name`, `description`, `language`, `agent`, `deployment`, `security` et `one_pr`. Aucun champ inconnu n'est accepte.
 - Succes: HTTP 200, `application/zip`, nom de fichier derive du nom valide. Erreur client: HTTP 400, 403, 404 ou 415 avec un texte sans secret.
 - Le navigateur n'est jamais une source de confiance; ses contraintes HTML ne remplacent pas la validation Python.

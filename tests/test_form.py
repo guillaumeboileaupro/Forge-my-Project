@@ -32,7 +32,7 @@ class FormTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         parser = FormParser()
-        cls.source = Path("ui/index.html").read_text(encoding="utf-8")
+        cls.source = Path("ui/legacy.html").read_text(encoding="utf-8")
         parser.feed(cls.source)
         cls.form = parser
 
@@ -51,7 +51,7 @@ class FormTests(unittest.TestCase):
 
     def test_ui_uses_external_assets(self):
         self.assertIn('href="/css/app.css"', self.source)
-        self.assertIn('src="/js/app.js"', self.source)
+        self.assertIn('src="/js/legacy.js"', self.source)
         self.assertNotIn("<style", self.source)
         self.assertNotIn("<script>", self.source)
         self.assertNotIn(" style=", self.source)
