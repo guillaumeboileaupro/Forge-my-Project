@@ -18,16 +18,16 @@ Le graphe est indicatif: la colonne Depend de fait foi.
 | ID | Phase | Travail | Depend de | Estime | Reel | Ecart | Statut | Critere de fin |
 | --- | --- | --- | --- | ---: | ---: | ---: | --- | --- |
 | T01 | P1 | Auditer le prototype et corriger ses defauts | - | 1 j | 0 h 05 | -7 h 55 (base 8 h/j) | DONE | Tests serveur/ZIP et JS reproductibles |
-| T02 | P1 | Reorganiser modules et modeles externes sans casser l'existant | T01 | 1 j | - | - | TODO | Contrats clairs, tests verts |
-| T03 | P2 | Formulaire hybride, navigation et progression | T02 | 2 j | - | - | TODO | Parcours UI valides |
-| T04 | P2 | Questions conditionnelles et validation | T03 | 1 j | - | - | TODO | Questions coherentes selon reponses |
+| T02 | P1 | Reorganiser modules et modeles externes sans casser l'existant | T01 | 1 j | - | - | DONE | Contrats clairs, tests verts |
+| T03 | P2 | Formulaire hybride, navigation et progression | T02 | 2 j | en cours | - | IN PROGRESS | Parcours UI valides |
+| T04 | P2 | Questions conditionnelles et validation | T03 | 1 j | en cours | - | IN PROGRESS | Questions coherentes selon reponses |
 | T05 | P2 | Profils, autosauvegarde et import/export JSON | T03 | 1 j | - | - | TODO | Reprise et import fiable |
-| T06 | P3 | Catalogue technologies et compatibilites | T02 | 2 j | - | - | IN PROGRESS | Configs incompatibles detectees |
-| T07 | P3 | Moteur de regles et composition des templates | T06 | 2 j | - | - | IN PROGRESS | Rendu deterministe et coherent |
-| T08 | P3 | AGENTS.md et documentation complete personnalisee | T07 | 2 j | - | - | IN PROGRESS | Aucun contenu fictif cache |
-| T09 | P4 | Recuperer et selectionner les skills du depot my-skills | T07 | 1 j | - | - | IN PROGRESS | Skills pertinents copies sans execution |
-| T10 | P4 | Recherche et validation de skills externes | T09 | 2 j | - | - | IN PROGRESS | Sources verifiees, accord utilisateur |
-| T11 | P4 | Verifier packages, versions, compatibilites, API | T06 | 2 j | - | - | IN PROGRESS | Packages inconnus rejetes |
+| T06 | P3 | Catalogue technologies et compatibilites | T02 | 2 j | 0 h 13 | -15 h 47 (base 8 h/j) | DONE | Configs incompatibles detectees |
+| T07 | P3 | Moteur de regles et composition des templates | T06 | 2 j | 0 h 02 | -15 h 58 (base 8 h/j) | DONE | Rendu deterministe et coherent |
+| T08 | P3 | AGENTS.md et documentation complete personnalisee | T07 | 2 j | 0 h 03 | -15 h 57 (base 8 h/j) | DONE | Aucun contenu fictif cache |
+| T09 | P4 | Recuperer et selectionner les skills du depot my-skills | T07 | 1 j | 0 h 03 | -7 h 57 (base 8 h/j) | DONE | Skills pertinents copies sans execution |
+| T10 | P4 | Recherche et validation de skills externes | T09 | 2 j | 0 h 03 | - | IN PROGRESS | Sources verifiees, accord utilisateur |
+| T11 | P4 | Verifier packages, versions, compatibilites, API | T06 | 2 j | 0 h 03 | -15 h 57 (base 8 h/j) | DONE | Packages inconnus rejetes |
 | T12 | P5 | GitHub Actions generees et verifiees | T07,T11 | 2 j | - | - | TODO | Pipelines reels pour stacks supportees |
 | T13 | P5 | Controles securite stricts et rapports | T11,T12 | 2 j | - | - | TODO | Scans applicables et blocage fiable |
 | T14 | P5 | Hooks Git et agents suivant leurs capacites | T07 | 1 j | - | - | TODO | Hooks activables et executes |
@@ -55,3 +55,14 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 - CI: [push PASS](https://github.com/guillaumeboileaupro/Forge-my-Project/actions/runs/43583433146) et [PR PASS](https://github.com/guillaumeboileaupro/Forge-my-Project/actions/runs/43583453284).
 - NON VERIFIE: Bandit, Semgrep et Gitleaks absents. `pip check` signale des incoherences de l'environnement Anaconda global, sans dependance tierce du projet.
 - Risques restants hors T01: profil nomme TypeScript mais base JavaScript, workflow genere volontairement bloquant, absence de lockfiles et fonctions T02-T18 non implementees.
+
+### T02 - 14 novembre 2026 (Codex, PR #5)
+- Fusionnee apres CI verte (runs 43584707105 et 43584848078). Temps reel non renseigne par Codex.
+
+### T06-T11 - 14 novembre 2026 (Claude Code, PR #6)
+- Temps reels mesures sur l'historique Git: branche creee a 10 h 54; commits T06 11 h 07, T07 11 h 09, T08 11 h 12, T11 11 h 15, T09 11 h 18, T10 11 h 21; fusion 11 h 28 (total 0 h 34).
+- Tests: `python3 -m unittest discover -s tests` PASS, 90 tests apres synchronisation avec T02; pyflakes sans alerte.
+- CI: [push PASS](https://github.com/guillaumeboileaupro/Forge-my-Project/actions/runs/43585339901) et [PR PASS](https://github.com/guillaumeboileaupro/Forge-my-Project/actions/runs/43585342252) (Python 3.11).
+- Verifications reelles: package fictif rejete; django 3.0.0 et lodash 4.17.15 bloques (GHSA haute/critique); Node 20 et Python 3.9 bloques (fin de vie); 6 skills my-skills copies au commit 16cddc53, scripts ignores.
+- T10 reste IN PROGRESS: recherche et approbation disponibles dans le moteur et la CLI, pas encore dans l'interface.
+- NON VERIFIE: API des packages (pas d'installation); licence PyPI = derniere version publiee.

@@ -78,4 +78,5 @@ Uniquement sur demande (`verify`, `skills`, `skills-search`), en HTTPS vers une 
 - La licence PyPI est celle de la derniere version publiee.
 - La recherche de skills externes lit chaque SKILL.md des catalogues reconnus : plusieurs dizaines de secondes.
 - Le catalogue couvre Python et Node.js/TypeScript ; toute autre pile est refusee comme inconnue.
-- Le moteur n'est pas encore branche sur l'interface ni sur generator.py (integration prevue avec T03-T05/T16-T17).
+- Le moteur est branche sur le formulaire hybride (`/`, API `/api/*`, voir docs/CONTRACTS.md) ; `generator.py` et `/legacy` restent l'ancien parcours, inchange.
+- L'interface ne propose pas encore la recherche/approbation des skills externes (CLI uniquement), ni l'edition des fichiers avant ecriture (T16) ni l'ecriture locale (T17) : la sortie est un ZIP.

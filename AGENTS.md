@@ -5,11 +5,11 @@ Construire un generateur interactif, fiable et extensible qui produit des squele
 
 ## Etat reel
 - Serveur HTTP local: server.py; bind 127.0.0.1:8765.
-- Formulaire web: ui/index.html, avec assets ui/css et ui/js.
+- Formulaire web: ui/index.html (formulaire hybride du moteur) et ui/legacy.html (historique), assets ui/css et ui/js.
 - Validation / creation ZIP: facade generator.py; implementation historique dans forge/config/legacy.py et forge/generator/legacy.py.
-- Tests: tests/test_generator.py.
+- Tests: tests/ (unitaires, API HTTP, recette Firefox headless activee par FORGE_E2E=1).
 - Aucun package tiers requis pour le generateur.
-- Moteur technique: forge/ (catalogs/, templates/), contrat dans docs/ENGINE.md; verification des registres uniquement sur demande explicite; pas encore branche sur l'UI. Aucun MCP operationnel n'est configure.
+- Moteur technique: forge/ (catalogs/, templates/), contrat dans docs/ENGINE.md; verification des registres uniquement sur demande explicite; formulaire hybride sur / (ui/index.html), formulaire historique sur /legacy. Aucun MCP operationnel n'est configure.
 - Le pipeline inclus dans les ZIP generes est un modele volontairement bloquant: ne pas le confondre avec la CI de ce depot.
 
 ## Architecture
