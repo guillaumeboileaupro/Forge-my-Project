@@ -2,9 +2,10 @@
 from forge import TEMPLATES_DIR
 from forge.diagnostics import ForgeError
 from forge.generator.context import build_context
-from forge.generator.paths import resolve_inside
+from forge.generator.paths import resolve_inside, safe_relative_path
 from forge.generator.template import TemplateError, render
 from forge.planner.plan import build_plan
+from forge.rules.engine import PACKAGE_PLACEHOLDER
 
 
 def _errors(diagnostics):
@@ -21,6 +22,7 @@ def render_plan(plan, templates_dir=TEMPLATES_DIR, verification=None):
     files = {}
     for path, (template, rule_id) in plan.files.items():
         source = resolve_inside(templates_dir, template).read_text(encoding="utf-8")
+        path = safe_relative_path(path.replace(PACKAGE_PLACEHOLDER, plan.spec.package_name))
         try:
             files[path] = render(source, context)
         except TemplateError as exc:

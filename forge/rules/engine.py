@@ -21,7 +21,9 @@ SECTIONS = (
     "architecture", "conventions", "testing", "security", "dependencies",
     "workflow", "pitfalls", "deployment", "dod",
 )
-CONDITIONS = {"technologies_all", "technologies_any", "agents_any", "project_types", "security", "options"}
+CONDITIONS = {"technologies_all", "technologies_any", "technologies_none", "agents_any", "project_types", "security", "options"}
+# Seul emplacement autorise dans un chemin de sortie : nom de package Python valide.
+PACKAGE_PLACEHOLDER = "{package}"
 RULE_FIELDS = {"schema_version", "id", "description", "mandatory", "priority", "when", "files", "sections", "skills"}
 FILE_FIELDS = {"path", "template", "override"}
 
@@ -75,7 +77,7 @@ def _parse_when(raw, where, catalog):
     _require(isinstance(raw, dict), where + " : when doit etre un objet")
     _require(not set(raw) - CONDITIONS, where + " : condition inconnue " + ", ".join(sorted(set(raw) - CONDITIONS)))
     when = {}
-    for key in ("technologies_all", "technologies_any"):
+    for key in ("technologies_all", "technologies_any", "technologies_none"):
         if key in raw:
             when[key] = _ids(raw[key], where + "." + key, catalog.technologies)
     if "agents_any" in raw:
@@ -98,7 +100,9 @@ def _parse_files(raw, where, templates_dir):
     for item in raw:
         _require(isinstance(item, dict) and not set(item) - FILE_FIELDS, where + " : entree de fichier invalide")
         try:
-            path = safe_relative_path(item.get("path"))
+            raw_path = item.get("path")
+            safe_relative_path(raw_path.replace(PACKAGE_PLACEHOLDER, "pkg") if isinstance(raw_path, str) else raw_path)
+            path = raw_path
             template = safe_relative_path(item.get("template"))
             source = resolve_inside(templates_dir, template)
         except PathError as exc:
@@ -159,6 +163,8 @@ def matches(rule, spec, technology_ids):
     if "technologies_all" in when and not set(when["technologies_all"]) <= technology_ids:
         return False
     if "technologies_any" in when and not technology_ids.intersection(when["technologies_any"]):
+        return False
+    if "technologies_none" in when and technology_ids.intersection(when["technologies_none"]):
         return False
     if "agents_any" in when and not set(spec.agents).intersection(when["agents_any"]):
         return False

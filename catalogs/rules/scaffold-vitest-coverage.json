@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "scaffold-vitest-coverage",
+  "description": "Seuils de couverture Vitest.",
+  "priority": 35,
+  "when": {
+    "technologies_any": [
+      "vitest-coverage-v8"
+    ]
+  },
+  "files": [
+    {
+      "path": "vitest.config.js",
+      "template": "stack/node/vitest.config.js.tmpl"
+    }
+  ]
+}

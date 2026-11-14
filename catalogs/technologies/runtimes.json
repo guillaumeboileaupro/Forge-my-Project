@@ -7,8 +7,17 @@
       "name": "Node.js",
       "description": "Environnement d'execution JavaScript (versions LTS uniquement).",
       "ecosystem": null,
-      "versions": {"preferred": "24", "supported": ["22", "24"], "eol_product": "nodejs"},
-      "commands": {"install": "npm ci"},
+      "versions": {
+        "preferred": "24",
+        "supported": [
+          "22",
+          "24"
+        ],
+        "eol_product": "nodejs"
+      },
+      "commands": {
+        "install": "npm install"
+      },
       "docs": "https://nodejs.org/en/about/previous-releases"
     }
   ]

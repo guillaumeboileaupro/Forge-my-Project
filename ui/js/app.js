@@ -226,7 +226,9 @@ function renderFiles(contents) {
     files.append(item);
   }
   $('#preview').hidden = false;
-  const first = files.querySelector('button');
+  // AGENTS.md est le document principal : il est affiche en premier s'il existe.
+  const buttons = [...files.querySelectorAll('button')];
+  const first = buttons.find(b => b.textContent === 'AGENTS.md') || buttons[0];
   if (first) first.click();
 }
 

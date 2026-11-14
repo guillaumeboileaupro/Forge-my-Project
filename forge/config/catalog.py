@@ -21,7 +21,7 @@ PACKAGE_NAMES = {
 }
 TECH_FIELDS = {
     "id", "name", "description", "ecosystem", "package", "dev", "versions", "requires",
-    "conflicts", "constraints", "commands", "docs",
+    "conflicts", "constraints", "commands", "docs", "companions",
 }
 
 
@@ -46,6 +46,7 @@ class Technology:
     conflicts: tuple = ()
     constraints: dict = field(default_factory=dict)
     commands: dict = field(default_factory=dict)
+    companions: tuple = ()  # (package, alternatives declenchantes) installes avec la technologie
 
 
 @dataclass(frozen=True)
@@ -152,13 +153,27 @@ def _parse_technology(raw, category, command_kinds):
         requires=_parse_requires(raw.get("requires", []), where),
         conflicts=_string_list(raw.get("conflicts", []), where + ".conflicts"),
         constraints=dict(constraints), commands=dict(commands),
+        companions=_parse_companions(raw.get("companions", []), where, ecosystem),
     )
+
+
+def _parse_companions(raw, where, ecosystem):
+    _require(isinstance(raw, list), where + " : companions doit etre une liste")
+    _require(not raw or ecosystem, where + " : companions sans ecosysteme")
+    result = []
+    for item in raw:
+        _require(isinstance(item, dict) and set(item) <= {"package", "when_any"}, where + " : compagnon invalide")
+        package = item.get("package")
+        _require(isinstance(package, str) and PACKAGE_NAMES[ecosystem].fullmatch(package), where + " : package compagnon invalide")
+        result.append((package, _string_list(item.get("when_any", []), where + ".when_any")))
+    return tuple(result)
 
 
 def _check_references(technologies):
     for tech in technologies.values():
         referenced = [t for options in tech.requires for t in options]
         referenced += list(tech.conflicts) + list(tech.constraints)
+        referenced += [t for _, when in tech.companions for t in when]
         for ref in referenced:
             _require(ref in technologies, "technologie %s : reference inconnue %s" % (tech.id, ref))
         for target in tech.constraints:

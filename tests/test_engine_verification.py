@@ -5,6 +5,7 @@ from forge.diagnostics import ForgeError, Status
 from forge.generator.render import generate
 from forge.pipeline import run
 from forge.planner.plan import build_plan
+from forge.generator.stack import load_ci_catalog
 from forge.verification import checks, http
 from forge.verification.http import FetchError, Response
 from forge.verification.report import verify_plan
@@ -19,6 +20,10 @@ PYPI = {
 NPM = {
     "https://registry.npmjs.org/@vitest%2Fcoverage-v8": {"dist-tags": {"latest": "5.0.0"},
                                                          "versions": {"5.0.0": {"license": "MIT"}, "4.0.0": {"deprecated": "x"}}},
+}
+ACTIONS = {
+    "https://api.github.com/repos/%s/git/ref/tags/%s" % (a["repository"], a["tag"]): {"object": {"type": "commit", "sha": a["sha"]}}
+    for a in load_ci_catalog()["actions"].values()
 }
 EOL = {"https://endoflife.date/api/python.json": [{"cycle": "3.13", "eol": "2029-10-31"}, {"cycle": "3.11", "eol": "2026-01-01"}]}
 
@@ -36,7 +41,7 @@ class FakeRegistry:
         if payload is not None:
             key = "%s@%s" % (payload["package"]["name"], payload["version"])
             return Response(200, {"vulns": self.vulns.get(key, [])})
-        data = {**PYPI, **NPM, **EOL}.get(url)
+        data = {**PYPI, **NPM, **EOL, **ACTIONS}.get(url)
         return Response(404, None) if data is None else Response(200, data)
 
 
@@ -121,6 +126,32 @@ class ReportTests(unittest.TestCase):
         with mock.patch.object(http._OPENER, "open", side_effect=AssertionError("reseau interdit")):
             generate(SPEC)
             run(SPEC)
+
+
+class ActionCheckTests(unittest.TestCase):
+    def test_action_pin_policy(self):
+        sha = "a" * 40
+        url = "https://api.github.com/repos/actions/checkout/git/ref/tags/v1"
+
+        def fake(data):
+            return lambda u, payload=None: Response(200 if data else 404, data)
+
+        self.assertEqual(checks.check_action("actions/checkout", "v1", sha, fake({"object": {"type": "commit", "sha": sha}})).status, Status.PASS)
+        moved = checks.check_action("actions/checkout", "v1", sha, fake({"object": {"type": "commit", "sha": "b" * 40}}))
+        self.assertEqual(moved.status, Status.FAIL)
+        self.assertEqual(checks.check_action("actions/checkout", "v1", sha, fake(None)).status, Status.FAIL)
+        annotated = {url: {"object": {"type": "tag", "url": "https://api.github.com/repos/actions/checkout/git/tags/x"}},
+                     "https://api.github.com/repos/actions/checkout/git/tags/x": {"object": {"type": "commit", "sha": sha}}}
+        self.assertEqual(checks.check_action("actions/checkout", "v1", sha, lambda u, payload=None: Response(200, annotated[u])).status, Status.PASS)
+        self.assertEqual(checks.check_action("actions/checkout", "v1", sha, FakeRegistry(offline="*")).status, Status.NON_VERIFIE)
+
+    def test_moved_action_tag_blocks_generation(self):
+        registry = FakeRegistry()
+        first = next(iter(ACTIONS))
+        with mock.patch.dict(ACTIONS, {first: {"object": {"type": "commit", "sha": "c" * 40}}}):
+            with self.assertRaises(ForgeError) as ctx:
+                run(SPEC, verify=True, verifier=lambda p: verify_plan(p, registry, TODAY))
+        self.assertIn("verification-action", {x.code for x in ctx.exception.diagnostics})
 
 
 class HttpGuardTests(unittest.TestCase):

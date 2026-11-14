@@ -3,7 +3,11 @@
 Toute information absente est rendue explicitement (NON DEFINI / NON VERIFIE)
 au lieu d'etre inventee.
 """
+import json
+
 from forge.config.spec import AGENTS
+from forge.generator.stack import stack_context
+from forge.verification.report import active_companions
 
 UNDEFINED = "NON DEFINI"
 UNVERIFIED = "NON VERIFIE"
@@ -28,7 +32,7 @@ def _technologies(plan):
         {
             "id": t.id, "name": t.name, "category": t.category, "description": t.description, "docs": t.docs,
             "version": versions.get(t.id, ""), "package": t.package or "", "ecosystem": t.ecosystem or "",
-            "dev": t.dev,
+            "dev": t.dev, "companions": active_companions(plan, t),
         }
         for t in plan.resolution.technologies
     ]
@@ -50,6 +54,9 @@ def _dependencies(technologies, verification=None):
     for t in technologies:
         if not t["package"]:
             continue
+        for companion in t["companions"]:
+            technologies_extra = dict(t, package=companion, name=companion, companions=[], dev=True)
+            result.extend(_dependencies([technologies_extra], verification))
         status, details = UNVERIFIED, {}
         if verification is not None:
             state, details = verification.package_status(t["ecosystem"], t["package"])
@@ -84,9 +91,12 @@ def build_context(plan, verification=None):
     commands, command_map = _commands(plan)
     agents = [dict(AGENT_INFO[a], id=a) for a in spec.agents]
     sections = {name: list(items) for name, items in plan.composition.sections.items()}
+    summary = spec.description.splitlines()[0][:200] if spec.description else "Projet %s" % spec.name
     return {
+        **stack_context(plan, verification),
         "project": {
             "name": spec.name,
+            "summary_toml": json.dumps(summary),
             "package_name": spec.package_name,
             "description": spec.description or UNDEFINED,
             "description_lines": spec.description.splitlines() if spec.description else [UNDEFINED],

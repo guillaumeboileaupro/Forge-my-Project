@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "id": "scaffold-node-test",
+  "description": "Test de fumee node:test.",
+  "priority": 35,
+  "when": {
+    "technologies_any": [
+      "node-test"
+    ]
+  },
+  "files": [
+    {
+      "path": "tests/smoke.test.js",
+      "template": "stack/node/node.smoke.test.js.tmpl"
+    }
+  ]
+}
