@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "my_skills": {
+    "repository": "guillaumeboileaupro/my-skills",
+    "ref": "main",
+    "path": "skills"
+  },
+  "copy": {
+    "extensions": [".md", ".yaml", ".yml", ".json", ".txt"],
+    "max_file_bytes": 262144,
+    "max_skill_bytes": 1048576
+  }
+}

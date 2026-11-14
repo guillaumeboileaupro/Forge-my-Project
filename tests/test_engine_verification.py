@@ -3,6 +3,7 @@ from unittest import mock
 
 from forge.diagnostics import ForgeError, Status
 from forge.generator.render import generate
+from forge.pipeline import run
 from forge.planner.plan import build_plan
 from forge.verification import checks, http
 from forge.verification.http import FetchError, Response
@@ -91,8 +92,8 @@ class VulnerabilityAndRuntimeTests(unittest.TestCase):
 class ReportTests(unittest.TestCase):
     def test_full_report_pass_and_document_statuses(self):
         registry = FakeRegistry()
-        plan, files = generate(SPEC, verification=lambda p: verify_plan(p, registry, TODAY))
-        deps = files["docs/DEPENDENCIES.md"]
+        result = run(SPEC, verify=True, verifier=lambda p: verify_plan(p, registry, TODAY))
+        plan, deps = result.plan, result.files["docs/DEPENDENCIES.md"]
         self.assertIn("| fastapi | pypi | execution | 1.2.0 | MIT | PASS |", deps)
         self.assertIn("| pytest | pypi | developpement | 9.0.0 | MIT | PASS |", deps)
         report = verify_plan(plan, registry, TODAY)
@@ -102,11 +103,11 @@ class ReportTests(unittest.TestCase):
     def test_vulnerable_or_fictional_dependency_blocks_generation(self):
         registry = FakeRegistry({"fastapi@1.2.0": [{"id": "GHSA-x", "database_specific": {"severity": "CRITICAL"}}]})
         with self.assertRaises(ForgeError) as ctx:
-            generate(SPEC, verification=lambda p: verify_plan(p, registry, TODAY))
+            run(SPEC, verify=True, verifier=lambda p: verify_plan(p, registry, TODAY))
         self.assertIn("verification-vulnerabilities", {x.code for x in ctx.exception.diagnostics})
         chosen = dict(SPEC, versions={"fastapi": "0.0.1"})
         with self.assertRaises(ForgeError):
-            generate(chosen, verification=lambda p: verify_plan(p, FakeRegistry(), TODAY))
+            run(chosen, verify=True, verifier=lambda p: verify_plan(p, FakeRegistry(), TODAY))
 
     def test_offline_registry_gives_warnings_not_pass(self):
         plan = build_plan(SPEC)
@@ -117,8 +118,9 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(report.package_status("pypi", "fastapi")[0], Status.NON_VERIFIE)
 
     def test_no_network_without_explicit_verification(self):
-        with mock.patch("urllib.request.urlopen", side_effect=AssertionError("reseau interdit")):
+        with mock.patch.object(http._OPENER, "open", side_effect=AssertionError("reseau interdit")):
             generate(SPEC)
+            run(SPEC)
 
 
 class HttpGuardTests(unittest.TestCase):

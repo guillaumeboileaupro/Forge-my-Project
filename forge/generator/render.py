@@ -28,12 +28,7 @@ def render_plan(plan, templates_dir=TEMPLATES_DIR, verification=None):
     return files
 
 
-def generate(data, catalog=None, rules=None, templates_dir=TEMPLATES_DIR, verification=None):
-    """Facade : valide, planifie et rend. Retourne (plan, fichiers) sans ecrire sur disque.
-
-    `verification` est une fonction plan -> VerificationReport (ex. verify_plan),
-    appelee uniquement si fournie : sans elle, aucune requete reseau.
-    """
+def generate(data, catalog=None, rules=None, templates_dir=TEMPLATES_DIR):
+    """Valide, planifie et rend les documents, sans reseau ni ecriture. Retourne (plan, fichiers)."""
     plan = build_plan(data, catalog, rules)
-    report = verification(plan) if verification is not None and plan.ok else None
-    return plan, render_plan(plan, templates_dir, report)
+    return plan, render_plan(plan, templates_dir)
