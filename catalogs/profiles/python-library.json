@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "python-library",
+  "label": "Bibliotheque Python",
+  "description": "Bibliotheque Python avec pytest, couverture, Ruff, mypy et pip-audit.",
+  "answers": {
+    "project_type": "library",
+    "technologies": ["python", "pytest", "pytest-cov", "ruff", "mypy", "pip-audit"],
+    "versions": {"python": "3.13"},
+    "agents": ["codex", "claude"],
+    "security": "strict"
+  }
+}

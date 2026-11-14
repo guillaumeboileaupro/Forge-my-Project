@@ -15,6 +15,7 @@ import threading
 import time
 import unittest
 import urllib.request
+from unittest import mock
 
 from server import Handler, ThreadingHTTPServer
 
@@ -32,6 +33,9 @@ def free_port():
 class FirefoxFormTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.profiles_dir = tempfile.mkdtemp(prefix="forge-e2e-profiles-")
+        cls.env = mock.patch.dict(os.environ, {"FORGE_PROFILES_FILE": os.path.join(cls.profiles_dir, "profiles.json")})
+        cls.env.start()
         cls.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
         threading.Thread(target=cls.server.serve_forever, daemon=True).start()
         cls.base = "http://127.0.0.1:%d" % cls.server.server_address[1]
@@ -62,7 +66,24 @@ class FirefoxFormTests(unittest.TestCase):
             cls.driver.wait(10)
             cls.server.shutdown()
             cls.server.server_close()
+            cls.env.stop()
             shutil.rmtree(cls.tmp, ignore_errors=True)
+            shutil.rmtree(cls.profiles_dir, ignore_errors=True)
+
+    def setUp(self):
+        """Chaque parcours part d'un navigateur sans brouillon."""
+        self.open_with_storage(None)
+
+    def open_with_storage(self, draft):
+        # Le stockage est prepare depuis une page du meme domaine sans l'application,
+        # sinon la sauvegarde a la fermeture (pagehide) reecrirait le brouillon.
+        self.cmd("POST", "/url", {"url": self.base + "/css/app.css"})
+        self.js("localStorage.clear(); if (arguments[0]) localStorage.setItem('forge-my-project.draft.v1', arguments[0]);", draft)
+        self.cmd("POST", "/url", {"url": self.base + "/"})
+        self.wait_ready()
+
+    def wait_ready(self):
+        self.wait("return document.querySelectorAll('#profile-select option').length > 1")
 
     @classmethod
     def call(cls, method, path, payload=None):
@@ -102,9 +123,94 @@ class FirefoxFormTests(unittest.TestCase):
             with open(os.path.join(target, name + ".png"), "wb") as handle:
                 handle.write(base64.b64decode(self.cmd("GET", "/screenshot")))
 
+    def type_text(self, css, text):
+        self.cmd("POST", "/element/%s/clear" % self.find(css), {})
+        self.cmd("POST", "/element/%s/value" % self.find(css), {"text": text})
+
+    def checked(self, css):
+        return self.js("return document.querySelector(arguments[0]).checked", css)
+
+    def test_autosave_restores_conditional_answers(self):
+        self.type_text("#name", "draft-demo")
+        self.click('[data-goto="1"]')
+        for css in ("#tech-node", "#tech-typescript", "#tech-vitest"):
+            self.click(css)
+        self.js("const s=document.querySelector('[data-version=\"node\"]'); s.value='22'; s.dispatchEvent(new Event('change',{bubbles:true}))")
+        self.wait("return (localStorage.getItem('forge-my-project.draft.v1') || '').includes('vitest')")
+        self.assertIn("sauvegardees", self.js("return document.querySelector('#autosave-status').textContent"))
+        self.cmd("POST", "/refresh", {})
+        self.wait("return document.querySelector('#autosave-status').textContent.includes('restaurees')")
+        self.assertEqual(self.js("return document.querySelector('#name').value"), "draft-demo")
+        self.assertTrue(self.checked("#tech-vitest"))
+        self.assertTrue(self.js("return !document.querySelector('[data-tech=\"vitest\"]').hidden"))
+        self.assertEqual(self.js("return document.querySelector('[data-version=\"node\"]').value"), "22")
+        self.click('[data-goto="1"]')
+        self.click("#tech-eslint")
+        self.cmd("POST", "/refresh", {})  # rechargement immediat : sauvegarde a la fermeture
+        self.wait("return document.querySelector('#autosave-status').textContent.includes('restaurees')")
+        self.assertTrue(self.checked("#tech-eslint"))
+        self.click("#reset")
+        self.assertFalse(self.checked("#tech-typescript"))
+        self.assertIsNone(self.js("return localStorage.getItem('forge-my-project.draft.v1')"))
+
+    def test_incompatible_draft_is_not_restored(self):
+        draft = {"format": "forge-my-project/answers", "schema_version": 1, "answers": {"technologies": ["cobol"]}}
+        self.open_with_storage(json.dumps(draft))
+        self.wait("return document.querySelector('#alert').textContent.includes('Brouillon precedent ignore')")
+        self.assertIsNone(self.js("return localStorage.getItem('forge-my-project.draft.v1')"))
+
+    def test_profiles_lifecycle(self):
+        self.type_text("#name", "profil-demo")
+        self.js("const s=document.querySelector('#profile-select'); s.value='typescript-web-react'; s.dispatchEvent(new Event('change',{bubbles:true}))")
+        self.click("#profile-load")
+        self.assertTrue(self.checked("#tech-react"))
+        self.assertFalse(self.js("return document.querySelector('[data-tech=\"node\"] .version').hidden"))
+        self.assertEqual(self.js("return document.querySelector('#name').value"), "profil-demo")
+        self.click('[data-goto="1"]')
+        self.click("#tech-prettier")  # reponses modifiables apres chargement
+        self.click('[data-goto="0"]')
+        self.js("document.querySelector('#profile-manage').open = true")
+        self.js("const s=document.querySelector('#profile-select'); s.value=''; s.dispatchEvent(new Event('change',{bubbles:true}))")
+        self.type_text("#profile-label", "E2E perso")
+        self.screenshot("profils")
+        self.click("#profile-create")
+        self.wait("return document.querySelector('#profile-select').value === 'e2e-perso'")
+        self.type_text("#profile-label", "E2E perso v2")
+        self.click("#profile-update")
+        self.wait("return [...document.querySelectorAll('#profile-select option')].some(o => o.textContent === 'E2E perso v2')")
+        self.click("#profile-delete")
+        self.cmd("POST", "/alert/accept", {})
+        self.wait("return ![...document.querySelectorAll('#profile-select option')].some(o => o.value === 'e2e-perso')")
+
+    def test_export_then_import(self):
+        self.type_text("#name", "export-demo")
+        self.click('[data-goto="1"]')
+        self.click("#tech-python")
+        self.click("#tech-pytest")
+        self.js("window.__blobs=[]; URL.createObjectURL = blob => { window.__blobs.push(blob); return 'blob:test'; };")
+        self.click("#export")
+        self.wait("return window.__blobs.length === 1")
+        exported = json.loads(self.cmd("POST", "/execute/async", {
+            "script": "arguments[0].length; window.__blobs[0].text().then(arguments[arguments.length - 1])", "args": [[]]}))
+        self.assertEqual(exported["format"], "forge-my-project/answers")
+        self.assertEqual(exported["answers"]["technologies"], ["python", "pytest"])
+        self.click("#reset")
+        path = os.path.join(self.tmp, "import.json")
+        with open(path, "w", encoding="utf-8") as handle:
+            json.dump(exported, handle)
+        self.cmd("POST", "/element/%s/value" % self.find("#import"), {"text": path})
+        self.wait("return document.querySelector('#tech-pytest').checked")
+        self.assertEqual(self.js("return document.querySelector('#name').value"), "export-demo")
+        for content, message in (("{pas du json", "pas un JSON valide"),
+                                 (json.dumps({"technologies": ["python", "flask", "django"]}), "incompatible")):
+            with open(path, "w", encoding="utf-8") as handle:
+                handle.write(content)
+            self.cmd("POST", "/element/%s/value" % self.find("#import"), {"text": path})
+            self.wait("return document.querySelector('#alert').textContent.includes(arguments[0])".replace(
+                "arguments[0]", json.dumps(message)))
+        self.assertTrue(self.checked("#tech-pytest"))  # un import refuse ne modifie rien
+
     def test_full_journey(self):
-        self.cmd("POST", "/url", {"url": self.base + "/"})
-        self.wait("return document.querySelectorAll('#project_type option').length > 0")
         # Section 1 : badge d'erreur tant que le nom est invalide.
         self.assertFalse(self.js("return document.querySelector('[data-goto=\"0\"] .badge').hidden"))
         self.cmd("POST", "/element/%s/value" % self.find("#name"), {"text": "e2e-demo"})

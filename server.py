@@ -18,7 +18,13 @@ LOCAL_HOST = re.compile(r"^(?:127\.0\.0\.1|localhost)(?::[0-9]{1,5})?$")
 LOCAL_ORIGIN = re.compile(r"^http://(?:127\.0\.0\.1|localhost)(?::[0-9]{1,5})?$")
 LEGACY_LIMIT = 16384
 API_LIMIT = 65536
-API_POST = {"/api/plan": web.plan_payload, "/api/archive": web.archive_payload}
+API_POST = {
+    "/api/plan": web.plan_payload,
+    "/api/archive": web.archive_payload,
+    "/api/answers/validate": web.answers_validate_payload,
+    "/api/profiles": web.profile_create_payload,
+}
+PROFILE_PATH = re.compile(r"^/api/profiles/([a-z0-9][a-z0-9-]{0,47})$")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -39,20 +45,37 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/api/catalog":
             return self.reply(*web.catalog_payload())
+        if self.path == "/api/profiles":  # donnees locales : controle Host contre le rebinding DNS
+            return self.safe_reply(web.profiles_payload) if self.local_request() else None
         resource = STATIC.get(self.path)
         if resource is None:
             return self.reply(404, b"Not found")
         path, media = resource
         self.reply(200, path.read_bytes(), media)
 
-    def read_json_body(self, limit):
-        """Controles communs : hote et origine locaux, JSON, taille bornee. Retourne le corps ou None."""
+    def safe_reply(self, handler, *args):
+        """Execute un cas d'usage ; une erreur imprevue donne un 500 sans detail."""
+        try:
+            response = handler(*args)
+        except Exception:  # erreur imprevue : journal local, reponse sans detail
+            self.log_error("Erreur interne sur %s", self.path)
+            return self.reply(500, b"Erreur interne")
+        return self.reply(*response)
+
+    def local_request(self):
+        """Hote et origine loopback obligatoires pour toute modification."""
         if not LOCAL_HOST.fullmatch(self.headers.get("Host", "")):
             self.reply(403, b"Hote interdit")
-            return None
+            return False
         origin = self.headers.get("Origin")
         if origin is not None and not LOCAL_ORIGIN.fullmatch(origin):
             self.reply(403, b"Origine interdite")
+            return False
+        return True
+
+    def read_json_body(self, limit):
+        """Controles communs : requete locale, JSON, taille bornee. Retourne le corps ou None."""
+        if not self.local_request():
             return None
         if self.headers.get_content_type() != "application/json":
             self.reply(415, b"Content-Type application/json requis")
@@ -69,14 +92,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path in API_POST:
             raw = self.read_json_body(API_LIMIT)
-            if raw is None:
-                return None
-            try:
-                response = API_POST[self.path](raw)
-            except Exception:  # erreur imprevue : journal local, reponse sans detail
-                self.log_error("Erreur interne sur %s", self.path)
-                return self.reply(500, b"Erreur interne")
-            return self.reply(*response)
+            return None if raw is None else self.safe_reply(API_POST[self.path], raw)
         if self.path != "/generate":
             return self.reply(404, b"Not found")
         raw = self.read_json_body(LEGACY_LIMIT)
@@ -88,6 +104,20 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, TypeError, UnicodeError, json.JSONDecodeError) as exc:
             return self.reply(400, str(exc).encode("utf-8"))
         self.reply(200, result, "application/zip", config["name"] + ".zip")
+
+    def do_PUT(self):
+        match = PROFILE_PATH.fullmatch(self.path)
+        if not match:
+            return self.reply(404, b"Not found")
+        raw = self.read_json_body(API_LIMIT)
+        return None if raw is None else self.safe_reply(web.profile_update_payload, match.group(1), raw)
+
+    def do_DELETE(self):
+        match = PROFILE_PATH.fullmatch(self.path)
+        if not match:
+            return self.reply(404, b"Not found")
+        if self.local_request():
+            self.safe_reply(web.profile_delete_payload, match.group(1))
 
 
 if __name__ == "__main__":

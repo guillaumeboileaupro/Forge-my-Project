@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "id": "python-web-django",
+  "label": "Application web Django",
+  "description": "Application Django avec pytest, Ruff et pip-audit.",
+  "answers": {
+    "project_type": "web",
+    "technologies": ["python", "django", "pytest", "ruff", "pip-audit"],
+    "versions": {"python": "3.13"},
+    "agents": ["codex", "claude"],
+    "security": "strict"
+  }
+}

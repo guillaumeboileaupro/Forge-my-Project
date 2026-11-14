@@ -22,6 +22,14 @@
         <li><button type="button" data-goto="4">Verification et apercu <span class="badge" hidden></span></button></li>
       </ol>
     </nav>
+    <section class="tools" aria-labelledby="h-save">
+      <h2 id="h-save">Sauvegarde</h2>
+      <p id="autosave-status" class="help" aria-live="polite">Sauvegarde automatique dans ce navigateur.</p>
+      <button type="button" id="export">Exporter les reponses (JSON)</button>
+      <label for="import" class="file-label">Importer un fichier JSON</label>
+      <input type="file" id="import" accept="application/json,.json">
+      <button type="button" id="reset">Reinitialiser le questionnaire</button>
+    </section>
     <p><a href="/legacy">Formulaire historique (archive ZIP initiale)</a></p>
   </aside>
 
@@ -29,6 +37,26 @@
     <form id="forge" novalidate>
       <section class="step" aria-labelledby="h-projet">
         <h2 id="h-projet">1. Projet</h2>
+        <fieldset id="profiles">
+          <legend>Profils</legend>
+          <label for="profile-select">Profil</label>
+          <select id="profile-select"><option value="">Choisir un profil...</option></select>
+          <p id="profile-info" class="help"></p>
+          <button type="button" id="profile-load">Charger dans le questionnaire</button>
+          <details id="profile-manage">
+            <summary>Profils personnels</summary>
+            <label for="profile-label">Libelle du profil</label>
+            <input id="profile-label" maxlength="60" autocomplete="off">
+            <label for="profile-description">Description du profil</label>
+            <input id="profile-description" maxlength="200" autocomplete="off">
+            <div class="row">
+              <button type="button" id="profile-create">Enregistrer les reponses comme nouveau profil</button>
+              <button type="button" id="profile-update" disabled>Mettre a jour le profil selectionne</button>
+              <button type="button" id="profile-delete" disabled>Supprimer le profil selectionne</button>
+            </div>
+            <p id="profile-storage" class="help"></p>
+          </details>
+        </fieldset>
         <label for="name">Nom du projet</label>
         <input id="name" name="name" required pattern="[a-z][a-z0-9\-]{1,48}[a-z0-9]" placeholder="mon-projet" autocomplete="off" aria-describedby="name-help">
         <p id="name-help" class="help">3 a 50 caracteres : minuscules, chiffres et tirets.</p>
@@ -87,6 +115,7 @@
         <button type="button" id="next">Suivant</button>
       </div>
     </form>
+    <p id="alert" class="error" role="alert"></p>
     <p id="status" role="status"></p>
   </main>
 </div>
