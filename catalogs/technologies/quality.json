@@ -9,8 +9,13 @@
       "ecosystem": "pypi",
       "package": "ruff",
       "dev": true,
-      "requires": ["python"],
-      "commands": {"lint": "ruff check .", "format": "ruff format --check ."},
+      "requires": [
+        "python"
+      ],
+      "commands": {
+        "lint": "ruff check .",
+        "format": "ruff format --check ."
+      },
       "docs": "https://docs.astral.sh/ruff/"
     },
     {
@@ -20,8 +25,12 @@
       "ecosystem": "pypi",
       "package": "mypy",
       "dev": true,
-      "requires": ["python"],
-      "commands": {"typecheck": "mypy ."},
+      "requires": [
+        "python"
+      ],
+      "commands": {
+        "typecheck": "mypy"
+      },
       "docs": "https://mypy.readthedocs.io/"
     },
     {
@@ -31,9 +40,24 @@
       "ecosystem": "npm",
       "package": "eslint",
       "dev": true,
-      "requires": ["node"],
-      "commands": {"lint": "npx eslint ."},
-      "docs": "https://eslint.org/docs/latest/"
+      "requires": [
+        "node"
+      ],
+      "commands": {
+        "lint": "npx eslint ."
+      },
+      "docs": "https://eslint.org/docs/latest/",
+      "companions": [
+        {
+          "package": "@eslint/js"
+        },
+        {
+          "package": "typescript-eslint",
+          "when_any": [
+            "typescript"
+          ]
+        }
+      ]
     },
     {
       "id": "prettier",
@@ -42,8 +66,12 @@
       "ecosystem": "npm",
       "package": "prettier",
       "dev": true,
-      "requires": ["node"],
-      "commands": {"format": "npx prettier --check ."},
+      "requires": [
+        "node"
+      ],
+      "commands": {
+        "format": "npx prettier --check src tests"
+      },
       "docs": "https://prettier.io/docs/"
     }
   ]

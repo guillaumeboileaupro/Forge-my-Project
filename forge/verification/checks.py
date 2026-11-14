@@ -153,3 +153,24 @@ def api_unverified(tech):
     """Les API ne sont pas verifiables sans installer le package : etat explicite."""
     return Check("api", tech.id, Status.NON_VERIFIE,
                  "API non verifiee automatiquement : consulter la documentation officielle avant usage", tech.docs)
+
+
+def check_action(repository, tag, sha, fetch=fetch_json):
+    """Verifie que le tag d'une action GitHub designe toujours le commit epingle."""
+    subject = "%s@%s" % (repository, tag)
+    url = "https://api.github.com/repos/%s/git/ref/tags/%s" % (repository, quote(tag, safe=""))
+    try:
+        response = fetch(url)
+        target = (response.data or {}).get("object") or {}
+        if target.get("type") == "tag":  # tag annote : dereferencer vers le commit
+            response = fetch(target.get("url", ""))
+            target = (response.data or {}).get("object") or {}
+    except FetchError as exc:
+        return Check("action", subject, Status.NON_VERIFIE, "API GitHub indisponible : %s" % exc, url)
+    if response.status == 404:
+        return Check("action", subject, Status.FAIL, "Tag introuvable", url)
+    if target.get("sha") != sha:
+        return Check("action", subject, Status.FAIL, "Le tag ne pointe plus sur le SHA epingle %s" % sha[:12], url,
+                     {"actual": str(target.get("sha", ""))})
+    return Check("action", subject, Status.PASS, "Tag et SHA epingle concordants", url, {"sha": sha})
+

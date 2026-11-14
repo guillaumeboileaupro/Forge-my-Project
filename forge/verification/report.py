@@ -9,7 +9,8 @@ from dataclasses import dataclass
 
 from forge import diagnostics as d
 from forge.diagnostics import Status
-from forge.verification import checks
+from forge.verification import checks, npm_peers
+from forge.generator.stack import load_ci_catalog
 from forge.verification.http import fetch_json
 
 
@@ -52,26 +53,74 @@ def _diagnostic(check):
     return None
 
 
-def _verify_package(tech, wanted, fetch):
-    result = [checks.check_package(tech.ecosystem, tech.package, wanted, fetch)]
+def _verify_package(ecosystem, package, wanted, fetch):
+    result = [checks.check_package(ecosystem, package, wanted, fetch)]
     version = result[0].details.get("version")
     if result[0].status is Status.PASS and version:
-        result.append(checks.check_vulnerabilities(tech.ecosystem, tech.package, version, fetch))
+        result.append(checks.check_vulnerabilities(ecosystem, package, version, fetch))
     else:
-        result.append(checks.Check("vulnerabilities", "%s:%s" % (tech.ecosystem, tech.package), Status.NON_VERIFIE,
+        result.append(checks.Check("vulnerabilities", "%s:%s" % (ecosystem, package), Status.NON_VERIFIE,
                                    "Audit impossible sans version verifiee"))
     return result
+
+
+def active_companions(plan, tech):
+    """Packages installes avec une technologie (ex. configuration ESLint)."""
+    ids = plan.resolution.ids()
+    return [package for package, when in tech.companions if not when or ids.intersection(when)]
+
+
+def _cached(fetch):
+    """Memorise les lectures (GET) pour ne pas interroger deux fois le meme registre."""
+    memory = {}
+
+    def cached(url, payload=None):
+        if payload is not None:
+            return fetch(url, payload)
+        if url not in memory:
+            memory[url] = fetch(url)
+        return memory[url]
+
+    return cached
+
+
+def _resolve_npm(plan, fetch):
+    requested = []
+    for tech in plan.resolution.technologies:
+        if tech.ecosystem == "npm":
+            requested.append((tech.package, plan.spec.versions.get(tech.id)))
+            requested.extend((package, None) for package in active_companions(plan, tech))
+    if not requested:
+        return {}, None
+    return npm_peers.resolve(requested, fetch)
+
+
+def _verify_actions(fetch):
+    try:
+        actions = load_ci_catalog()["actions"].values()
+    except (OSError, ValueError) as exc:
+        return [checks.Check("action", "catalogs/ci/actions.json", Status.FAIL, "Catalogue CI invalide : %s" % exc)]
+    return [checks.check_action(a["repository"], a["tag"], a["sha"], fetch) for a in actions]
 
 
 def verify_plan(plan, fetch=fetch_json, today=None):
     """Verifie chaque technologie du plan. `today` (AAAA-MM-JJ) est injectable pour les tests."""
     today = today or datetime.date.today().isoformat()
+    fetch = _cached(fetch)
     results = []
+    npm_versions, compatibility = _resolve_npm(plan, fetch)
     for tech in plan.resolution.technologies:
         if tech.package:
-            results.extend(_verify_package(tech, plan.spec.versions.get(tech.id), fetch))
+            wanted = npm_versions.get(tech.package, plan.spec.versions.get(tech.id))
+            results.extend(_verify_package(tech.ecosystem, tech.package, wanted, fetch))
             results.append(checks.api_unverified(tech))
+            for package in active_companions(plan, tech):
+                results.extend(_verify_package(tech.ecosystem, package, npm_versions.get(package), fetch))
         if tech.eol_product and tech.id in plan.resolution.versions:
             results.append(checks.check_runtime(tech.eol_product, plan.resolution.versions[tech.id], today, fetch))
+    if compatibility is not None:
+        results.append(compatibility)
+    if ".github/workflows/ci.yml" in plan.files:
+        results.extend(_verify_actions(fetch))
     diagnostics = tuple(x for x in map(_diagnostic, results) if x is not None)
     return VerificationReport(tuple(results), diagnostics)

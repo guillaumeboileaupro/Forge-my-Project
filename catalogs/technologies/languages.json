@@ -7,8 +7,19 @@
       "name": "Python",
       "description": "Langage Python (CPython).",
       "ecosystem": null,
-      "versions": {"preferred": "3.13", "supported": ["3.11", "3.12", "3.13", "3.14"], "eol_product": "python"},
-      "commands": {"install": "python -m pip install -e ."},
+      "versions": {
+        "preferred": "3.13",
+        "supported": [
+          "3.11",
+          "3.12",
+          "3.13",
+          "3.14"
+        ],
+        "eol_product": "python"
+      },
+      "commands": {
+        "install": "python -m pip install -e \".[dev]\""
+      },
       "docs": "https://docs.python.org/3/"
     },
     {
@@ -16,7 +27,9 @@
       "name": "JavaScript (ES modules)",
       "description": "JavaScript execute par Node.js.",
       "ecosystem": null,
-      "requires": ["node"],
+      "requires": [
+        "node"
+      ],
       "docs": "https://nodejs.org/api/esm.html"
     },
     {
@@ -26,8 +39,13 @@
       "ecosystem": "npm",
       "package": "typescript",
       "dev": true,
-      "requires": ["node"],
-      "commands": {"typecheck": "npx tsc --noEmit", "build": "npx tsc"},
+      "requires": [
+        "node"
+      ],
+      "commands": {
+        "typecheck": "npx tsc --noEmit",
+        "build": "npx tsc"
+      },
       "docs": "https://www.typescriptlang.org/docs/"
     }
   ]
