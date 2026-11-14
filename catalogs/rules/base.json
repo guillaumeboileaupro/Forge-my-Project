@@ -52,6 +52,22 @@
     {
       "path": ".gitignore",
       "template": "stack/gitignore.tmpl"
+    },
+    {
+      "path": ".githooks/pre-commit",
+      "template": "hooks/pre-commit.tmpl"
+    },
+    {
+      "path": ".githooks/commit-msg",
+      "template": "hooks/commit-msg.tmpl"
+    },
+    {
+      "path": ".githooks/pre-push",
+      "template": "hooks/pre-push.tmpl"
+    },
+    {
+      "path": "scripts/hooks/agent_guard.py",
+      "template": "hooks/agent_guard.py.tmpl"
     }
   ],
   "sections": {
@@ -84,13 +100,15 @@
       "CI verte et revue de la PR avant fusion ; supprimer la branche apres fusion.",
       "Mettre a jour TODO.md (temps reel et ecart) a la fin de chaque tache.",
       "La protection de branche et les permissions GitHub doivent etre configurees sur le depot distant par son proprietaire.",
-      "La CI .github/workflows/ci.yml execute les commandes de ce document ; ses actions sont epinglees par SHA et ses permissions limitees a la lecture."
+      "La CI .github/workflows/ci.yml execute les commandes de ce document ; ses actions sont epinglees par SHA et ses permissions limitees a la lecture.",
+      "Activer les hooks Git des le clonage : git config core.hooksPath .githooks (pre-commit : secrets, formatage, lint ; commit-msg : Conventional Commits ; pre-push : typage et tests)."
     ],
     "pitfalls": [
       "Presenter un controle non execute comme reussi : il est NON VERIFIE.",
       "Ajouter une dependance par habitude sans verifier son existence ni sa maintenance.",
       "Modifier des fichiers hors du perimetre de la tache.",
-      "Executer un script telecharge ou fourni par un skill sans l'avoir lu et approuve."
+      "Executer un script telecharge ou fourni par un skill sans l'avoir lu et approuve.",
+      "Contourner un hook (--no-verify, commit -n, push force, changement de core.hooksPath) : interdit aux agents par le garde-fou PreToolUse ; un humain qui le fait doit le justifier dans la PR."
     ],
     "dod": [
       "Comportement implemente conforme a la tache et a l'architecture.",

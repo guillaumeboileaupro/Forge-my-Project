@@ -3,6 +3,19 @@
   "id": "agent-claude",
   "description": "Fichier d'instructions Claude Code important AGENTS.md.",
   "priority": 30,
-  "when": {"agents_any": ["claude"]},
-  "files": [{"path": "CLAUDE.md", "template": "agents/CLAUDE.md.tmpl"}]
+  "when": {
+    "agents_any": [
+      "claude"
+    ]
+  },
+  "files": [
+    {
+      "path": "CLAUDE.md",
+      "template": "agents/CLAUDE.md.tmpl"
+    },
+    {
+      "path": ".claude/settings.json",
+      "template": "hooks/claude-settings.json.tmpl"
+    }
+  ]
 }

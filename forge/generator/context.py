@@ -12,6 +12,12 @@ from forge.verification.report import active_companions
 UNDEFINED = "NON DEFINI"
 UNVERIFIED = "NON VERIFIE"
 
+AGENT_HOOKS = {
+    "claude": {"file": ".claude/settings.json", "note": ""},
+    "codex": {"file": ".codex/hooks.json", "note": "a approuver une fois avec /hooks : Codex n'execute pas un hook de projet non revu"},
+    "copilot": {"file": ".github/hooks/forge-guard.json",
+                "note": "Copilot CLI et agent cloud ; doit etre sur la branche par defaut pour l'agent cloud"},
+}
 AGENT_INFO = {
     "codex": {"name": "Codex", "instructions": "AGENTS.md", "skills_dir": ".agents/skills"},
     "claude": {"name": "Claude Code", "instructions": "CLAUDE.md (importe AGENTS.md)", "skills_dir": ".claude/skills"},
@@ -106,6 +112,7 @@ def build_context(plan, verification=None):
         },
         "agents": agents,
         "agent_names": ", ".join(a["name"] for a in agents),
+        "agent_hooks": [dict(AGENT_HOOKS[a["id"]], name=a["name"]) for a in agents],
         "has": dict({a: a in spec.agents for a in AGENTS},
                     mcp=spec.options["mcp"], docker="docker" in plan.resolution.ids(),
                     hardened=spec.security == "hardened", dependencies=bool(dependencies)),

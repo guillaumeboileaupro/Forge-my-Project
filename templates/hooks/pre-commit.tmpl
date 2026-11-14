@@ -1,0 +1,25 @@
+#!/bin/sh
+# Genere par Forge-my-Project. Activation : git config core.hooksPath .githooks
+# pre-commit : controles rapides sur ce qui est commite (secrets, formatage, lint).
+# Typage et tests : pre-push. Audits, SBOM et historique complet : CI.
+set -eu
+fail() { echo "pre-commit: $1" >&2; exit 1; }
+
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks git --pre-commit --staged --redact --no-banner . || fail "secret detecte par gitleaks"
+else
+  echo "pre-commit: gitleaks absent, controle des secrets reduit (NON VERIFIE localement ; la CI reste bloquante)" >&2
+  sensitive=$(git diff --cached --name-only --diff-filter=ACMR \
+    | grep -E '(^|/)(\.env(\..+)?|id_(rsa|dsa|ecdsa|ed25519)|[^/]+\.(pem|key|p12|pfx))$' \
+    | grep -Ev '(^|/)\.env\.example$' || true)
+  [ -z "$sensitive" ] || fail "fichier sensible indexe : $sensitive"
+  if git diff --cached -U0 --diff-filter=ACMR | grep -Eq '^\+.*(gh[pousr]_[A-Za-z0-9]{36}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----)'; then
+    fail "motif de secret detecte dans les modifications indexees"
+  fi
+fi
+{{#each hooks.pre_commit}}
+
+echo "pre-commit: {{ this.label }}"
+{{ this.guard }}
+{{ this.command }} || fail "{{ this.label }} en echec"
+{{/each}}

@@ -26,6 +26,9 @@ SCAFFOLD = {
     "package.json", "tsconfig.json", "src/index.ts", "src/index.js", "eslint.config.js", "vitest.config.js",
     "tests/smoke.test.ts", "tests/smoke.test.js",
 }
+HOOKS = {".githooks/pre-commit", ".githooks/commit-msg", ".githooks/pre-push", "scripts/hooks/agent_guard.py"}
+AGENT_HOOK_FILES = {".claude/settings.json", ".codex/hooks.json", ".github/hooks/forge-guard.json"}
+SCAFFOLD = SCAFFOLD | HOOKS | AGENT_HOOK_FILES
 BASE_DOCS = {
     "AGENTS.md", "README.md", "SECURITY.md", "CONTRIBUTING.md", "TODO.md", "docs/ARCHITECTURE.md",
     "docs/DEVELOPMENT_PLAN.md", "docs/TESTING.md", "docs/DEPENDENCIES.md", "docs/adr/0001-choix-techniques.md",
@@ -98,9 +101,9 @@ class PythonApiDocumentsTests(unittest.TestCase):
         cls.plan, cls.files = generate(PYTHON_API)
 
     def test_expected_files(self):
-        self.assertEqual(set(self.files), BASE_DOCS | {"CLAUDE.md", "docs/DEPLOYMENT.md", ".github/workflows/ci.yml",
-                                                       ".gitignore", "pyproject.toml", "src/stock_api/__init__.py",
-                                                       "tests/test_smoke.py"})
+        self.assertEqual(set(self.files), BASE_DOCS | HOOKS | {
+            "CLAUDE.md", "docs/DEPLOYMENT.md", ".github/workflows/ci.yml", ".gitignore", "pyproject.toml",
+            "src/stock_api/__init__.py", "tests/test_smoke.py", ".claude/settings.json", ".codex/hooks.json"})
 
     def test_agents_md_is_specific(self):
         agents = self.files["AGENTS.md"]
