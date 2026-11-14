@@ -45,12 +45,21 @@ def _commands(plan, catalog_kinds=tuple(COMMAND_LABELS)):
     return listing, flat
 
 
-def _dependencies(technologies):
-    return [
-        {"name": t["name"], "package": t["package"], "ecosystem": t["ecosystem"],
-         "scope": "developpement" if t["dev"] else "execution", "status": UNVERIFIED}
-        for t in technologies if t["package"]
-    ]
+def _dependencies(technologies, verification=None):
+    result = []
+    for t in technologies:
+        if not t["package"]:
+            continue
+        status, details = UNVERIFIED, {}
+        if verification is not None:
+            state, details = verification.package_status(t["ecosystem"], t["package"])
+            status = state.value
+        result.append({
+            "name": t["name"], "package": t["package"], "ecosystem": t["ecosystem"],
+            "scope": "developpement" if t["dev"] else "execution", "status": status,
+            "version": details.get("version") or UNVERIFIED, "license": details.get("license") or UNVERIFIED,
+        })
+    return result
 
 
 def _tasks(plan, has_dependencies):
@@ -68,9 +77,10 @@ def _tasks(plan, has_dependencies):
             for index, (title, depends, priority) in enumerate(tasks, start=1)]
 
 
-def build_context(plan):
+def build_context(plan, verification=None):
     spec = plan.spec
     technologies = _technologies(plan)
+    dependencies = _dependencies(technologies, verification)
     commands, command_map = _commands(plan)
     agents = [dict(AGENT_INFO[a], id=a) for a in spec.agents]
     sections = {name: list(items) for name, items in plan.composition.sections.items()}
@@ -88,9 +98,9 @@ def build_context(plan):
         "agent_names": ", ".join(a["name"] for a in agents),
         "has": dict({a: a in spec.agents for a in AGENTS},
                     mcp=spec.options["mcp"], docker="docker" in plan.resolution.ids(),
-                    hardened=spec.security == "hardened", dependencies=bool(_dependencies(technologies))),
+                    hardened=spec.security == "hardened", dependencies=bool(dependencies)),
         "technologies": technologies,
-        "dependencies": _dependencies(technologies),
+        "dependencies": dependencies,
         "commands": commands,
         "command": command_map,
         "sections": sections,
@@ -100,7 +110,7 @@ def build_context(plan):
             "is_manual": plan.architecture["source"] == "manual",
             "is_undefined": plan.architecture["source"] == "undefined",
         },
-        "tasks": _tasks(plan, bool(_dependencies(technologies))),
+        "tasks": _tasks(plan, bool(dependencies)),
         "skills": list(plan.composition.skills),
         "rules": list(plan.composition.rules),
         "warnings": [diag.message for diag in plan.diagnostics if diag.severity.value == "warning"],

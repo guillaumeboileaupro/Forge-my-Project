@@ -7,11 +7,17 @@ from forge.generator.template import TemplateError, render
 from forge.planner.plan import build_plan
 
 
-def render_plan(plan, templates_dir=TEMPLATES_DIR):
-    """Retourne {chemin relatif: contenu}. Refuse un plan contenant des erreurs."""
+def _errors(diagnostics):
+    return [x for x in diagnostics if x.severity.value == "error"]
+
+
+def render_plan(plan, templates_dir=TEMPLATES_DIR, verification=None):
+    """Retourne {chemin relatif: contenu}. Refuse un plan ou une verification en erreur."""
     if not plan.ok:
-        raise ForgeError("Plan invalide : generation bloquee", [x for x in plan.diagnostics if x.severity.value == "error"])
-    context = build_context(plan)
+        raise ForgeError("Plan invalide : generation bloquee", _errors(plan.diagnostics))
+    if verification is not None and not verification.ok:
+        raise ForgeError("Verification en echec : generation bloquee", _errors(verification.diagnostics))
+    context = build_context(plan, verification)
     files = {}
     for path, (template, rule_id) in plan.files.items():
         source = resolve_inside(templates_dir, template).read_text(encoding="utf-8")
@@ -22,7 +28,12 @@ def render_plan(plan, templates_dir=TEMPLATES_DIR):
     return files
 
 
-def generate(data, catalog=None, rules=None, templates_dir=TEMPLATES_DIR):
-    """Facade : valide, planifie et rend. Retourne (plan, fichiers) sans ecrire sur disque."""
+def generate(data, catalog=None, rules=None, templates_dir=TEMPLATES_DIR, verification=None):
+    """Facade : valide, planifie et rend. Retourne (plan, fichiers) sans ecrire sur disque.
+
+    `verification` est une fonction plan -> VerificationReport (ex. verify_plan),
+    appelee uniquement si fournie : sans elle, aucune requete reseau.
+    """
     plan = build_plan(data, catalog, rules)
-    return plan, render_plan(plan, templates_dir)
+    report = verification(plan) if verification is not None and plan.ok else None
+    return plan, render_plan(plan, templates_dir, report)

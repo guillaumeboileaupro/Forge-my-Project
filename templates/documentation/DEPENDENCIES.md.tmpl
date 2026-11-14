@@ -3,10 +3,10 @@
 Statuts : PASS (verifie sur le registre officiel), FAIL (inexistant, version absente ou vulnerabilite bloquante), NON VERIFIE (controle non effectue).
 
 {{#if dependencies}}
-| Package | Ecosysteme | Portee | Statut |
-| --- | --- | --- | --- |
+| Package | Ecosysteme | Portee | Version | Licence | Statut |
+| --- | --- | --- | --- | --- | --- |
 {{#each dependencies}}
-| {{ this.package }} | {{ this.ecosystem }} | {{ this.scope }} | {{ this.status }} |
+| {{ this.package }} | {{ this.ecosystem }} | {{ this.scope }} | {{ this.version }} | {{ this.license }} | {{ this.status }} |
 {{/each}}
 {{else}}
 Aucune dependance tierce retenue.

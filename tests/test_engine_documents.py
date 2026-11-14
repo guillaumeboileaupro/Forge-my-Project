@@ -66,8 +66,8 @@ class PythonApiDocumentsTests(unittest.TestCase):
 
     def test_dependencies_are_unverified_until_checked(self):
         deps = self.files["docs/DEPENDENCIES.md"]
-        self.assertIn("| fastapi | pypi | execution | NON VERIFIE |", deps)
-        self.assertIn("| pytest | pypi | developpement | NON VERIFIE |", deps)
+        self.assertIn("| fastapi | pypi | execution | NON VERIFIE | NON VERIFIE | NON VERIFIE |", deps)
+        self.assertIn("| pytest | pypi | developpement | NON VERIFIE | NON VERIFIE | NON VERIFIE |", deps)
         self.assertNotIn("PASS |", deps)
 
     def test_todo_has_tracking_columns_and_no_invented_estimate(self):
