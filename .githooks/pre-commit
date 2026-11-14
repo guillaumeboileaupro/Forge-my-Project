@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+# Activation explicite: git config core.hooksPath .githooks
+if git diff --cached --name-only | grep -E '(^|/)(\.env($|\.)|id_rsa$|id_ed25519$|[^/]*\.pem$|[^/]*\.p12$)' >/dev/null; then
+  echo "Fichier potentiellement sensible indexe. Retirer de l'index." >&2
+  exit 1
+fi
+python3 -m unittest discover -s tests -q
