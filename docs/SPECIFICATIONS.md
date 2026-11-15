@@ -36,7 +36,7 @@ MCP uniquement si necessaires, avec recherche, verification, permissions minimal
 - Jamais d'execution de scripts distants non approuves ou de packages inventes.
 
 ## Workflow genere
-Un seul agent developpeur actif, une seule PR ouverte, branche dediee, pas de commit direct sur main, tests et audits avant fusion, CI verte, mise a jour des temps et nettoyage apres fusion. Les permissions GitHub et les regles de branche doivent etre effectivement configurees pour imposer ces contraintes a distance.
+Plusieurs agents developpeurs et PR peuvent etre actifs en parallele sur des worktrees independants, avec petites taches et PR rapidement fusionnables, branche dediee, pas de commit direct sur main, tests et audits avant fusion, CI verte, mise a jour des temps et nettoyage apres fusion. Les permissions GitHub et les regles de branche doivent etre effectivement configurees pour imposer ces contraintes a distance.
 
 ## Verification et erreurs
 - Bouton "Verifier la configuration" et controles critiques repetes juste avant ecriture.
@@ -49,3 +49,17 @@ Un seul agent developpeur actif, une seule PR ouverte, branche dediee, pas de co
 - Pas d'IA embarquee.
 - Pas de publication/deploiement automatique.
 - Pas de synchronisation ou maintenance des projets cibles apres initialisation.
+
+## Evolutions validees le 15 novembre 2026
+
+La reference detaillee est [ROADMAP_2026.md](ROADMAP_2026.md) : 24 decisions de finalisation et 10 decisions de refonte UI, soit 34 decisions approuvees.
+
+- Linux uniquement; installer.sh et start.sh a verifier par rapport au lanceur existant, sans doublon.
+- Securite: maintien des scans, scanner Docker, Semgrep, confirmation explicite des NON VERIFIE et controles bloques sur FAIL critiques.
+- Fusion automatique a trois voies uniquement avec base fiable; E2E a completer dans les projets cibles; assistant des commandes de protection de branches sans execution implicite.
+- API statiques Python/JS/TS verifiees lorsque possible; skills avec cache et recherche parallele; catalogues personnels extensibles Rust/Go/Java/Python/JS.
+- Refonte complete de l'interface (pas du moteur) avec panneaux modulables, themes, onglets, palette de commandes, questionnaire progressif et apercu, diagramme et arborescence synchronises, diagnostics centralises et editeur leger.
+- Validation progressive + finale: Firefox, accessibilite, performances, captures et plusieurs resolutions avant remplacement de l'ancienne UI.
+- Releases ciblees v1.0.0 (nettoyage), v1.1.0 (trois PARTIEL), v2.0.0 (nouvelle UI et ameliorations).
+- Agents IA utilises comme outils: **aucune attribution Git comme auteur, committer ou co-auteur**. Controler les commits et les branches.
+- Piste VS Code uniquement long terme: voir `long-terme-ideas-project-liste.md`.
