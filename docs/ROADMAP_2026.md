@@ -21,7 +21,7 @@ Codex et Claude Code developpent **en parallele** sur des fichiers distincts, av
 | ID | Travail | Priorite | Agent propose | Depend de | Charge estimee | Reel | Ecart | Statut |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | P1 | Claude | - | 0,5 j | - | - | TODO |
-| E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | P1 | Claude | - | 1 j | - | - | TODO |
+| E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | P1 | Claude | - | 1 j | 0 h 26 | -7 h 34 | IN PROGRESS |
 | E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | P2 | Claude | E01 | 1 j | - | - | TODO |
 | E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | P1 | Codex | - | 1 j | - | - | TODO |
 | E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | P1 | Claude | E01 | 1 j | - | - | TODO |

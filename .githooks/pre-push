@@ -1,0 +1,5 @@
+#!/bin/sh
+# Activation explicite: git config core.hooksPath .githooks
+# pre-push : refuse la publication de commits attribues a un agent IA (docs/GIT_ATTRIBUTION.md).
+set -eu
+python3 "$(git rev-parse --show-toplevel)/scripts/attribution_guard.py" pre-push "$@"

@@ -26,7 +26,8 @@ SCAFFOLD = {
     "package.json", "tsconfig.json", "src/index.ts", "src/index.js", "eslint.config.js", "vitest.config.js",
     "tests/smoke.test.ts", "tests/smoke.test.js",
 }
-HOOKS = {".githooks/pre-commit", ".githooks/commit-msg", ".githooks/pre-push", "scripts/hooks/agent_guard.py"}
+HOOKS = {".githooks/pre-commit", ".githooks/commit-msg", ".githooks/pre-push", "scripts/hooks/agent_guard.py",
+         "scripts/hooks/attribution_guard.py"}
 AGENT_HOOK_FILES = {".claude/settings.json", ".codex/hooks.json", ".github/hooks/forge-guard.json"}
 MCP_FILES = {".mcp.json", ".codex/config.toml"}  # uniquement si des serveurs MCP sont choisis
 SCAFFOLD = SCAFFOLD | HOOKS | AGENT_HOOK_FILES | MCP_FILES
