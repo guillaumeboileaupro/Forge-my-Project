@@ -257,7 +257,7 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 | E17 | Editeur leger coloration/lignes/recherche/remplacement, panneau diagnostics et integration des flux securises existants | Codex + Claude (fichiers separes) | E15,E16 | 3 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E18 | Validation visuelle et fonctionnelle progressive, accessibilite, performances, resolutions, recette globale; migration finale apres validation | Codex + Claude | E15,E16,E17 | 3 j | - | - | TODO | Voir ROADMAP_2026.md | 
 
-Regle de suivi: temps reels saisis manuellement. L'ecart est calcule en heures selon 1 j = 8 h. Toute PR renseigne preuve CI, revue, tests et limites. Ne pas marquer DONE avant verification.
+Les priorites et les criteres d'acceptation propres a chaque ligne sont maintenus dans [docs/ROADMAP_2026.md](docs/ROADMAP_2026.md); cette reference fait partie du contrat de la tache, pas d'un critere generique. Charge totale estimee: **36,5 j**. Regle de suivi: temps reels saisis manuellement. L'ecart est calcule en heures selon 1 j = 8 h. Toute PR renseigne preuve CI, revue, tests et limites. Ne pas marquer DONE avant verification.
 
 ## Idees hors suivi actif
 
