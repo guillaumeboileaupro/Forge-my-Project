@@ -174,6 +174,64 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 - Rapport: docs/ACCEPTANCE.md; gates G01-G12 cochees dans docs/FINALIZATION_PLAN.md.
 
 
+## Matrice des 34 reponses validees - suivi question par question
+
+**Source de verite:** questionnaire utilisateur de 24 questions + 10 questions UI. La colonne "Etat" indique le statut de mise en oeuvre de la **nouvelle decision**, pas le statut des anciennes taches T01-T18. "Hors perimetre" signifie aucune nouvelle implementation demandee. Chaque ligne pointe vers une tache E ou un suivi documentaire; aucune reponse n'est perdue.
+
+### 24 decisions de finalisation
+
+| Question | Reponse validee | Decision et critere verifiable | Taches / jalon | Etat |
+| --- | --- | --- | --- | --- |
+| Q01 | A | Linux uniquement, sans promesse Windows/macOS | E04, v1.0.0 | TODO |
+| Q02 | B, recadree Linux | Ecriture directe dans les dossiers Linux; ne pas developper Windows | E04, E07 | TODO |
+| Q03 | A + B | GitHub Actions et tests manuels Linux | E05, E18 | TODO |
+| Q04 | B | `installer.sh` et `start.sh`; examiner la PR existante de `start.py` avant doublon | E04 | TODO |
+| Q05 | Reportee | MCP GitHub authentifie NON VERIFIE; conserver dans les pistes futures sans PR maintenant | Backlog long terme | REPORTE |
+| Q06 | A puis B puis C | Maintenir GitHub/Playwright, puis MCP officiels, enfin recherche libre verifiee | Backlog MCP progressif | FUTUR |
+| Q07 | Tout (A+B+C+D) | Maintenir les scans existants, ajouter analyse Docker et Semgrep, bloquer sev. haute/critique | E10 | TODO |
+| Q08 | B | Expliquer et faire confirmer explicitement chaque NON VERIFIE, trace et revalidation | E06 | TODO |
+| Q09 | B | Fusion trois voies seulement avec base fiable; garder diff, fusion manuelle et rollback | E07, v1.1.0 | TODO |
+| Q10 | A + B | TESTING.md et infrastructure E2E cible prete a completer sans tests metier inventes | E08, v1.1.0 | TODO |
+| Q11 | B | Assistant qui prepare les commandes de protection GitHub, sans les executer | E09, v1.1.0 | TODO |
+| Q12 | B avec PR courtes | Agents et PR en parallele; taches petites, CI verte et fusion rapide | E05, AGENTS.md | TODO |
+| Q13 | C (correction de A) | Archiver inventaire noms/SHA des branches docs/* avant suppression sur preuve de fusion | E01 | TODO |
+| Q14 | A | Supprimer codex/file-preview apres verification d'integration et absence de travail local | E01 | TODO |
+| Q15 | C | Nettoyage automatise worktrees apres fusion, mode simulation, refus si sale ou actif | E01 | TODO |
+| Q16 | B | Audit fichiers obsoletes, temporaires, doublons, configurations; suppression seulement sur preuve | E03 | TODO |
+| Q17 | B | Verifier statiquement APIs Python, JS/TS quand possible, afficher PASS/FAIL/NON VERIFIE | E11 | TODO |
+| Q18 | C | Skills: cache expire, recherches paralleles, classement et reverification avant copie | E12 | TODO |
+| Q19 | B + C, usage personnel | Stacks Python/JS/Rust/Go/Java et catalogue/regles personnels editables localement | E13 | TODO |
+| Q20 | A | Temps manuels uniquement; conserver estime/reel/ecart sans chronometre ni mesure Git | Toutes E, pas de fonctionnalite nouvelle | REGLE |
+| Q21 | B puis C puis D | Trois releases: v1.0.0 nettoyage; v1.1.0 PARTIEL; v2.0.0 ameliorations+refonte | E05, E07-E09, E18 | TODO |
+| Q22 | C | Codex et Claude en parallele, composants et worktrees distincts | E05, E14-E18 | REGLE |
+| Q23 | B + C | Releases, bugs, mises a jour securite, controles reguliers dependances et regression | E05 | TODO |
+| Q24 | A+B+C+D | Plan detaille, missions agents, petites PR progressives et execution avec tests/CI | E05 + plan | REGLE |
+
+### 10 decisions de refonte UI - remplacement complet, pas un relooking
+
+| Question | Reponse validee | Decision et critere verifiable | Taches | Etat |
+| --- | --- | --- | --- | --- |
+| UI-01 | A+B | Interface de type VS Code ET design moderne; repartir de zero sur l'UI en gardant le moteur | E14, E15 | TODO |
+| UI-02 | A | Panneaux gauche/centre/droite deplacables, masquables, redimensionnables et persistants | E15 | TODO |
+| UI-03 | A+D | Minimalisme pro, themes sombre/clair, couleurs, densites et accessibilite | E14, E15, E18 | TODO |
+| UI-04 | D | Barre laterale permanente, onglets, palette Ctrl+Shift+P, raccourcis | E15 | TODO |
+| UI-05 | A+C | Questionnaire progressif et conditionnel avec barre de progression et apercu interactif | E16 | TODO |
+| UI-06 | C | Arborescence et diagramme d'architecture interactifs, synchronises dans les deux sens | E16 | TODO |
+| UI-07 | B | Panneau diagnostics central, gravites, filtres, clic vers le champ concerne | E17 | TODO |
+| UI-08 | A | Editeur leger avec coloration syntaxique, numeros, recherche/remplacement; diff T17 conserve | E17 | TODO |
+| UI-09 | C | Codex et Claude developpent en parallele par composants, design system commun, petites PR | E14-E18 | REGLE |
+| UI-10 | C+D | Tests visuels+fonctionnels progressifs, Firefox, accessibilite, performance, resolutions; ancien UI garde jusqu'a validation | E18 | TODO |
+
+### Cadence, livraisons et suivi
+
+1. **v1.0.0** : E01-E05 pertinents, scripts Linux verifies, audit/archivage/nettoyage, attribution Git securisee et maintenance documentee.
+2. **v1.1.0** : E07-E09, trois exigences PARTIEL levees avec preuves.
+3. **v2.0.0** : E06, E10-E18 et refonte UI validee visuellement/fonctionnellement; sous-lots independants, petites PR.
+4. **Hors releases actives** : Q05 tests MCP GitHub reportes; Q06 extension progressive MCP; LT01 extension VS Code dans `long-terme-ideas-project-liste.md`.
+
+**Controle de couverture :** Q01-Q24 = 24 lignes; UI-01 a UI-10 = 10 lignes; total **34/34 decisions**. Les temps affiches dans E01-E18 sont des estimations, non des durees promises. Les temps reels sont saisis manuellement. Un DONE demande tests, CI, revue et preuve de conformite.
+
+
 ## Cycle d'evolutions E01-E18 - non commence
 
 Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](docs/ROADMAP_2026.md). Le tableau de suivi des nouvelles taches (E01-E18) est maintenu ci-dessous; les 18 taches T01-T18 ci-dessus restent intactes et terminees.
