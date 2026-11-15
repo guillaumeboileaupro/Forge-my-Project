@@ -39,12 +39,12 @@ Voir TODO.md pour les 18 taches T01-T18 et les temps estimes, reels et ecarts. L
 
 ## Evolutions suivantes - decisions validees
 
-Les phases P1-P7 et 30 j ci-dessus constituent **l'historique termine T01-T18**, conserve pour tracabilite. Le cycle futur utilise les identifiants E01-E18, avec estimation, dependances, responsabilites et criteres de validation dans [ROADMAP_2026.md](ROADMAP_2026.md). Les temps reels sont renseignes manuellement, pas deduits des commits.
+Les phases P1-P7 et 30 j ci-dessus constituent **l'historique termine T01-T18**, conserve pour tracabilite. Le cycle futur E01-E18 represente **36,5 j estimes** au total, avec priorites, dependances, responsabilites et criteres d'acceptation propres a chaque tache dans [ROADMAP_2026.md](ROADMAP_2026.md). Les temps reels sont renseignes manuellement, pas deduits des commits.
 
 | Jalon | Livrable | Dependances | Conditions |
 | --- | --- | --- | --- |
-| v1.0.0 | Linux, scripts d'installation/demarrage, inventaire et nettoyage | E01-E05 selon perimetre | Sauvegardes, tests et CI verts |
-| v1.1.0 | Lever les trois exigences PARTIEL | E07-E09 | Fusion, E2E et assistant de protection verifies |
-| v2.0.0 | Refonte UI complete et ameliorations techniques choisies | E06,E10-E18 | Tests visuels/fonctionnels, accessibilite, securite, performance |
+| v1.0.0 | Linux, scripts d'installation/demarrage, attribution, inventaire et nettoyage | E01-E05 (4,5 j estimes) | Sauvegardes, tests et CI verts |
+| v1.1.0 | Lever les trois exigences PARTIEL | E07-E09 (5 j estimes) | Fusion, E2E et assistant de protection verifies |
+| v2.0.0 | Refonte UI complete et ameliorations techniques choisies | E06,E10-E18 (27 j estimes) | Tests visuels/fonctionnels, accessibilite, securite, performance |
 
 Le nettoyage de l'historique Git et la prevention des contributions attribuees aux agents IA sont des prealables de qualite. Ne jamais forcer une reecriture ni effacer un worktree sans inventaire et sauvegarde. L'extension VS Code est une idee de long terme, hors calendrier des releases ci-dessus.
