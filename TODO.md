@@ -38,7 +38,7 @@ Le graphe est indicatif: la colonne Depend de fait foi.
 | **Total** | | | | **30 j** | **3 h 57** | **-236 h 03** (base 8 h/j) | | 18 taches DONE |
 
 ## Ordre de travail
-Commencer par T01. Une seule PR ouverte et un seul agent de developpement a la fois. Actualiser les colonnes Reel/Ecart apres chaque tache et noter les preuves CI dans la PR.
+T01-T18 sont terminees. Pour E01-E18, plusieurs petites PR sont autorisees en parallele avec worktrees independants, revue et CI verte. Actualiser les colonnes Reel/Ecart apres chaque tache et noter les preuves CI dans la PR.
 
 ## Etat existant
 Le serveur local, le formulaire initial, le ZIP, AGENTS.md, une bibliotheque initiale de skills, des docs et une CI du depot existent. Les fonctions cible non implementees ne doivent pas etre marquees DONE.
@@ -173,3 +173,34 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 - NON VERIFIE: macOS et Windows (aucun environnement), execution du MCP GitHub distant (gh 2.4.0 sans `auth token`).
 - Rapport: docs/ACCEPTANCE.md; gates G01-G12 cochees dans docs/FINALIZATION_PLAN.md.
 
+
+## Cycle d'evolutions E01-E18 - non commence
+
+Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](docs/ROADMAP_2026.md). Le tableau de suivi des nouvelles taches (E01-E18) est maintenu ci-dessous; les 18 taches T01-T18 ci-dessus restent intactes et terminees.
+
+| ID | Travail | Responsable | Depend de | Estime | Reel | Ecart | Statut | Validation |
+| --- | --- | --- | --- | ---: | ---: | ---: | --- | --- |
+| E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | Claude | - | 0,5 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | Claude | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | Claude | E01 | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | Claude | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | Codex | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E08 | Infrastructure E2E des projets generes, adaptee a la stack, sans scenarios metier inventes | Claude | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E09 | Assistant de protection de branche GitHub: preparer les commandes, ne pas appliquer automatiquement | Claude | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E10 | Scanner d'images Docker et SAST complementaire dont Semgrep, sans retrait des controles actuels | Claude | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E11 | Verification statique des API Python/JS/TS lorsque possible; PASS/FAIL/NON VERIFIE | Claude | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E12 | Recherche des skills: cache expire, parallelisme, classement, reverification avant copie | Claude | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E13 | Enrichir les stacks Python/JS/Rust/Go/Java et permettre les catalogues/regles personnalises localement | Claude | - | 4 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E14 | Definir le design system et les contrats de la nouvelle UI avant de coder | Codex + Claude | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E15 | Nouvelle coque UI: look professionnel minimal, themes clair/sombre, densite, panneaux deplacables et redimensionnables, onglets, navigation, palette | Codex | E14 | 4 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E16 | Parcours questionnaire progressif et conditionnel avec apercu dynamique, arbre et diagramme synchronises | Claude | E14 | 4 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E17 | Editeur leger coloration/lignes/recherche/remplacement, panneau diagnostics et integration des flux securises existants | Codex + Claude (fichiers separes) | E15,E16 | 3 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E18 | Validation visuelle et fonctionnelle progressive, accessibilite, performances, resolutions, recette globale; migration finale apres validation | Codex + Claude | E15,E16,E17 | 3 j | - | - | TODO | Voir ROADMAP_2026.md | 
+
+Regle de suivi: temps reels saisis manuellement. L'ecart est calcule en heures selon 1 j = 8 h. Toute PR renseigne preuve CI, revue, tests et limites. Ne pas marquer DONE avant verification.
+
+## Idees hors suivi actif
+
+- Extension VS Code: [long-terme-ideas-project-liste.md](long-terme-ideas-project-liste.md), LT01-01 a LT01-08, estimation initiale 24 j. Ne pas lancer sans decision explicite.
