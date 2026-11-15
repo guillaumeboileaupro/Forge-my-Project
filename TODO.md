@@ -18,7 +18,7 @@ Le graphe est indicatif: la colonne Depend de fait foi.
 | ID | Phase | Travail | Depend de | Estime | Reel | Ecart | Statut | Critere de fin |
 | --- | --- | --- | --- | ---: | ---: | ---: | --- | --- |
 | T01 | P1 | Auditer le prototype et corriger ses defauts | - | 1 j | 0 h 05 | -7 h 55 (base 8 h/j) | DONE | Tests serveur/ZIP et JS reproductibles |
-| T02 | P1 | Reorganiser modules et modeles externes sans casser l'existant | T01 | 1 j | - | - | DONE | Contrats clairs, tests verts |
+| T02 | P1 | Reorganiser modules et modeles externes sans casser l'existant | T01 | 1 j | 0 h 06 | -7 h 54 (base 8 h/j) | DONE | Contrats clairs, tests verts |
 | T03 | P2 | Formulaire hybride, navigation et progression | T02 | 2 j | en cours | - | IN PROGRESS | Parcours UI valides |
 | T04 | P2 | Questions conditionnelles et validation | T03 | 1 j | en cours | - | IN PROGRESS | Questions coherentes selon reponses |
 | T05 | P2 | Profils, autosauvegarde et import/export JSON | T03 | 1 j | 0 h 09 | -7 h 51 (base 8 h/j) | DONE | Reprise et import fiable |
@@ -57,7 +57,11 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 - Risques restants hors T01: profil nomme TypeScript mais base JavaScript, workflow genere volontairement bloquant, absence de lockfiles et fonctions T02-T18 non implementees.
 
 ### T02 - 14 novembre 2026 (Codex, PR #5)
-- Fusionnee apres CI verte (runs 43584707105 et 43584848078). Temps reel non renseigne par Codex.
+- Temps reel mesure: 0 h 06, de la creation de la branche dediee a la premiere CI de PR verte.
+- Tests locaux: 24 tests PASS; compilation Python PASS; 64 configurations avec sorties `build()` octet pour octet identiques a T01; projets generes Python et JavaScript executes avec succes.
+- Recette: serveur HTTP local PASS; formulaire et assets externes rendus dans Firefox headless PASS; regression du checkbox sous CSP detectee puis corrigee avant livraison.
+- Securite: templates rendus en un passage, traversee `..` refusee, assets servis par liste fermee et CSP sans `unsafe-inline`.
+- CI et integration: [push PASS](https://github.com/guillaumeboileaupro/Forge-my-Project/actions/runs/43584707105), [PR PASS](https://github.com/guillaumeboileaupro/Forge-my-Project/actions/runs/43584848078), fusion `6506dd0` dans `main`.
 
 ### T06-T11 - 14 novembre 2026 (Claude Code, PR #6)
 - Temps reels mesures sur l'historique Git: branche creee a 10 h 54; commits T06 11 h 07, T07 11 h 09, T08 11 h 12, T11 11 h 15, T09 11 h 18, T10 11 h 21; fusion 11 h 28 (total 0 h 34).
