@@ -204,6 +204,10 @@ class InstalledRepositoryTests(SandboxMixin, unittest.TestCase):
         self.assertEqual(ci("pull_request", {"pull_request": pull}).returncode, 0)
         pull["head"]["sha"] = head
         self.assertEqual(ci("pull_request", {"pull_request": pull}).returncode, 1)
+        pull["base"]["sha"] = "f" * 40  # commits absents (checkout superficiel) : refus, jamais succes
+        missing = ci("pull_request", {"pull_request": pull})
+        self.assertEqual(missing.returncode, 1)
+        self.assertIn("aucune plage de commits verifiable", missing.stderr)
 
 
 class ExistingHooksTests(SandboxMixin, unittest.TestCase):
