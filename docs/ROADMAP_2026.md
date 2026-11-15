@@ -1,0 +1,81 @@
+# Feuille de route validee - 34 decisions (15 novembre 2026)
+
+## Statut et regles
+
+Source: questionnaire utilisateur termine: 24 decisions de finalisation + 10 decisions UI. Ce document complete les 18 taches historiques terminees; il ne les remet pas a zero.
+Produit personnel, **Linux uniquement**. Python 3.11+ requis. Conserver le moteur et toutes les fonctions validees.
+
+Regle incontournable: aucun agent IA (Claude, Anthropic, Codex ou autre) ne doit apparaitre comme auteur, committer ou co-auteur Git. Refuser les trailers d'attribution automatique; analyser l'historique des branches et des PR avant de declarer le nettoyage termine. Ne jamais inventer de contributeur. Les mecanismes CI ne sont efficaces que si leur reussite est imposee sur la branche de destination; les hooks locaux seuls sont contournables.
+
+Codex et Claude Code developpent **en parallele** sur des fichiers distincts, avec des worktrees independants, des petites PR a fusionner rapidement, des tests et une revue avant fusion. Temps estime, temps reel et ecart: saisie **manuelle**. Pas de chronometre ou de calcul Git automatique.
+
+## Releases et dependances
+
+- **v1.0.0** apres audit/nettoyage securise des branches, worktrees et fichiers et validation du lancement Linux.
+- **v1.1.0** apres resolution des trois exigences partielles: fusion a trois voies lorsque possible, infrastructure E2E vide prete a completer, assistant de protection de branche produisant des commandes manuelles.
+- **v2.0.0** apres refonte complete de l'interface et toutes les ameliorations retenues.
+- Chaque release: tests verts, controle de securite, changelog, limites explicites et absence de bug bloquant. Les numéros sont cibles, a ajuster si necessaire.
+
+## Lots de travail (nouveaux identifiants E01-E18)
+
+| ID | Travail | Priorite | Agent propose | Depend de | Charge estimee | Reel | Ecart | Statut |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | P1 | Claude | - | 0,5 j | - | - | TODO |
+| E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | P1 | Claude | - | 1 j | - | - | TODO |
+| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | P2 | Claude | E01 | 1 j | - | - | TODO |
+| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | P1 | Codex | - | 1 j | - | - | TODO |
+| E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | P1 | Claude | E01 | 1 j | - | - | TODO |
+| E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | P1 | Claude | - | 1 j | - | - | TODO |
+| E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | P2 | Codex | - | 2 j | - | - | TODO |
+| E08 | Infrastructure E2E des projets generes, adaptee a la stack, sans scenarios metier inventes | P2 | Claude | - | 2 j | - | - | TODO |
+| E09 | Assistant de protection de branche GitHub: preparer les commandes, ne pas appliquer automatiquement | P2 | Claude | - | 1 j | - | - | TODO |
+| E10 | Scanner d'images Docker et SAST complementaire dont Semgrep, sans retrait des controles actuels | P1 | Claude | - | 2 j | - | - | TODO |
+| E11 | Verification statique des API Python/JS/TS lorsque possible; PASS/FAIL/NON VERIFIE | P2 | Claude | - | 2 j | - | - | TODO |
+| E12 | Recherche des skills: cache expire, parallelisme, classement, reverification avant copie | P2 | Claude | - | 2 j | - | - | TODO |
+| E13 | Enrichir les stacks Python/JS/Rust/Go/Java et permettre les catalogues/regles personnalises localement | P2 | Claude | - | 4 j | - | - | TODO |
+| E14 | Definir le design system et les contrats de la nouvelle UI avant de coder | P1 | Codex + Claude | - | 2 j | - | - | TODO |
+| E15 | Nouvelle coque UI: look professionnel minimal, themes clair/sombre, densite, panneaux deplacables et redimensionnables, onglets, navigation, palette | P1 | Codex | E14 | 4 j | - | - | TODO |
+| E16 | Parcours questionnaire progressif et conditionnel avec apercu dynamique, arbre et diagramme synchronises | P1 | Claude | E14 | 4 j | - | - | TODO |
+| E17 | Editeur leger coloration/lignes/recherche/remplacement, panneau diagnostics et integration des flux securises existants | P1 | Codex + Claude (fichiers separes) | E15,E16 | 3 j | - | - | TODO |
+| E18 | Validation visuelle et fonctionnelle progressive, accessibilite, performances, resolutions, recette globale; migration finale apres validation | P1 | Codex + Claude | E15,E16,E17 | 3 j | - | - | TODO |
+
+Les charges sont indicatives et doivent etre confirmees avant ouverture des taches. Une PR courte et independante par lot ou sous-lot, sans gros chantier monolithique.
+
+## Contrat de la refonte UI - decisions UI-1 a UI-10
+
+- UI-1 A+B: experience inspiree de VS Code, avec design d'application moderne.
+- UI-2 A: panneaux gauche/centre/droite deplacables, redimensionnables et masquables, disposition persistante.
+- UI-3 A+D: minimalisme professionnel, themes clair/sombre, couleurs et densite personnalisables.
+- UI-4 D: barre laterale, onglets, palette de commandes et raccourcis.
+- UI-5 A+C: questionnaire progressif et conditionnel, apercu reactif.
+- UI-6 C: arborescence et diagramme d'architecture synchronises.
+- UI-7 B: panneau central de diagnostics, filtres et navigation vers l'erreur.
+- UI-8 A: editeur simple avec coloration, lignes et recherche/remplacement; conserver le diff/fusion existant.
+- UI-9 C: design system partage, composants distincts, deux agents et petites PR.
+- UI-10 C+D: validation progressive ET complete, screenshots, Firefox, accessibilite, performance, plusieurs resolutions; ancienne UI conservee avant acceptation de la nouvelle.
+- **Pas de simple relooking**: reconstruction de zero de l'interface seulement; conserver le moteur et les garanties fonctionnelles.
+
+## Autres decisions importantes (Q1-Q24)
+
+- Q1 Linux uniquement; Q2 support de l'ecriture locale sur Linux, sans developpement Windows; Q3 tests GitHub Actions et manuels; Q4 scripts installer.sh et start.sh, verifier l'existant/PR avant doublon.
+- Q5 tests MCP GitHub authentifies reportes dans pistes futures, statut NON VERIFIE conserve; Q6 catalogue MCP actuel, puis ajouts officiels, ensuite recherche libre controlee.
+- Q7 conserver les scans et ajouter Docker + Semgrep; Q8 confirmation explicite NON VERIFIE.
+- Q9 fusion a trois voies; Q10 docs TESTING.md et infrastructure E2E; Q11 assistant de commandes de protection de branche.
+- Q12 plusieurs agents/PR courtes; Q13 inventorier et archiver docs/* avant suppression; Q14 supprimer codex/file-preview apres controle; Q15 nettoyage worktrees automatise mais prudent; Q16 audit complet des fichiers.
+- Q17 verification API statique lorsque possible; Q18 cache/parallelisme/classement skills; Q19 grandes stacks et catalogues personnels; Q20 temps manuels.
+- Q21 trois releases apres nettoyage / resolution partiels / ameliorations; Q22 agents en parallele; Q23 politique de releases+anomalies+dependances+tests; Q24 plan+instructions+execution progressive+CI.
+
+## Gates de validation
+
+1. Aucun auteur/committer/co-auteur agent IA dans les refs cible et aucun contenu de projet perdu.
+2. Pour tout nettoyage, inventaire, sauvegarde, simulation et controle des worktrees; ne pas effacer un worktree actif.
+3. Pour chaque fonctionnalite, tests unitaires+integration+securite et recette Firefox si UI.
+4. Pour l'UI, valider captures d'ecran, ergonomie, navigation clavier, themes et resolutions, puis parcours complet avant bascule.
+5. Aucun controle NON VERIFIE presente comme PASS.
+6. Contrats entre Codex et Claude et integration CI verte avant fusion.
+
+## Pistes futures hors perimetre immediat
+
+- Tests d'authentification reelle du serveur MCP GitHub, avec compte de test et consentement.
+- Expansion du catalogue MCP par etapes selon Q6.
+- macOS/Windows non cibles.

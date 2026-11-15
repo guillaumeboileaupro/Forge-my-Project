@@ -24,7 +24,7 @@ Conserver la distinction entre generation de texte, verification et installation
 - Python 3.11+, stdlib par defaut; HTML/CSS/JS sans framework tant que cela suffit.
 - Fonctions courtes, modules orientes responsabilite, entrees validees, erreurs explicites.
 - Ne pas inventer de package, module, serveur MCP, action CI ni API. Verifier registre officiel, version, licence et documentation avant adoption.
-- Un seul agent developpeur et une seule PR ouverte pour les changements proposes.
+- Codex et Claude Code peuvent developper en parallele, avec composants distincts, worktrees independants et petites PR rapidement fusionnables.
 - Pas de modification de main sans demande explicite; ne jamais forcer un push.
 - Eviter changements hors perimetre, commits de secrets et contournements des tests.
 - Documentation en francais, commandes reproductibles.
@@ -54,3 +54,12 @@ Tester le formulaire sur http://127.0.0.1:8765 et les archives Python/JS avant d
 5. Documentation et architecture mises a jour, comportement reproductible, retour utilisateur clair.
 6. CI verte, revue de la PR et absence de severite haute/critique non resolue.
 7. Le recapitulatif fournit tests effectifs, limites, fichiers modifies et risques residuels.
+
+## Regles applicables au nouveau cycle de developpement
+
+- Reference obligatoire: `docs/ROADMAP_2026.md` (34 decisions), `docs/SPECIFICATIONS.md`, `docs/DEVELOPMENT_PLAN.md` et la section E01-E18 de `TODO.md`.
+- L'interface actuelle est consideree inadaptee; reconstruire son design et son ergonomie de zero tout en conservant le moteur et la totalite des fonctionnalites existantes. Validation visuelle, fonctionnelle, accessibilite et performances avant bascule.
+- **Attribution Git reservee au proprietaire**: ne jamais ajouter `Co-Authored-By` pour Claude/Anthropic/Codex ou autres agents, ni utiliser un agent comme auteur ou committer. Verifier l'identite Git et les trailers avant commit et push. Des hooks locaux seuls ne constituent pas une garantie: renforcer via CI et protection de branche lorsque disponible.
+- Plusieurs agents/PR en parallele mais taches courtes et fichiers non chevauchants. Pas de push force ni contournement des controles; synchroniser apres fusion et nettoyer de facon sure.
+- Temps de developpement **saisis manuellement** dans TODO (estime, reel, ecart), sans conversion automatique de l'historique Git.
+- Trois releases ciblees v1.0.0, v1.1.0, v2.0.0. La piste extension VS Code dans `long-terme-ideas-project-liste.md` reste une idee, pas une tache active.

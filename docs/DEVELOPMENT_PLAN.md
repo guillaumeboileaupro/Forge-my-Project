@@ -15,10 +15,10 @@ Reference: docs/SPECIFICATIONS.md. Valide: 14 novembre 2026. Les charges sont de
 | **Total** | | **30 j** | |
 
 ## Dependances
-P1 -> P2; P1 -> P3; P2 + P3 -> P4; P3 + P4 -> P5; P2 + P3 -> P6; P1-P6 -> P7. Les travaux sont executes progressivement avec une seule PR ouverte.
+P1 -> P2; P1 -> P3; P2 + P3 -> P4; P3 + P4 -> P5; P2 + P3 -> P6; P1-P6 -> P7. Les prochaines evolutions autorisent plusieurs petites PR independantes en parallele.
 
 ## Lots et mode de travail
-Chaque phase peut etre divisee en plusieurs PR successives. Un seul agent developpeur a la fois. Pour chaque tache: implementation minimale, tests locaux, audit applicable, documentation et TODO a jour, PR unique, CI verte, revue, fusion et nettoyage. Ne jamais contourner les checks pour marquer DONE.
+Chaque phase peut etre divisee en plusieurs PR successives. Codex et Claude Code travaillent en parallele sur des fichiers distincts, chacun avec son worktree et une PR courte. Pour chaque tache: implementation minimale, tests locaux, audit applicable, documentation et TODO a jour, PR unique, CI verte, revue, fusion et nettoyage. Ne jamais contourner les checks pour marquer DONE.
 
 ## Coordination des composants
 T02 fixe les contrats de compatibilite dans docs/CONTRACTS.md et isole le prototype sous des modules `legacy`. Codex garde la couche UI et la gestion des fichiers: T16 valide l'apercu edite sans effet de bord; T17 ajoutera les operations locales confirmees. Claude developpe les catalogues, rules/planner, generation moderne, skills, verification et MCP. Toute substitution de la facade historique doit conserver les signatures et tests contractuels ou faire l'objet d'une decision documentee.
@@ -36,3 +36,15 @@ Le generateur ne produit PAS le code metier du projet cible. GitHub est source d
 
 ## Detail et charges
 Voir TODO.md pour les 18 taches T01-T18 et les temps estimes, reels et ecarts. Le total de 30 j correspond aux taches retenues et doit etre reestime selon les integrations effectivement supportees.
+
+## Evolutions suivantes - decisions validees
+
+Les phases P1-P7 et 30 j ci-dessus constituent **l'historique termine T01-T18**, conserve pour tracabilite. Le cycle futur utilise les identifiants E01-E18, avec estimation, dependances, responsabilites et criteres de validation dans [ROADMAP_2026.md](ROADMAP_2026.md). Les temps reels sont renseignes manuellement, pas deduits des commits.
+
+| Jalon | Livrable | Dependances | Conditions |
+| --- | --- | --- | --- |
+| v1.0.0 | Linux, scripts d'installation/demarrage, inventaire et nettoyage | E01-E05 selon perimetre | Sauvegardes, tests et CI verts |
+| v1.1.0 | Lever les trois exigences PARTIEL | E07-E09 | Fusion, E2E et assistant de protection verifies |
+| v2.0.0 | Refonte UI complete et ameliorations techniques choisies | E06,E10-E18 | Tests visuels/fonctionnels, accessibilite, securite, performance |
+
+Le nettoyage de l'historique Git et la prevention des contributions attribuees aux agents IA sont des prealables de qualite. Ne jamais forcer une reecriture ni effacer un worktree sans inventaire et sauvegarde. L'extension VS Code est une idee de long terme, hors calendrier des releases ci-dessus.
