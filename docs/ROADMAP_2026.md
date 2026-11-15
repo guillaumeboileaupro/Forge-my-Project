@@ -18,26 +18,27 @@ Codex et Claude Code developpent **en parallele** sur des fichiers distincts, av
 
 ## Lots de travail (nouveaux identifiants E01-E18)
 
-| ID | Travail | Priorite | Agent propose | Depend de | Charge estimee | Reel | Ecart | Statut |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | P1 | Claude | - | 0,5 j | - | - | TODO |
-| E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | P1 | Claude | - | 1 j | 0 h 26 | -7 h 34 | IN PROGRESS |
-| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | P2 | Claude | E01 | 1 j | - | - | TODO |
-| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | P1 | Codex | - | 1 j | - | - | TODO |
-| E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | P1 | Claude | E01 | 1 j | - | - | TODO |
-| E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | P1 | Claude | - | 1 j | - | - | TODO |
-| E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | P2 | Codex | - | 2 j | - | - | TODO |
-| E08 | Infrastructure E2E des projets generes, adaptee a la stack, sans scenarios metier inventes | P2 | Claude | - | 2 j | - | - | TODO |
-| E09 | Assistant de protection de branche GitHub: preparer les commandes, ne pas appliquer automatiquement | P2 | Claude | - | 1 j | - | - | TODO |
-| E10 | Scanner d'images Docker et SAST complementaire dont Semgrep, sans retrait des controles actuels | P1 | Claude | - | 2 j | - | - | TODO |
-| E11 | Verification statique des API Python/JS/TS lorsque possible; PASS/FAIL/NON VERIFIE | P2 | Claude | - | 2 j | - | - | TODO |
-| E12 | Recherche des skills: cache expire, parallelisme, classement, reverification avant copie | P2 | Claude | - | 2 j | - | - | TODO |
-| E13 | Enrichir les stacks Python/JS/Rust/Go/Java et permettre les catalogues/regles personnalises localement | P2 | Claude | - | 4 j | - | - | TODO |
-| E14 | Definir le design system et les contrats de la nouvelle UI avant de coder | P1 | Codex + Claude | - | 2 j | - | - | TODO |
-| E15 | Nouvelle coque UI: look professionnel minimal, themes clair/sombre, densite, panneaux deplacables et redimensionnables, onglets, navigation, palette | P1 | Codex | E14 | 4 j | - | - | TODO |
-| E16 | Parcours questionnaire progressif et conditionnel avec apercu dynamique, arbre et diagramme synchronises | P1 | Claude | E14 | 4 j | - | - | TODO |
-| E17 | Editeur leger coloration/lignes/recherche/remplacement, panneau diagnostics et integration des flux securises existants | P1 | Codex + Claude (fichiers separes) | E15,E16 | 3 j | - | - | TODO |
-| E18 | Validation visuelle et fonctionnelle progressive, accessibilite, performances, resolutions, recette globale; migration finale apres validation | P1 | Codex + Claude | E15,E16,E17 | 3 j | - | - | TODO |
+| ID | Travail | Priorite | Agent propose | Depend de | Charge estimee | Reel | Ecart | Statut | Critere d'acceptation verifiable |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | P1 | Claude | - | 0,5 j | - | - | TODO | Inventaire nom/SHA archive; simulation puis nettoyage sans branche non fusionnee ni worktree sale supprime |
+| E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | P1 | Claude | - | 1 j | 0 h 26 | -7 h 34 | IN PROGRESS | Commits auteur/committer/trailer IA refuses localement et en CI; audit des refs publie |
+| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | P2 | Claude | E01 | 1 j | - | - | TODO | Inventaire justifie; suppressions revues; suite complete et generation des profils sans regression |
+| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | P1 | Codex | - | 1 j | - | - | TODO | Installation et demarrage sur Linux propre testes; aucun lanceur concurrent ou promesse multi-OS |
+| E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | P1 | Claude | E01 | 1 j | - | - | TODO | Regles de version, changelog, triage et cadence de maintenance documentes et controles par CI |
+| E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | P1 | Claude | - | 1 j | - | - | TODO | Tout NON VERIFIE est explique, confirme et journalise; changement ou refus bloque l'ecriture |
+| E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | P2 | Codex | - | 2 j | - | - | TODO | Fusion propre et conflit testes avec base fiable; sans base, mode manuel; rollback restaure les octets initiaux |
+| E08 | Infrastructure E2E des projets generes, adaptee a la stack, sans scenarios metier inventes | P2 | Claude | - | 2 j | - | - | TODO | TESTING.md et harnais E2E generes par stack; commande temoin passe sans scenario metier fictif |
+| E09 | Assistant de protection de branche GitHub: preparer les commandes, ne pas appliquer automatiquement | P2 | Claude | - | 1 j | - | - | TODO | Commandes conformes aux checks reels, affichables et testees; aucune mutation GitHub sans execution utilisateur |
+| E10 | Scanner d'images Docker et SAST complementaire dont Semgrep, sans retrait des controles actuels | P1 | Claude | - | 2 j | - | - | TODO | Images applicables et code scannes; fixtures haute/critique bloquent; scans existants restent actifs |
+| E11 | Verification statique des API Python/JS/TS lorsque possible; PASS/FAIL/NON VERIFIE | P2 | Claude | - | 2 j | - | - | TODO | Contrats valides, invalides et invérifiables classes PASS/FAIL/NON VERIFIE avec preuves par langage |
+| E12 | Recherche des skills: cache expire, parallelisme, classement, reverification avant copie | P2 | Claude | - | 2 j | - | - | TODO | Expiration, recherches paralleles, classement deterministe et changement amont avant copie testes |
+| E13 | Enrichir les stacks Python/JS/Rust/Go/Java et permettre les catalogues/regles personnalises localement | P2 | Claude | - | 4 j | - | - | TODO | Chaque stack produit un squelette testable; catalogue local valide, borne et sans execution implicite |
+| E14 | Definir le design system et les contrats de la nouvelle UI avant de coder | P1 | Codex + Claude | - | 2 j | - | - | TODO | Tokens, composants, etats, accessibilite, responsive et contrats moteur/UI documentes et revus |
+| E15 | Nouvelle coque UI: look professionnel minimal, themes clair/sombre, densite, panneaux deplacables et redimensionnables, onglets, navigation, palette | P1 | Codex | E14 | 4 j | - | - | TODO | Coque utilisable au clavier; dispositions persistantes; themes, densites, panneaux, onglets et palette testes |
+| E16 | Parcours questionnaire progressif et conditionnel avec apercu dynamique, arbre et diagramme synchronises | P1 | Claude | E14 | 4 j | - | - | TODO | Parcours conditionnel complet; progression et apercu coherents; arbre et diagramme synchronises dans les deux sens |
+| E17 | Editeur leger coloration/lignes/recherche/remplacement, panneau diagnostics et integration des flux securises existants | P1 | Codex + Claude (fichiers separes) | E15,E16 | 3 j | - | - | TODO | Edition, recherche/remplacement et diagnostics navigables testes sans regression du diff, de la validation ni de l'ecriture |
+| E18 | Validation visuelle et fonctionnelle progressive, accessibilite, performances, resolutions, recette globale; migration finale apres validation | P1 | Codex + Claude | E15,E16,E17 | 3 j | - | - | TODO | Captures approuvees; Firefox, clavier, accessibilite, budgets performance et resolutions passent avant bascule |
+| **Total** |  |  |  |  | **36,5 j** | **-** | **-** |  |  |
 
 Les charges sont indicatives et doivent etre confirmees avant ouverture des taches. Une PR courte et independante par lot ou sous-lot, sans gros chantier monolithique.
 

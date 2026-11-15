@@ -266,7 +266,7 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 - Resultats locaux: 265 tests OK (12 ignores); `smoke_generated.py` 4/4 profils Python PASS avec le job attribution; profils TypeScript en echec a `npm install` (`edgesOut`), reproduit a l'identique sur origin/main (npm 10.8.2/Node 20 local), CI a verifier; Ruff check/format du garde OK; audit de toutes les refs: aucune attribution interdite (les 2 commits T10/T15 a trailer ne sont plus atteignables).
 - Limites: hooks locaux contournables (`--no-verify`); job CI bloquant seulement apres protection de branche par le proprietaire (commande dans docs/GIT_ATTRIBUTION.md); detection par liste d'agents a maintenir; titre/description de PR controles aux evenements opened/synchronize/reopened seulement; installation dans les autres depots et modele global non executes sur la machine (commandes fournies).
 
-Regle de suivi: temps reels saisis manuellement. L'ecart est calcule en heures selon 1 j = 8 h. Toute PR renseigne preuve CI, revue, tests et limites. Ne pas marquer DONE avant verification.
+Les priorites et les criteres d'acceptation propres a chaque ligne sont maintenus dans [docs/ROADMAP_2026.md](docs/ROADMAP_2026.md); cette reference fait partie du contrat de la tache, pas d'un critere generique. Charge totale estimee: **36,5 j**. Regle de suivi: temps reels saisis manuellement. L'ecart est calcule en heures selon 1 j = 8 h. Toute PR renseigne preuve CI, revue, tests et limites. Ne pas marquer DONE avant verification.
 
 ## Idees hors suivi actif
 
