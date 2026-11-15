@@ -7,10 +7,15 @@ Outil local qui prepare l'environnement de developpement d'un nouveau projet (AG
 Python 3.11+, sans dependances externes.
 
 ```bash
-python3 start.py              # ou : ./start.py
+./installer.sh               # verification locale, sans sudo ni acces reseau
+./start.sh                   # demarrage recommande sous Linux
 ```
 
-`start.py` peut etre lance avec n'importe quel `python3`, meme trop ancien (Anaconda 3.7 par exemple) : il cherche alors un Python 3.11+ dans le PATH et `~/.local/bin` et se relance avec. Si Forge tourne deja sur le port 8765, il ouvre simplement le navigateur dessus ; sinon il prend le premier port libre a partir de 8765 et affiche l'adresse retenue. Options : `--port N` (premier port essaye), `--no-browser`, `--new` (nouveau serveur meme si Forge tourne deja). `python3.12 server.py` reste possible (port 8765 fixe).
+`installer.sh` est idempotent : il verifie Linux, les fichiers requis et la presence d'un Python 3.11 ou plus recent. Il n'installe aucun paquet, ne contacte aucun registre et n'utilise jamais `sudo`. Relancer la commande ne modifie pas le depot. Pour imposer un interpreteur precis : `FORGE_PYTHON=/chemin/vers/python3.12 ./installer.sh`.
+
+`start.sh` fonctionne depuis n'importe quel repertoire, y compris si le chemin du depot contient des espaces. Il selectionne un Python 3.11+ puis delegue a `start.py`, qui reutilise Forge s'il tourne deja sur le port demande ou choisit le premier port libre. Options : `--port N` (premier port essaye), `--no-browser`, `--new` (nouveau serveur meme si Forge tourne deja). `python3 start.py` et `python3.12 server.py` restent possibles; le second conserve le port fixe 8765.
+
+En cas d'erreur, installer Python 3.11+ avec le gestionnaire de paquets de la distribution puis relancer `./installer.sh`. Les scripts sont POSIX `/bin/sh` et valides sur Linux; Ubuntu est couvert par la CI. macOS et Windows ne sont pas pris en charge par ces scripts.
 
 Ouvrir l'adresse affichee (par defaut http://127.0.0.1:8765) dans Firefox : formulaire par sections (projet, technologies avec recherche, agents, securite, skills et MCP, verification), suggestion d'architecture modifiable, confirmation explicite des avertissements, explorateur des fichiers generes, edition et validation des contenus, puis telechargement de l'archive ZIP ou ecriture dans un dossier local. Les fichiers modifies sont signales et peuvent etre retablis avant validation ; le contenu edite est controle (secrets, configurations MCP et hooks, skills). L'ecriture locale compare d'abord le dossier choisi (nouveau, identique, conflit avec diff), demande une decision pour chaque conflit (conserver, remplacer, fusionner) et une confirmation, sauvegarde les fichiers remplaces dans `.forge-backup/` et annule tout en cas d'echec : voir docs/LOCAL_WRITE.md (operations et restauration). Les controles en ligne (registres, my-skills) sont des cases a cocher explicites ; les skills externes sont recherches a la demande et copies uniquement apres approbation, au commit et a l'empreinte approuves. L'ancien formulaire reste disponible sur http://127.0.0.1:8765/legacy.
 

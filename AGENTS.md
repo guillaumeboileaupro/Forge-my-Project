@@ -5,6 +5,7 @@ Construire un generateur interactif, fiable et extensible qui produit des squele
 
 ## Etat reel
 - Serveur HTTP local: server.py; bind 127.0.0.1:8765.
+- Lancement Linux: `installer.sh` verifie localement Linux et Python 3.11+ sans installer de paquet; `start.sh` delegue au lanceur `start.py`, y compris depuis un autre repertoire ou un chemin avec espaces.
 - Formulaire web: ui/index.html (formulaire hybride du moteur) et ui/legacy.html (historique), assets ui/css et ui/js.
 - Validation / creation ZIP: facade generator.py; implementation historique dans forge/config/legacy.py et forge/generator/legacy.py.
 - Tests: tests/ (unitaires, API HTTP, recette Firefox headless activee par FORGE_E2E=1).
