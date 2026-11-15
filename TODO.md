@@ -57,7 +57,7 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 - Risques restants hors T01: profil nomme TypeScript mais base JavaScript, workflow genere volontairement bloquant, absence de lockfiles et fonctions T02-T18 non implementees.
 
 ### T02 - 14 novembre 2026 (Codex, PR #5)
-- Temps reel mesure: 0 h 06, de la creation de la branche dediee a la premiere CI de PR verte.
+- Temps reel mesure: 0 h 06, de la creation de la branche dediee a la premiere CI push verte.
 - Tests locaux: 24 tests PASS; compilation Python PASS; 64 configurations avec sorties `build()` octet pour octet identiques a T01; projets generes Python et JavaScript executes avec succes.
 - Recette: serveur HTTP local PASS; formulaire et assets externes rendus dans Firefox headless PASS; regression du checkbox sous CSP detectee puis corrigee avant livraison.
 - Securite: templates rendus en un passage, traversee `..` refusee, assets servis par liste fermee et CSP sans `unsafe-inline`.
