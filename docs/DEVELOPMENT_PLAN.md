@@ -48,3 +48,5 @@ Les phases P1-P7 et 30 j ci-dessus constituent **l'historique termine T01-T18**,
 | v2.0.0 | Refonte UI complete et ameliorations techniques choisies | E06,E10-E18 (27 j estimes) | Tests visuels/fonctionnels, accessibilite, securite, performance |
 
 Le nettoyage de l'historique Git et la prevention des contributions attribuees aux agents IA sont des prealables de qualite. Ne jamais forcer une reecriture ni effacer un worktree sans inventaire et sauvegarde. L'extension VS Code est une idee de long terme, hors calendrier des releases ci-dessus.
+
+L'audit E03 des fichiers, ses preuves de references, les elements conserves et les controles de non-regression sont consignes dans [E03_CLEANUP_AUDIT.md](E03_CLEANUP_AUDIT.md). Aucun fichier suivi ne peut etre supprime sans preuve d'inutilite.

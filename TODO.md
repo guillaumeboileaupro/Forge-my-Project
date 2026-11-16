@@ -240,7 +240,7 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 | --- | --- | --- | --- | ---: | ---: | ---: | --- | --- |
 | E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | Claude | - | 0,5 j | 0 h 04 | -3 h 56 (base 8 h/j) | IN PROGRESS | PR E01; docs/E01_REFS_AUDIT.md | 
 | E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | Claude | - | 1 j | 0 h 40 | -7 h 20 (base 8 h/j) | DONE | PR #26 fusionnee (140bdb2, 16/11); branche et worktree nettoyes en E01 | 
-| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | - | - | IN PROGRESS | Audit termine; temps reel manuel requis; docs/E03_CLEANUP_AUDIT.md |
 | E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | Claude | E01 | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | Claude | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
@@ -270,10 +270,18 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 ### E01 - 16 novembre 2026 (Claude Code, branche docs/e01-refs-audit)
 - Temps reel: 22 h 32 -> 22 h 36 (0 h 04, hors attente CI), worktree dedie `Forge-my-Project-e01` depuis origin/main 140bdb2 (PR #26 fusionnee).
 - Rapport complet: [docs/E01_REFS_AUDIT.md](docs/E01_REFS_AUDIT.md) (inventaire, methode, archive nom/SHA des branches docs/*, simulation, execution).
+
 - Preuves: chaque branche testee par ascendance, `git cherry`, simulation de fusion dans un worktree jetable (detecte squash et reecritures) et `attribution_guard.py check-range`; worktrees controles (modifications, non suivis, ignores, stash). 7 branches distantes integrees supprimees apres `push --dry-run` (docs/development-roadmap-todo, docs/validated-project-specification, docs/roadmap-34-decisions-2026, fix/no-ai-coauthor-attribution, feat/e02-git-attribution-guard, claude/start-launcher, codex/file-preview); branche locale et worktree E02 retires (`worktree remove` sans force, `branch -d`). Distant: 9 -> 2 branches (main, feat/e04-linux-launcher).
 - Conserve: feat/e04-linux-launcher (PR #25 ouverte, worktree modifie), worktree principal (TODO.md non commite: main local non avance), worktrees propres `.forge-start` et `Forge-my-Project-codex` rattaches a d'autres sessions (inutilite non demontree).
 - Attributions IA: aucune sur branches, tags, stash ou reflogs. Residuel: les commits T10/T15 a trailer Claude restent references par les refs GitHub en lecture seule `refs/pull/14-19/head` et `refs/pull/21/head` (clone miroir); purge possible uniquement par le support GitHub, a la demande du proprietaire.
 - Limites: aucune reecriture, aucun push force; restauration d'une branche supprimee: `git push origin <SHA>:refs/heads/<branche>` (SHA archives dans le rapport).
+
+### E03 - 16 novembre 2026
+- Audit complet: [docs/E03_CLEANUP_AUDIT.md](docs/E03_CLEANUP_AUDIT.md).
+- Aucun fichier suivi supprime: aucun candidat n'etait demonstrablement obsolete; les composants historiques, preuves T18, configurations actives et scripts references sont conserves.
+- Caches Python ignores produits par les tests supprimes uniquement dans le worktree E03; aucun autre worktree touche.
+- Tests locaux: 265 PASS, 12 ignores; quatre profils Python PASS; profil TypeScript bloque avant execution par une erreur interne npm reproduite sans modification applicative.
+- Temps reel et ecart: a saisir manuellement par le proprietaire avant passage a `DONE`.
 
 Les priorites et les criteres d'acceptation propres a chaque ligne sont maintenus dans [docs/ROADMAP_2026.md](docs/ROADMAP_2026.md); cette reference fait partie du contrat de la tache, pas d'un critere generique. Charge totale estimee: **36,5 j**. Regle de suivi: temps reels saisis manuellement. L'ecart est calcule en heures selon 1 j = 8 h. Toute PR renseigne preuve CI, revue, tests et limites. Ne pas marquer DONE avant verification.
 
