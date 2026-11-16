@@ -194,10 +194,10 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 | Q10 | A + B | TESTING.md et infrastructure E2E cible prete a completer sans tests metier inventes | E08, v1.1.0 | TODO |
 | Q11 | B | Assistant qui prepare les commandes de protection GitHub, sans les executer | E09, v1.1.0 | TODO |
 | Q12 | B avec PR courtes | Agents et PR en parallele; taches petites, CI verte et fusion rapide | E05, AGENTS.md | TODO |
-| Q13 | C (correction de A) | Archiver inventaire noms/SHA des branches docs/* avant suppression sur preuve de fusion | E01 | TODO |
-| Q14 | A | Supprimer codex/file-preview apres verification d'integration et absence de travail local | E01 | TODO |
-| Q15 | C | Nettoyage automatise worktrees apres fusion, mode simulation, refus si sale ou actif | E01 | TODO |
-| Q16 | B | Audit fichiers obsoletes, temporaires, doublons, configurations; suppression seulement sur preuve | E03 | TODO |
+| Q13 | C (correction de A) | Archiver inventaire noms/SHA des branches docs/* avant suppression sur preuve de fusion | E01 | DONE |
+| Q14 | A | Supprimer codex/file-preview apres verification d'integration et absence de travail local | E01 | PARTIEL (E01: branche distante supprimee; branche locale et worktree Codex conserves) |
+| Q15 | C | Nettoyage automatise worktrees apres fusion, mode simulation, refus si sale ou actif | E01 | TODO (non construit: E01 a nettoye manuellement, sans outil automatise) |
+| Q16 | B | Audit fichiers obsoletes, temporaires, doublons, configurations; suppression seulement sur preuve | E03 | IN PROGRESS (PR #28, CI verte, en attente de fusion) |
 | Q17 | B | Verifier statiquement APIs Python, JS/TS quand possible, afficher PASS/FAIL/NON VERIFIE | E11 | TODO |
 | Q18 | C | Skills: cache expire, recherches paralleles, classement et reverification avant copie | E12 | TODO |
 | Q19 | B + C, usage personnel | Stacks Python/JS/Rust/Go/Java et catalogue/regles personnels editables localement | E13 | TODO |
@@ -232,15 +232,15 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 **Controle de couverture :** Q01-Q24 = 24 lignes; UI-01 a UI-10 = 10 lignes; total **34/34 decisions**. Les temps affiches dans E01-E18 sont des estimations, non des durees promises. Les temps reels sont saisis manuellement. Un DONE demande tests, CI, revue et preuve de conformite.
 
 
-## Cycle d'evolutions E01-E18 - non commence
+## Cycle d'evolutions E01-E18 - en cours
 
 Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](docs/ROADMAP_2026.md). Le tableau de suivi des nouvelles taches (E01-E18) est maintenu ci-dessous; les 18 taches T01-T18 ci-dessus restent intactes et terminees.
 
 | ID | Travail | Responsable | Depend de | Estime | Reel | Ecart | Statut | Validation |
 | --- | --- | --- | --- | ---: | ---: | ---: | --- | --- |
-| E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | Claude | - | 0,5 j | 0 h 04 | -3 h 56 (base 8 h/j) | IN PROGRESS | PR E01; docs/E01_REFS_AUDIT.md | 
+| E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | Claude | - | 0,5 j | 0 h 04 | -3 h 56 (base 8 h/j) | DONE | PR #27 fusionnee; docs/E01_REFS_AUDIT.md |
 | E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | Claude | - | 1 j | 0 h 40 | -7 h 20 (base 8 h/j) | DONE | PR #26 fusionnee (140bdb2, 16/11); branche et worktree nettoyes en E01 | 
-| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | - | - | IN PROGRESS | Audit termine; temps reel manuel requis; docs/E03_CLEANUP_AUDIT.md |
+| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | 0 h 12 (Claude) + Codex non mesure | -7 h 48 sur la part mesuree (base 8 h/j) | IN PROGRESS | PR #28 CI verte (6/6 profils); docs/E03_CLEANUP_AUDIT.md |
 | E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | Claude | E01 | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | Claude | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
@@ -280,8 +280,10 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 - Audit complet: [docs/E03_CLEANUP_AUDIT.md](docs/E03_CLEANUP_AUDIT.md).
 - Aucun fichier suivi supprime: aucun candidat n'etait demonstrablement obsolete; les composants historiques, preuves T18, configurations actives et scripts references sont conserves.
 - Caches Python ignores produits par les tests supprimes uniquement dans le worktree E03; aucun autre worktree touche.
-- Tests locaux: 265 PASS, 12 ignores; quatre profils Python PASS; profil TypeScript bloque avant execution par une erreur interne npm reproduite sans modification applicative.
-- Temps reel et ecart: a saisir manuellement par le proprietaire avant passage a `DONE`.
+- Tests locaux: 265 PASS, 12 ignores; quatre profils Python PASS; profil TypeScript bloque localement a `npm install` (`edgesOut`, npm 10.8.2/Node 20), sans lien avec E03.
+- CI PR #28 (0e62860): runs 43964140186 (push) et 43964178570 (pull_request) verts; CI generee 6/6 profils PASS, dont typescript-api-express et typescript-web-react: la limite npm est locale.
+- Temps reel: Claude 22 h 47 -> 22 h 53 puis 22 h 54 -> 23 h 00 (0 h 12); partie Codex (commit 0e62860, PR #28) non mesuree, donc ecart partiel.
+- Corrections de la reprise: Q15 remis a TODO (nettoyage automatise des worktrees non construit), Q14 PARTIEL; doublon de lien vers docs/CONVENTIONS.md retire d'AGENTS.md.
 
 Les priorites et les criteres d'acceptation propres a chaque ligne sont maintenus dans [docs/ROADMAP_2026.md](docs/ROADMAP_2026.md); cette reference fait partie du contrat de la tache, pas d'un critere generique. Charge totale estimee: **36,5 j**. Regle de suivi: temps reels saisis manuellement. L'ecart est calcule en heures selon 1 j = 8 h. Toute PR renseigne preuve CI, revue, tests et limites. Ne pas marquer DONE avant verification.
 

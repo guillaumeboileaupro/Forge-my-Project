@@ -7,7 +7,7 @@ Reference : `origin/main` = `5bb1200` (fusion de la PR #27). Perimetre : les 214
 | Controle | Commande ou methode | Resultat |
 | --- | --- | --- |
 | Temporaires et sauvegardes suivis | `git ls-files` filtre sur `.bak .orig .rej .swp ~ .log .old copy backup .DS_Store .pyc` | aucun (les seules correspondances sont des extensions `.tmpl`) |
-| Doublons exacts | empreintes de blobs `git ls-files -s` | aucun |
+| Doublons exacts | empreintes de blobs `git ls-files -s`, puis inspection des liens symboliques | aucun blob independant duplique ; `scripts/attribution_guard.py` est le lien symbolique actif vers la source unique `templates/hooks/attribution_guard.py.tmpl`, donc conserve |
 | Fichiers orphelins | chemin, nom et module de chaque fichier recherches ailleurs (`git grep`) | catalogues JSON : charges par `glob("*.json")` (`forge/config/catalog.py`, `forge/rules/engine.py`), donc utilises ; modules `versions`, `bundle`, `npm_peers`, `semver` : importes ; seul orphelin reel : `docs/CONVENTIONS.md` |
 | Templates | chaque `templates/**` reference par un catalogue ou par le code | tous references |
 | Scripts | `generator.py`, `server.py`, `start.py`, `scripts/attribution_guard.py`, `tests/smoke_*.py`, `tests/acceptance_t18.py` | tous utilises (CI, README ou TODO) |
@@ -27,7 +27,9 @@ Reference : `origin/main` = `5bb1200` (fusion de la PR #27). Perimetre : les 214
 ## Non-regression
 
 - `python3.12 -m unittest discover -s tests -v` : 265 tests PASS, 12 ignores avec les sockets loopback autorisees. Le premier passage confine a echoue uniquement sur huit creations de sockets interdites par le bac a sable.
-- `python3.12 tests/smoke_generated.py` : les quatre profils Python PASS. Le premier profil TypeScript s'arrete pendant `npm install` sur l'erreur interne `Cannot read properties of null (reading 'edgesOut')`, reproduite par une relance ciblee avant toute modification applicative. La CI est requise pour trancher cette limite d'environnement.
+- `python3.12 tests/smoke_generated.py` : les quatre profils Python PASS. Le premier profil TypeScript s'arrete pendant `npm install` sur l'erreur interne `Cannot read properties of null (reading 'edgesOut')`, reproduite par une relance ciblee avant toute modification applicative. La CI l'a tranchee (ci-dessous).
 - La suite standard couvre la generation et l'execution des projets Python et JavaScript. Aucun fichier applicatif n'est modifie par E03.
 
-Le temps reel et l'ecart restent a saisir manuellement par le proprietaire avant de marquer E03 `DONE`.
+- CI de la PR #28 (runs 43964140186 push et 43964178570 pull_request) : verte, generation et execution des 6 profils PASS, dont les deux profils TypeScript. La limite npm est donc propre a l'environnement local.
+
+Temps reel : voir TODO.md (part Claude mesuree, part Codex non mesuree).

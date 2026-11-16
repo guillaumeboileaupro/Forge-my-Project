@@ -21,7 +21,6 @@ Interdire les chemins arbitraires, les selections non autorisees et les operatio
 Conserver la distinction entre generation de texte, verification et installation.
 
 ## Conventions
-- Lire aussi `docs/CONVENTIONS.md` pour les regles de nommage, de tests des fichiers generes et d'alignement entre documentation et CI.
 - Python 3.11+, stdlib par defaut; HTML/CSS/JS sans framework tant que cela suffit.
 - Fonctions courtes, modules orientes responsabilite, entrees validees, erreurs explicites.
 - Ne pas inventer de package, module, serveur MCP, action CI ni API. Verifier registre officiel, version, licence et documentation avant adoption.
