@@ -28,6 +28,7 @@ Conserver la distinction entre generation de texte, verification et installation
 - Pas de modification de main sans demande explicite; ne jamais forcer un push.
 - Eviter changements hors perimetre, commits de secrets et contournements des tests.
 - Documentation en francais, commandes reproductibles.
+- Regles detaillees de nommage, de PR et de fichiers generes: docs/CONVENTIONS.md.
 
 ## Commandes
 ```bash
