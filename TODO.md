@@ -241,7 +241,7 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 | E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | Claude | - | 0,5 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | Claude | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 1 j | Non renseigne | Non calculable | DONE | Tests Linux, idempotence, Python, ports, chemins et arret PASS; voir ROADMAP_2026.md |
+| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 1 j | A saisir manuellement | - | IN PROGRESS | Implementation et controles PASS; temps reel requis avant DONE; voir ROADMAP_2026.md |
 | E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | Claude | E01 | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | Claude | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | Codex | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
@@ -264,7 +264,7 @@ Les priorites et les criteres d'acceptation propres a chaque ligne sont maintenu
 - PR #25: scripts Linux sans privilege, paquet ni acces reseau, reutilisant `start.py` de la PR #20.
 - Tests locaux: 250 PASS, 12 SKIP; tests E04 cibles 14 PASS; syntaxe shell et compilation Python PASS.
 - CI: six checks PASS (push et pull request); revue independante APPROVED sans constat P0-P2.
-- Temps reel: non renseigne par le proprietaire; aucune duree deduite de Git ou de la session. Ecart non calculable.
+- Temps reel: en attente de saisie manuelle par le proprietaire; aucune duree deduite de Git ou de la session. E04 reste IN PROGRESS jusqu'a cette saisie et au calcul de l'ecart.
 - Limites: ShellCheck non execute car absent; Ubuntu valide par CI, autres distributions Linux non executees dans cette mission.
 
 ## Idees hors suivi actif
