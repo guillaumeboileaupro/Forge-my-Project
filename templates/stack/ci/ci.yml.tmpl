@@ -82,3 +82,17 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 {{/if}}
+
+  attribution:
+    name: Attribution Git (aucun agent IA auteur, committer ou co-auteur)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout (historique complet)
+        uses: {{ ci.actions.checkout.repository }}@{{ ci.actions.checkout.sha }} # {{ ci.actions.checkout.tag }}
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Auteurs, committers, trailers et description de PR
+        run: |
+          python3 scripts/hooks/attribution_guard.py ci

@@ -1,0 +1,1 @@
+../templates/hooks/attribution_guard.py.tmpl

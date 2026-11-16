@@ -68,6 +68,10 @@
     {
       "path": "scripts/hooks/agent_guard.py",
       "template": "hooks/agent_guard.py.tmpl"
+    },
+    {
+      "path": "scripts/hooks/attribution_guard.py",
+      "template": "hooks/attribution_guard.py.tmpl"
     }
   ],
   "sections": {
@@ -101,7 +105,8 @@
       "Mettre a jour TODO.md (temps reel et ecart) a la fin de chaque tache.",
       "La protection de branche et les permissions GitHub doivent etre configurees sur le depot distant par son proprietaire : commande fournie dans CONTRIBUTING.md (section Protection de la branche main).",
       "La CI .github/workflows/ci.yml execute les commandes de ce document ; ses actions sont epinglees par SHA et ses permissions limitees a la lecture.",
-      "Activer les hooks Git des le clonage : git config core.hooksPath .githooks (pre-commit : secrets, formatage, lint ; commit-msg : Conventional Commits ; pre-push : typage et tests)."
+      "Activer les hooks Git des le clonage : git config core.hooksPath .githooks (pre-commit : secrets, formatage, lint ; commit-msg : attribution et Conventional Commits ; pre-push : attribution, typage et tests).",
+      "Attribution Git reservee au proprietaire : aucun agent IA comme auteur, committer ou trailer Co-authored-by ; commit-msg, pre-push et le job CI attribution (scripts/hooks/attribution_guard.py) le refusent, et seule la protection de branche rend ce job obligatoire."
     ],
     "pitfalls": [
       "Presenter un controle non execute comme reussi : il est NON VERIFIE.",

@@ -1,7 +1,9 @@
 #!/bin/sh
 # Genere par Forge-my-Project. Activation : git config core.hooksPath .githooks
-# commit-msg : format Conventional Commits 1.0.0 (type(portee)!: description).
+# commit-msg : attribution Git (aucun agent IA auteur, committer ou co-auteur),
+# puis format Conventional Commits 1.0.0 (type(portee)!: description).
 set -eu
+python3 "$(git rev-parse --show-toplevel)/scripts/hooks/attribution_guard.py" commit-msg "$1" || exit 1
 first=$(head -n 1 "$1")
 case "$first" in
   "Merge "*|"Revert "*|"fixup! "*|"squash! "*) exit 0 ;;

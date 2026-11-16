@@ -73,3 +73,17 @@ jobs:
           python -m pip install "bandit==1.9.4"
           bandit -r forge server.py generator.py -q --severity-level medium --confidence-level medium
 
+  attribution:
+    name: Attribution Git (aucun agent IA auteur, committer ou co-auteur)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout (historique complet)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Auteurs, committers, trailers et description de PR
+        run: python3 scripts/attribution_guard.py ci
+      - name: Detection prouvee (tests du garde)
+        run: python3 -m unittest tests.test_attribution_guard -v

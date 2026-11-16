@@ -26,7 +26,7 @@ Forge-my-Project ne cree ni ne configure le depot distant. Apres le premier push
 ```bash
 gh api --method PUT "repos/{owner}/{repo}/branches/main/protection" --input - <<'JSON'
 {
-  "required_status_checks": { "strict": true, "checks": [ { "context": "Qualite et tests" }, { "context": "Securite (secrets, SAST, dependances, SBOM)" } ] },
+  "required_status_checks": { "strict": true, "checks": [ { "context": "Qualite et tests" }, { "context": "Securite (secrets, SAST, dependances, SBOM)" }, { "context": "Attribution Git (aucun agent IA auteur, committer ou co-auteur)" } ] },
   "enforce_admins": true,
   "required_pull_request_reviews": { "required_approving_review_count": 0, "dismiss_stale_reviews": true },
   "restrictions": null,
