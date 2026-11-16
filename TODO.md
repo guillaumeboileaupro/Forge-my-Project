@@ -197,7 +197,7 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 | Q13 | C (correction de A) | Archiver inventaire noms/SHA des branches docs/* avant suppression sur preuve de fusion | E01 | DONE |
 | Q14 | A | Supprimer codex/file-preview apres verification d'integration et absence de travail local | E01 | PARTIEL (E01: branche distante supprimee; branche locale et worktree Codex conserves) |
 | Q15 | C | Nettoyage automatise worktrees apres fusion, mode simulation, refus si sale ou actif | E01 | TODO (non construit: E01 a nettoye manuellement, sans outil automatise) |
-| Q16 | B | Audit fichiers obsoletes, temporaires, doublons, configurations; suppression seulement sur preuve | E03 | IN PROGRESS (PR #28, CI verte, en attente de fusion) |
+| Q16 | B | Audit fichiers obsoletes, temporaires, doublons, configurations; suppression seulement sur preuve | E03 | DONE (PR #28 fusionnee; aucun fichier suivi inutile demontre) |
 | Q17 | B | Verifier statiquement APIs Python, JS/TS quand possible, afficher PASS/FAIL/NON VERIFIE | E11 | TODO |
 | Q18 | C | Skills: cache expire, recherches paralleles, classement et reverification avant copie | E12 | TODO |
 | Q19 | B + C, usage personnel | Stacks Python/JS/Rust/Go/Java et catalogue/regles personnels editables localement | E13 | TODO |
@@ -240,8 +240,8 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 | --- | --- | --- | --- | ---: | ---: | ---: | --- | --- |
 | E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | Claude | - | 0,5 j | 0 h 04 | -3 h 56 (base 8 h/j) | DONE | PR #27 fusionnee; docs/E01_REFS_AUDIT.md |
 | E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | Claude | - | 1 j | 0 h 40 | -7 h 20 (base 8 h/j) | DONE | PR #26 fusionnee (140bdb2, 16/11); branche et worktree nettoyes en E01 | 
-| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | 0 h 12 (Claude) + Codex non mesure | -7 h 48 sur la part mesuree (base 8 h/j) | IN PROGRESS | PR #28 CI verte (6/6 profils); docs/E03_CLEANUP_AUDIT.md |
-| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | 0 h 12 (Claude) + Codex non mesure | -7 h 48 sur la part mesuree (base 8 h/j) | DONE | PR #28 fusionnee (e7ce436, 16/11); CI push/PR verte (6/6 profils); docs/E03_CLEANUP_AUDIT.md |
+| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 1 j | Non renseigne | Non calculable | IN PROGRESS | PR #25 ouverte; installation Linux et tests realises; fusion en attente | 
 | E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | Claude | E01 | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | Claude | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | Codex | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
