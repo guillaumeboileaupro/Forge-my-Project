@@ -24,6 +24,7 @@ from forge.mcp.catalog import load_mcp_catalog
 from forge.pipeline import run
 from forge.planner.plan import build_plan
 from forge.skills import service as skill_service
+from forge.verification import unverified
 
 JSON = "application/json; charset=utf-8"
 REQUEST_FIELDS = {"config", "verify", "skills"}
@@ -86,6 +87,19 @@ def _execute(raw, extra=()):
     return run(body["config"], verify=body.get("verify", False), skills=body.get("skills", False)), body
 
 
+def _assessment(result, body):
+    """Controles NON VERIFIE et avertissements a confirmer, pour cette configuration exacte."""
+    flags = {"verify": body.get("verify", False), "skills": body.get("skills", False)}
+    return unverified.assess(result, body["config"], flags)
+
+
+def _unconfirmed(exc):
+    """409 si la confirmation manque ou est perimee (reconfirmer), 422 si un controle critique bloque."""
+    status = 409 if exc.stale else 422
+    return _json(status, {"ok": False, "error": str(exc), "stale": exc.stale, "confirmation_required": exc.stale,
+                          "unverified": exc.assessment, "diagnostics": []})
+
+
 def _revalidate(edited, result, body):
     """validate_preview, avec une explication si une source reseau a change le rendu depuis l'apercu."""
     try:
@@ -123,6 +137,7 @@ def plan_payload(raw):
         return _failure(exc)
     payload = result.as_dict()
     payload["contents"] = result.files
+    payload["unverified"] = _assessment(result, _parse_request(raw))
     if result.plan is not None:
         # Suggestion des regles locales, reprise et modifiable dans le formulaire.
         payload["architecture"] = {"source": result.plan.architecture["source"],
@@ -136,9 +151,12 @@ def archive_payload(raw):
         result, body = _execute(raw, ("files",))
         if d.has_errors(result.diagnostics):
             raise ForgeError("Erreurs bloquantes", [x for x in result.diagnostics if x.severity is d.Severity.ERROR])
+        unverified.ensure_not_blocking(_assessment(result, body))
         files = result.files if body.get("files") is None else _revalidate(body["files"], result, body)
         name = result.plan.spec.name
         content = build_zip(name, files)
+    except unverified.ConfirmationError as exc:
+        return _unconfirmed(exc)
     except (ForgeError, ValueError) as exc:
         return _failure(exc)
     return 200, content, "application/zip", name + ".zip"
@@ -274,11 +292,12 @@ def write_compare_payload(raw):
         return _failure(exc)
     except OSError as exc:
         return _failure(ValueError("Destination inaccessible : %s" % exc.strerror))
-    return _json(200, dict(comparison, ok=True, diagnostics=[x.as_dict() for x in result.diagnostics]))
+    return _json(200, dict(comparison, ok=True, diagnostics=[x.as_dict() for x in result.diagnostics],
+                           unverified=_assessment(result, body)))
 
 
-def _journal(report, result):
-    """Journal final exige par la specification : genere, ignore, non verifie, echec."""
+def _journal(report, result, assessment):
+    """Journal final exige par la specification : genere, ignore, non verifie, echec, confirmations."""
     operations = report["operations"]
     checks = result.verification.as_dict()["checks"] if result.verification is not None else []
     return {
@@ -289,15 +308,21 @@ def _journal(report, result):
                        + ["%s %s : %s" % (c["kind"], c["subject"], c["message"]) for c in checks
                           if c["status"] == "NON VERIFIE" and c["kind"] == "api"],
         "echec": [],  # un echec bloque l'ecriture (409, 422 ou 500 avec restauration)
+        # Statut et raison conserves : la confirmation accepte un NON VERIFIE, elle n'en fait jamais un PASS.
+        "confirmations": unverified.journal_entries(assessment, confirmed=bool(assessment["items"])),
     }
 
 
 def write_apply_payload(raw):
     """Repete generation, controles, validation et comparaison, puis ecrit apres confirmation."""
     try:
-        result, body, files = _validated_files(raw, ("destination", "token", "decisions", "confirm"))
+        result, body, files = _validated_files(raw, ("destination", "token", "decisions", "confirm", "acknowledge"))
+        assessment = _assessment(result, body)
+        unverified.check_confirmation(assessment, body.get("acknowledge"))
         report = workflow.write_destination(body.get("destination"), files, result.files, body.get("token"),
                                             body.get("decisions", {}), body.get("confirm"))
+    except unverified.ConfirmationError as exc:
+        return _unconfirmed(exc)
     except (workflow.StaleValidation, StaleError) as exc:
         return _json(409, {"ok": False, "error": str(exc), "stale": True,
                            "report": getattr(exc, "report", None), "diagnostics": []})
@@ -307,6 +332,6 @@ def write_apply_payload(raw):
         return _failure(exc)
     except OSError as exc:
         return _failure(ValueError("Destination inaccessible : %s" % exc.strerror))
-    report["journal"] = _journal(report, result)
+    report["journal"] = _journal(report, result, assessment)
     return _json(200, {"ok": True, "report": report, "diagnostics": [x.as_dict() for x in result.diagnostics]})
 
