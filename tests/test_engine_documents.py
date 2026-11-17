@@ -30,7 +30,8 @@ HOOKS = {".githooks/pre-commit", ".githooks/commit-msg", ".githooks/pre-push", "
          "scripts/hooks/attribution_guard.py"}
 AGENT_HOOK_FILES = {".claude/settings.json", ".codex/hooks.json", ".github/hooks/forge-guard.json"}
 MCP_FILES = {".mcp.json", ".codex/config.toml"}  # uniquement si des serveurs MCP sont choisis
-SCAFFOLD = SCAFFOLD | HOOKS | AGENT_HOOK_FILES | MCP_FILES
+SECURITY_SCRIPTS = {"scripts/security/npm_audit_gate.py"}  # stacks Node uniquement
+SCAFFOLD = SCAFFOLD | HOOKS | AGENT_HOOK_FILES | MCP_FILES | SECURITY_SCRIPTS
 BASE_DOCS = {
     "AGENTS.md", "README.md", "SECURITY.md", "CONTRIBUTING.md", "TODO.md", "docs/ARCHITECTURE.md",
     "docs/DEVELOPMENT_PLAN.md", "docs/TESTING.md", "docs/DEPENDENCIES.md", "docs/adr/0001-choix-techniques.md",
