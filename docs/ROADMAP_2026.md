@@ -7,24 +7,24 @@ Produit personnel, **Linux uniquement**. Python 3.11+ requis. Conserver le moteu
 
 Regle incontournable: aucun agent IA (Claude, Anthropic, Codex ou autre) ne doit apparaitre comme auteur, committer ou co-auteur Git. Refuser les trailers d'attribution automatique; analyser l'historique des branches et des PR avant de declarer le nettoyage termine. Ne jamais inventer de contributeur. Les mecanismes CI ne sont efficaces que si leur reussite est imposee sur la branche de destination; les hooks locaux seuls sont contournables.
 
-Codex et Claude Code developpent **en parallele** sur des fichiers distincts, avec des worktrees independants, des petites PR a fusionner rapidement, des tests et une revue avant fusion. Temps estime, temps reel et ecart: saisie **manuelle**. Pas de chronometre ou de calcul Git automatique.
+Codex et Claude Code developpent **en parallele** sur des fichiers distincts, avec des worktrees independants, des petites PR a fusionner rapidement, des tests et une revue avant fusion. Charge humaine estimee, execution IA mesuree, temps humain reel et ecart humain: saisie **manuelle**, definitions dans TODO.md (regle de suivi). Les minutes d'execution d'un agent ne sont jamais presentees comme des heures de developpement humain. Pas de chronometre ou de calcul Git automatique.
 
 ## Releases et dependances
 
 - **v1.0.0** apres audit/nettoyage securise des branches, worktrees et fichiers et validation du lancement Linux.
 - **v1.1.0** apres resolution des trois exigences partielles: fusion a trois voies lorsque possible, infrastructure E2E vide prete a completer, assistant de protection de branche produisant des commandes manuelles.
 - **v2.0.0** apres refonte complete de l'interface et toutes les ameliorations retenues.
-- Chaque release: tests verts, controle de securite, changelog, limites explicites et absence de bug bloquant. Les numéros sont cibles, a ajuster si necessaire.
+- Chaque release: tests verts, controle de securite, changelog, limites explicites et absence de bug bloquant. Les numéros sont cibles, a ajuster si necessaire. Plan et criteres: [RELEASES.md](RELEASES.md); politique: [MAINTENANCE.md](MAINTENANCE.md).
 
 ## Lots de travail (nouveaux identifiants E01-E18)
 
-| ID | Travail | Priorite | Agent propose | Depend de | Charge estimee | Reel | Ecart | Statut | Critere d'acceptation verifiable |
+| ID | Travail | Priorite | Agent propose | Depend de | Charge humaine estimee | Execution IA mesuree | Ecart humain | Statut | Critere d'acceptation verifiable |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | P1 | Claude | - | 0,5 j | 0 h 04 | -3 h 56 | DONE | Inventaire nom/SHA archive; simulation puis nettoyage sans branche non fusionnee ni worktree sale supprime |
-| E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | P1 | Claude | - | 1 j | 0 h 40 | -7 h 20 | DONE | Commits auteur/committer/trailer IA refuses localement et en CI; audit des refs publie |
-| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | P2 | Claude | E01 | 1 j | 0 h 12 + Codex non mesure | -7 h 48 (partiel) | IN PROGRESS | Inventaire justifie; suppressions revues; suite complete et generation des profils sans regression |
-| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | P1 | Codex | - | 1 j | - | - | TODO | Installation et demarrage sur Linux propre testes; aucun lanceur concurrent ou promesse multi-OS |
-| E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | P1 | Claude | E01 | 1 j | - | - | IN PROGRESS | Regles de version, changelog, triage et cadence de maintenance documentes et controles par CI |
+| E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | P1 | Claude | - | 0,5 j | 0 h 04 (Claude) | non calculable | DONE | Inventaire nom/SHA archive; simulation puis nettoyage sans branche non fusionnee ni worktree sale supprime |
+| E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | P1 | Claude | - | 1 j | 0 h 40 (Claude, attente CI comprise) | non calculable | DONE | Commits auteur/committer/trailer IA refuses localement et en CI; audit des refs publie |
+| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | P2 | Claude | E01 | 1 j | 0 h 12 (Claude) ; Codex non mesure | non calculable | DONE | Inventaire justifie; suppressions revues; suite complete et generation des profils sans regression |
+| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | P1 | Codex | - | 1 j | non mesure (Codex) | non calculable | IN PROGRESS | Installation et demarrage sur Linux propre testes; aucun lanceur concurrent ou promesse multi-OS |
+| E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | P1 | Claude | E01 | 1 j | @@E05IA@@ | non calculable | IN PROGRESS | Regles de version, changelog, triage et cadence de maintenance documentes et controles par CI |
 | E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | P1 | Claude | - | 1 j | - | - | TODO | Tout NON VERIFIE est explique, confirme et journalise; changement ou refus bloque l'ecriture |
 | E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | P2 | Codex | - | 2 j | - | - | TODO | Fusion propre et conflit testes avec base fiable; sans base, mode manuel; rollback restaure les octets initiaux |
 | E08 | Infrastructure E2E des projets generes, adaptee a la stack, sans scenarios metier inventes | P2 | Claude | - | 2 j | - | - | TODO | TESTING.md et harnais E2E generes par stack; commande temoin passe sans scenario metier fictif |
