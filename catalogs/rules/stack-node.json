@@ -22,5 +22,11 @@
   },
   "skills": [
     "code-solid"
+  ],
+  "files": [
+    {
+      "path": "scripts/security/npm_audit_gate.py",
+      "template": "security/npm_audit_gate.py.tmpl"
+    }
   ]
 }
