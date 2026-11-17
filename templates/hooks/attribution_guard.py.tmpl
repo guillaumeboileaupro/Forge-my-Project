@@ -1,0 +1,423 @@
+#!/usr/bin/env python3
+"""Garde d'attribution Git : aucun agent IA auteur, committer ou co-auteur.
+
+Fourni par Forge-my-Project (bibliotheque standard, Python 3.7+). Le proprietaire
+du depot est le seul contributeur Git a crediter ; Claude, Codex, Copilot et les
+autres agents sont des outils.
+
+Refuse :
+- une identite d'auteur ou de committer designant un agent IA ;
+- un trailer d'attribution (Co-authored-by, Signed-off-by...) designant un agent IA ;
+- le pied de message automatique "Generated with [Claude Code](...)".
+Ne refuse jamais une simple mention documentaire d'un agent dans un message.
+
+Commandes :
+  commit-msg FICHIER         hook commit-msg (identite + message)
+  pre-push [DISTANT [URL]]   hook pre-push (refs lues sur l'entree standard)
+  check-range REV...         commits designes par des arguments git rev-list
+  audit                      toutes les refs locales (historique complet)
+  ci                         GitHub Actions (plage de l'evenement + titre/corps de PR)
+  install [--allow-tracked] DEPOT...   installe dans des depots existants
+  uninstall DEPOT...                   desinstalle et restaure les hooks d'origine
+  install-template [--dir D] [--yes]   protege les futurs depots (init.templateDir)
+
+Codes de sortie : 0 conforme, 1 attribution interdite ou erreur.
+"""
+
+import json
+import os
+import re
+import stat
+import subprocess
+import sys
+from pathlib import Path
+
+# Identites d'agents IA (nom ou e-mail). Mot entier, insensible a la casse.
+# Maintenance : ajouter ici un nouvel agent, avec un test positif et un test negatif.
+AI_AGENT = re.compile(
+    r"(?<![a-z0-9])("
+    r"claude|anthropic|codex|openai|chatgpt|gpt-?[0-9][a-z0-9.]*|copilot|gemini|"
+    r"cursoragent|cursor\.com|devin-ai|aider|codeium|windsurf|tabnine|codewhisperer|"
+    r"amazon-q-developer"
+    r")(?![a-z])",
+    re.IGNORECASE,
+)
+# Trailers qui creditent une contribution. Les autres lignes ne sont pas controlees.
+ATTRIBUTION_TRAILER = re.compile(
+    r"^\s*((co-)?authored-by|co-developed-by|signed-off-by|committed-by|assisted-by|"
+    r"generated-by|helped-by)\s*:\s*(?P<value>.+)$",
+    re.IGNORECASE,
+)
+# Pied de message ajoute automatiquement par un agent (forme lien Markdown uniquement).
+GENERATED_FOOTER = re.compile(
+    r"^\W*generated\s+(with|by)\s+\[(claude[^\]]*|codex[^\]]*|copilot[^\]]*)\]\(",
+    re.IGNORECASE,
+)
+ZERO = re.compile(r"^0+$")
+MARKER = "attribution-guard: hook gere"
+HOOKS = ("commit-msg", "pre-push")
+GUARD_NAME = "attribution_guard.py"
+WRAPPER = """#!/bin/sh
+# @MARKER@ par attribution_guard.py (ne pas modifier).
+# Le hook d'origine eventuel est conserve dans "<nom>.local" et execute ensuite.
+set -u
+dir=$(dirname "$0")
+hook=$(basename "$0")
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "$hook: python3 absent, attribution non verifiee : refus" >&2
+  exit 1
+fi
+if [ "$hook" = pre-push ]; then
+  input=$(mktemp) || exit 1
+  trap 'rm -f "$input"' EXIT
+  cat > "$input"
+  python3 "$dir/@GUARD@" pre-push "$@" < "$input" || exit 1
+  if [ -x "$dir/$hook.local" ]; then "$dir/$hook.local" "$@" < "$input" || exit $?; fi
+  exit 0
+fi
+python3 "$dir/@GUARD@" "$hook" "$@" || exit 1
+if [ -x "$dir/$hook.local" ]; then exec "$dir/$hook.local" "$@"; fi
+exit 0
+""".replace("@MARKER@", MARKER).replace("@GUARD@", GUARD_NAME)
+
+
+class GuardError(Exception):
+    """Erreur d'utilisation ou d'environnement (code 1)."""
+
+
+def git(*args, cwd=None, check=True):
+    proc = subprocess.run(  # noqa: S603 - executable fixe (git), arguments internes
+        ["git"] + list(args),
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+    )
+    if check and proc.returncode:
+        raise GuardError("git {} : {}".format(" ".join(args), proc.stderr.strip()))
+    return proc
+
+
+# --- Regles -----------------------------------------------------------------
+
+
+def identity_problem(role, ident):
+    match = AI_AGENT.search(ident)
+    if match:
+        return f"{role} designe un agent IA ({match.group(1)}) : {ident.strip()}"
+    return None
+
+
+def message_problems(message):
+    problems = []
+    for number, line in enumerate(message.splitlines(), 1):
+        if line.lstrip().startswith("#"):
+            continue  # commentaire retire par git
+        trailer = ATTRIBUTION_TRAILER.match(line)
+        if trailer and AI_AGENT.search(trailer.group("value")):
+            problems.append(
+                f"ligne {number} : trailer d'attribution a un agent IA : {line.strip()}"
+            )
+        elif GENERATED_FOOTER.match(line):
+            problems.append(
+                f"ligne {number} : mention automatique de generation par un agent : {line.strip()}"
+            )
+    return problems
+
+
+def strip_comments(message):
+    # Seule la partie avant la ligne de ciseaux (commit -v) est conservee par git.
+    return message.split("# ------------------------ >8 ------------------------")[0]
+
+
+def commit_problems(rev_args, cwd=None):
+    """Controle les commits designes par rev_args ; retourne la liste des problemes."""
+    proc = git("rev-list", *rev_args, cwd=cwd)
+    problems = []
+    for sha in proc.stdout.split():
+        raw = git("show", "-s", "--format=%an <%ae>%x00%cn <%ce>%x00%B", sha, cwd=cwd).stdout
+        author, committer, body = raw.split("\x00", 2)
+        found = [identity_problem("auteur", author), identity_problem("committer", committer)]
+        found = [p for p in found if p] + message_problems(body)
+        problems.extend(f"commit {sha[:12]} : {p}" for p in found)
+    return problems
+
+
+def report(problems, context):
+    if not problems:
+        return 0
+    print(
+        f"{context} : attribution Git interdite "
+        "(le proprietaire du depot est le seul contributeur) :",
+        file=sys.stderr,
+    )
+    for problem in problems:
+        print("  - " + problem, file=sys.stderr)
+    print(
+        "Corriger l'identite (git config user.name/user.email) ou retirer le trailer, puis "
+        "recommencer. Voir docs/GIT_ATTRIBUTION.md.",
+        file=sys.stderr,
+    )
+    return 1
+
+
+# --- Hooks ------------------------------------------------------------------
+
+
+def cmd_commit_msg(args):
+    if len(args) != 1:
+        raise GuardError("usage : commit-msg FICHIER")
+    message = strip_comments(Path(args[0]).read_text(encoding="utf-8", errors="replace"))
+    problems = [
+        identity_problem("auteur", git("var", "GIT_AUTHOR_IDENT").stdout),
+        identity_problem("committer", git("var", "GIT_COMMITTER_IDENT").stdout),
+    ]
+    problems = [p for p in problems if p] + message_problems(message)
+    return report(problems, "commit-msg")
+
+
+def push_range(remote, local_sha, remote_sha):
+    exclude = ["--not", f"--remotes={remote}"]
+    if (
+        ZERO.match(remote_sha)
+        or git("cat-file", "-e", remote_sha + "^{commit}", check=False).returncode
+    ):
+        return [local_sha] + exclude
+    return [f"{remote_sha}..{local_sha}"]
+
+
+def cmd_pre_push(args):
+    if not args:
+        # git push passe toujours <distant> <url> ; sans argument, rien n'est publie.
+        print("pre-push : appel hors de git push, aucune ref a controler.", file=sys.stderr)
+        return 0
+    remote = args[0]
+    problems = []
+    for line in sys.stdin.read().splitlines():
+        parts = line.split()
+        if len(parts) != 4:
+            continue
+        local_ref, local_sha, _remote_ref, remote_sha = parts
+        if ZERO.match(local_sha):
+            continue  # suppression de ref : aucun commit publie
+        if git("cat-file", "-t", local_sha).stdout.strip() not in ("commit", "tag"):
+            continue
+        problems += [
+            f"{local_ref} : {p}" for p in commit_problems(push_range(remote, local_sha, remote_sha))
+        ]
+    return report(problems, "pre-push")
+
+
+def cmd_check_range(args):
+    if not args:
+        raise GuardError("usage : check-range REV... (ex. origin/main..HEAD)")
+    return report(commit_problems(args), "check-range")
+
+
+def cmd_audit(args):
+    if args:
+        raise GuardError("usage : audit")
+    problems = commit_problems(["--all"])
+    if not problems:
+        print("audit : aucune attribution interdite dans les refs locales.")
+    return report(problems, "audit")
+
+
+# --- CI (GitHub Actions) ----------------------------------------------------
+
+
+def ci_ranges(event_name, event):
+    """Plages a controler pour l'evenement GitHub ; HEAD complet en dernier recours."""
+    if event_name in ("pull_request", "pull_request_target") and event.get("pull_request"):
+        pull = event["pull_request"]
+        return [["{}..{}".format(pull["base"]["sha"], pull["head"]["sha"])]]
+    after, before = event.get("after"), event.get("before") or ""
+    if event_name == "push" and after and not ZERO.match(after):
+        ranges = []
+        if before and not ZERO.match(before):
+            ranges.append([f"{before}..{after}"])
+        default = (event.get("repository") or {}).get("default_branch")
+        if default and event.get("ref") != "refs/heads/" + default:
+            ranges.append([f"origin/{default}..{after}"])
+        ranges.append([after])
+        return ranges
+    return [["HEAD"]]
+
+
+def cmd_ci(args):
+    if args:
+        raise GuardError("usage : ci")
+    event_name = os.environ.get("GITHUB_EVENT_NAME", "")
+    path = os.environ.get("GITHUB_EVENT_PATH")
+    event = json.loads(Path(path).read_text(encoding="utf-8")) if path else {}
+    problems, checked = [], None
+    for rev_args in ci_ranges(event_name, event):
+        try:
+            problems = commit_problems(rev_args)
+            checked = " ".join(rev_args)
+            break
+        except GuardError as exc:
+            print(
+                "ci : plage {} inutilisable ({}), essai suivant".format(" ".join(rev_args), exc),
+                file=sys.stderr,
+            )
+    if checked is None:
+        raise GuardError("aucune plage de commits verifiable (checkout avec fetch-depth: 0 requis)")
+    pull = event.get("pull_request") or {}
+    text = "{}\n\n{}".format(pull.get("title") or "", pull.get("body") or "")
+    problems += [f"description de la PR : {p}" for p in message_problems(text)]
+    if not problems:
+        print(
+            f"ci : attribution conforme (commits {checked}"
+            f"{', titre et description de PR' if pull else ''})."
+        )
+    return report(problems, "ci")
+
+
+# --- Installation -----------------------------------------------------------
+
+
+def is_managed(path):
+    try:
+        return MARKER in path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return False
+
+
+def write_executable(path, content):
+    path.write_bytes(content)
+    path.chmod(path.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IRUSR)
+
+
+def install_into(hooks_dir):
+    """Installe le garde et les hooks enveloppes ; conserve les hooks existants en .local."""
+    hooks_dir.mkdir(parents=True, exist_ok=True)
+    for name in HOOKS:
+        hook, kept = hooks_dir / name, hooks_dir / (name + ".local")
+        if (hook.exists() or hook.is_symlink()) and not is_managed(hook):
+            if kept.exists() or kept.is_symlink():
+                raise GuardError(f"{hook} et {kept} existent deja : fusion manuelle requise")
+            hook.rename(kept)
+            print(f"  {name} existant conserve dans {kept.name}")
+    for name in HOOKS:
+        write_executable(hooks_dir / name, WRAPPER.encode("utf-8"))
+    write_executable(hooks_dir / GUARD_NAME, Path(__file__).read_bytes())
+    print("  hooks {} installes dans {}".format(", ".join(HOOKS), hooks_dir))
+
+
+def repo_hooks_dir(repo, allow_tracked):
+    repo = Path(repo).expanduser().resolve()
+    hooks = Path(
+        git("rev-parse", "--path-format=absolute", "--git-path", "hooks", cwd=repo).stdout.strip()
+    )
+    common = Path(
+        git("rev-parse", "--path-format=absolute", "--git-common-dir", cwd=repo).stdout.strip()
+    )
+    top = git("rev-parse", "--show-toplevel", cwd=repo, check=False).stdout.strip()
+    inside_git_dir = hooks == common or common in hooks.parents
+    tracked = bool(top) and not inside_git_dir and Path(top) in [hooks] + list(hooks.parents)
+    if tracked and not allow_tracked:
+        raise GuardError(
+            f"{repo} : core.hooksPath pointe vers {hooks}, "
+            "dans l'arbre de travail (hooks versionnes). Ajouter dans ces hooks l'appel "
+            "'python3 <chemin>/attribution_guard.py commit-msg \"$1\"' et '... pre-push \"$@\"', "
+            "ou relancer avec --allow-tracked puis commiter le resultat."
+        )
+    return hooks
+
+
+def cmd_install(args):
+    allow = "--allow-tracked" in args
+    repos = [a for a in args if a != "--allow-tracked"]
+    if not repos:
+        raise GuardError("usage : install [--allow-tracked] DEPOT...")
+    for repo in repos:
+        print(f"{repo} :")
+        install_into(repo_hooks_dir(repo, allow))
+    return 0
+
+
+def cmd_uninstall(args):
+    if not args:
+        raise GuardError("usage : uninstall DEPOT...")
+    for repo in args:
+        hooks = repo_hooks_dir(repo, True)
+        for name in HOOKS:
+            hook, kept = hooks / name, hooks / (name + ".local")
+            if is_managed(hook):
+                hook.unlink()
+                if kept.exists() or kept.is_symlink():
+                    kept.rename(hook)
+        guard = hooks / GUARD_NAME
+        if guard.exists():
+            guard.unlink()
+        print(f"{repo} : garde d'attribution retire, hooks d'origine restaures")
+    return 0
+
+
+def confirm(question, assume_yes):
+    if assume_yes:
+        return True
+    if not sys.stdin.isatty():
+        return False
+    return input(question + " [o/N] ").strip().lower() in ("o", "oui", "y", "yes")
+
+
+def cmd_install_template(args):
+    assume_yes = "--yes" in args
+    rest = [a for a in args if a != "--yes"]
+    chosen = None
+    if rest[:1] == ["--dir"] and len(rest) == 2:
+        chosen = Path(rest[1]).expanduser()
+    elif rest:
+        raise GuardError("usage : install-template [--dir REPERTOIRE] [--yes]")
+    current = git("config", "--global", "--get", "init.templateDir", check=False).stdout.strip()
+    target = chosen or (
+        Path(current).expanduser() if current else Path.home() / ".config" / "git" / "template"
+    )
+    install_into(target / "hooks")
+    if git("config", "--global", "--get", "core.hooksPath", check=False).stdout.strip():
+        print(
+            "ATTENTION : core.hooksPath global est defini ; git ignore alors les hooks copies "
+            "par le modele. Installer le garde dans ce repertoire de hooks.",
+            file=sys.stderr,
+        )
+    if current and Path(current).expanduser().resolve() == target.resolve():
+        print(f"init.templateDir global deja configure sur {target} : futurs depots proteges.")
+        return 0
+    command = f"git config --global init.templateDir {target}"
+    if current:
+        print(f"init.templateDir global vaut deja {current} (non modifie).")
+    if confirm(f"Modifier la configuration Git globale : {command} ?", assume_yes):
+        git("config", "--global", "init.templateDir", str(target))
+        print("init.templateDir global configure : git init et git clone installeront le garde.")
+    else:
+        print(f"Configuration globale NON modifiee. Pour proteger les futurs depots : {command}")
+    return 0
+
+
+COMMANDS = {
+    "commit-msg": cmd_commit_msg,
+    "pre-push": cmd_pre_push,
+    "check-range": cmd_check_range,
+    "audit": cmd_audit,
+    "ci": cmd_ci,
+    "install": cmd_install,
+    "uninstall": cmd_uninstall,
+    "install-template": cmd_install_template,
+}
+
+
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
+    if not argv or argv[0] not in COMMANDS:
+        print(__doc__, file=sys.stderr)
+        return 1
+    try:
+        return COMMANDS[argv[0]](argv[1:])
+    except (GuardError, OSError, ValueError, KeyError) as exc:
+        print(f"attribution_guard : {exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -194,10 +194,10 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 | Q10 | A + B | TESTING.md et infrastructure E2E cible prete a completer sans tests metier inventes | E08, v1.1.0 | TODO |
 | Q11 | B | Assistant qui prepare les commandes de protection GitHub, sans les executer | E09, v1.1.0 | TODO |
 | Q12 | B avec PR courtes | Agents et PR en parallele; taches petites, CI verte et fusion rapide | E05, AGENTS.md | TODO |
-| Q13 | C (correction de A) | Archiver inventaire noms/SHA des branches docs/* avant suppression sur preuve de fusion | E01 | TODO |
-| Q14 | A | Supprimer codex/file-preview apres verification d'integration et absence de travail local | E01 | TODO |
-| Q15 | C | Nettoyage automatise worktrees apres fusion, mode simulation, refus si sale ou actif | E01 | TODO |
-| Q16 | B | Audit fichiers obsoletes, temporaires, doublons, configurations; suppression seulement sur preuve | E03 | TODO |
+| Q13 | C (correction de A) | Archiver inventaire noms/SHA des branches docs/* avant suppression sur preuve de fusion | E01 | DONE |
+| Q14 | A | Supprimer codex/file-preview apres verification d'integration et absence de travail local | E01 | PARTIEL (E01: branche distante supprimee; branche locale et worktree Codex conserves) |
+| Q15 | C | Nettoyage automatise worktrees apres fusion, mode simulation, refus si sale ou actif | E01 | TODO (non construit: E01 a nettoye manuellement, sans outil automatise) |
+| Q16 | B | Audit fichiers obsoletes, temporaires, doublons, configurations; suppression seulement sur preuve | E03 | DONE (PR #28 fusionnee; aucun fichier suivi inutile demontre) |
 | Q17 | B | Verifier statiquement APIs Python, JS/TS quand possible, afficher PASS/FAIL/NON VERIFIE | E11 | TODO |
 | Q18 | C | Skills: cache expire, recherches paralleles, classement et reverification avant copie | E12 | TODO |
 | Q19 | B + C, usage personnel | Stacks Python/JS/Rust/Go/Java et catalogue/regles personnels editables localement | E13 | TODO |
@@ -232,16 +232,16 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 **Controle de couverture :** Q01-Q24 = 24 lignes; UI-01 a UI-10 = 10 lignes; total **34/34 decisions**. Les temps affiches dans E01-E18 sont des estimations, non des durees promises. Les temps reels sont saisis manuellement. Un DONE demande tests, CI, revue et preuve de conformite.
 
 
-## Cycle d'evolutions E01-E18 - non commence
+## Cycle d'evolutions E01-E18 - en cours
 
 Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](docs/ROADMAP_2026.md). Le tableau de suivi des nouvelles taches (E01-E18) est maintenu ci-dessous; les 18 taches T01-T18 ci-dessus restent intactes et terminees.
 
 | ID | Travail | Responsable | Depend de | Estime | Reel | Ecart | Statut | Validation |
 | --- | --- | --- | --- | ---: | ---: | ---: | --- | --- |
-| E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | Claude | - | 0,5 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | Claude | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 1 j | A saisir manuellement | - | IN PROGRESS | Implementation et controles PASS; temps reel requis avant DONE; voir ROADMAP_2026.md |
+| E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | Claude | - | 0,5 j | 0 h 04 | -3 h 56 (base 8 h/j) | DONE | PR #27 fusionnee; docs/E01_REFS_AUDIT.md |
+| E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | Claude | - | 1 j | 0 h 40 | -7 h 20 (base 8 h/j) | DONE | PR #26 fusionnee (140bdb2, 16/11); branche et worktree nettoyes en E01 |
+| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | 0 h 12 (Claude) + Codex non mesure | -7 h 48 sur la part mesuree (base 8 h/j) | DONE | PR #28 fusionnee (e7ce436, 16/11); CI push/PR verte (6/6 profils); docs/E03_CLEANUP_AUDIT.md |
+| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 8 h | Humain inconnu; IA a mesurer | Non calculable | IN PROGRESS | PR #25 ouverte; installation Linux et tests realises; fusion en attente |
 | E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | Claude | E01 | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | Claude | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | Codex | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
@@ -257,6 +257,34 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 | E17 | Editeur leger coloration/lignes/recherche/remplacement, panneau diagnostics et integration des flux securises existants | Codex + Claude (fichiers separes) | E15,E16 | 3 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E18 | Validation visuelle et fonctionnelle progressive, accessibilite, performances, resolutions, recette globale; migration finale apres validation | Codex + Claude | E15,E16,E17 | 3 j | - | - | TODO | Voir ROADMAP_2026.md | 
 
+### E02 - 15 novembre 2026 (Claude Code, branche feat/e02-git-attribution-guard)
+- Temps reel: 22 h 09 -> 22 h 49 (0 h 40, attente CI comprise), worktree dedie `Forge-my-Project-e02` depuis origin/main 1d7116e (PR #22 fusionnee).
+- Audit initial: PR #23 n'avait livre que `.claude/settings.json` et la documentation; aucun hook ni job CI ne controlait l'attribution. `main` sans protection de branche ni ruleset (API GitHub 404 / liste vide): la CI n'y est pas encore obligatoire.
+- Livre: `templates/hooks/attribution_guard.py.tmpl` (source unique, stdlib, Python 3.7+; lien `scripts/attribution_guard.py`): commit-msg (identite effective via `git var`, trailers, pied automatique), pre-push, check-range, audit, ci (plage de l'evenement + titre/description de PR), install/uninstall (hooks existants conserves en `.local`, refus sur hooks versionnes sans `--allow-tracked`), install-template (`init.templateDir` global modifie seulement apres confirmation).
+- Forge-my-Project: `.githooks/commit-msg` et `.githooks/pre-push` ajoutes, `.githooks/pre-commit` inchange; job CI `attribution`. Projets generes: garde copie, commit-msg/pre-push, job CI, regle AGENTS.md, contexte de protection CONTRIBUTING.md, attribution Claude desactivee.
+- Tests: `tests/test_attribution_guard.py` (20, depots Git reels): commit normal et mention documentaire acceptes; Co-Authored-By Claude et Codex, auteur Claude, committer Claude, identite `user.name` Codex refuses; push refuse (main et nouvelle branche) vers un distant nu apres `--no-verify`; push propre et suppression de branche acceptes; hooks existants executes avec stdin intact puis restaures; nouveau depot et clone proteges via modele; projet genere protege; mode CI push/PR refuse puis accepte. Mutation du garde: 6, 14 et 1 echecs detectes.
+- Resultats locaux: 265 tests OK (12 ignores); `smoke_generated.py` 4/4 profils Python PASS avec le job attribution; profils TypeScript en echec local a `npm install` (`edgesOut`), reproduit a l'identique sur origin/main (npm 10.8.2/Node 20 local); Ruff check/format du garde OK; audit de toutes les refs: aucune attribution interdite (les 2 commits T10/T15 a trailer ne sont plus atteignables).
+- CI PR #26: run 43764427826 rouge (job genere `attribution` du smoke heritait de `GITHUB_EVENT_PATH` de la PR Forge: SHA absents, refus fail-closed attendu); correction du harnais `tests/smoke_generated.py` + test du refus; run 43764652363 vert: python, securite, attribution (`ci : attribution conforme`, 20 tests du garde), CI generee 6/6 profils PASS dont TypeScript. Apres fusion de main: runs 43765231637 (push) et 43765237805 (pull_request, plage de la PR + titre et description controles) verts, PR MERGEABLE. Aucun run `pull_request` tant que la PR etait en conflit avec main (PR #24): `origin/main` fusionne dans la branche, sans rebase ni push force.
+- Limites: hooks locaux contournables (`--no-verify`); job CI bloquant seulement apres protection de branche par le proprietaire (commande dans docs/GIT_ATTRIBUTION.md); detection par liste d'agents a maintenir; titre/description de PR controles aux evenements opened/synchronize/reopened seulement; installation dans les autres depots et modele global non executes sur la machine (commandes fournies).
+
+### E01 - 16 novembre 2026 (Claude Code, branche docs/e01-refs-audit)
+- Temps reel: 22 h 32 -> 22 h 36 (0 h 04, hors attente CI), worktree dedie `Forge-my-Project-e01` depuis origin/main 140bdb2 (PR #26 fusionnee).
+- Rapport complet: [docs/E01_REFS_AUDIT.md](docs/E01_REFS_AUDIT.md) (inventaire, methode, archive nom/SHA des branches docs/*, simulation, execution).
+
+- Preuves: chaque branche testee par ascendance, `git cherry`, simulation de fusion dans un worktree jetable (detecte squash et reecritures) et `attribution_guard.py check-range`; worktrees controles (modifications, non suivis, ignores, stash). 7 branches distantes integrees supprimees apres `push --dry-run` (docs/development-roadmap-todo, docs/validated-project-specification, docs/roadmap-34-decisions-2026, fix/no-ai-coauthor-attribution, feat/e02-git-attribution-guard, claude/start-launcher, codex/file-preview); branche locale et worktree E02 retires (`worktree remove` sans force, `branch -d`). Distant: 9 -> 2 branches (main, feat/e04-linux-launcher).
+- Conserve: feat/e04-linux-launcher (PR #25 ouverte, worktree modifie), worktree principal (TODO.md non commite: main local non avance), worktrees propres `.forge-start` et `Forge-my-Project-codex` rattaches a d'autres sessions (inutilite non demontree).
+- Attributions IA: aucune sur branches, tags, stash ou reflogs. Residuel: les commits T10/T15 a trailer Claude restent references par les refs GitHub en lecture seule `refs/pull/14-19/head` et `refs/pull/21/head` (clone miroir); purge possible uniquement par le support GitHub, a la demande du proprietaire.
+- Limites: aucune reecriture, aucun push force; restauration d'une branche supprimee: `git push origin <SHA>:refs/heads/<branche>` (SHA archives dans le rapport).
+
+### E03 - 16 novembre 2026
+- Audit complet: [docs/E03_CLEANUP_AUDIT.md](docs/E03_CLEANUP_AUDIT.md).
+- Aucun fichier suivi supprime: aucun candidat n'etait demonstrablement obsolete; les composants historiques, preuves T18, configurations actives et scripts references sont conserves.
+- Caches Python ignores produits par les tests supprimes uniquement dans le worktree E03; aucun autre worktree touche.
+- Tests locaux: 265 PASS, 12 ignores; quatre profils Python PASS; profil TypeScript bloque localement a `npm install` (`edgesOut`, npm 10.8.2/Node 20), sans lien avec E03.
+- CI PR #28 (0e62860): runs 43964140186 (push) et 43964178570 (pull_request) verts; CI generee 6/6 profils PASS, dont typescript-api-express et typescript-web-react: la limite npm est locale.
+- Temps reel: Claude 22 h 47 -> 22 h 53 puis 22 h 54 -> 23 h 00 (0 h 12); partie Codex (commit 0e62860, PR #28) non mesuree, donc ecart partiel.
+- Corrections de la reprise: Q15 remis a TODO (nettoyage automatise des worktrees non construit), Q14 PARTIEL; doublon de lien vers docs/CONVENTIONS.md retire d'AGENTS.md.
+
 Les priorites et les criteres d'acceptation propres a chaque ligne sont maintenus dans [docs/ROADMAP_2026.md](docs/ROADMAP_2026.md); cette reference fait partie du contrat de la tache, pas d'un critere generique. Charge totale estimee: **36,5 j**. Regle de suivi: temps reels saisis manuellement. L'ecart est calcule en heures selon 1 j = 8 h. Toute PR renseigne preuve CI, revue, tests et limites. Ne pas marquer DONE avant verification.
 
 ### E04 - 16 novembre 2026
@@ -264,7 +292,7 @@ Les priorites et les criteres d'acceptation propres a chaque ligne sont maintenu
 - PR #25: scripts Linux sans privilege, paquet ni acces reseau, reutilisant `start.py` de la PR #20.
 - Tests locaux: 250 PASS, 12 SKIP; tests E04 cibles 14 PASS; syntaxe shell et compilation Python PASS.
 - CI: six checks PASS (push et pull request); revue independante APPROVED sans constat P0-P2.
-- Temps reel: en attente de saisie manuelle par le proprietaire; aucune duree deduite de Git ou de la session. E04 reste IN PROGRESS jusqu'a cette saisie et au calcul de l'ecart.
+- Temps: charge humaine estimee 8 h; temps humain reel inconnu et non invente; temps d'execution IA a mesurer. L'ecart humain reste non calculable.
 - Limites: ShellCheck non execute car absent; Ubuntu valide par CI, autres distributions Linux non executees dans cette mission.
 
 ## Idees hors suivi actif

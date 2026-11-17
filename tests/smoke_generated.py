@@ -82,6 +82,9 @@ def commit_all(root, message="smoke"):
 
 def environment(root, answers):
     env = dict(os.environ, RUNNER_TEMP=str(root / ".runner"))
+    # Evenement GitHub de Forge-my-Project : etranger au depot genere (job attribution).
+    for key in ("GITHUB_EVENT_NAME", "GITHUB_EVENT_PATH"):
+        env.pop(key, None)
     (root / ".runner").mkdir(exist_ok=True)
     if "python" in answers["technologies"]:
         target = root / ".runner" / "venv"

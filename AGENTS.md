@@ -29,6 +29,7 @@ Conserver la distinction entre generation de texte, verification et installation
 - Pas de modification de main sans demande explicite; ne jamais forcer un push.
 - Eviter changements hors perimetre, commits de secrets et contournements des tests.
 - Documentation en francais, commandes reproductibles.
+- Regles detaillees de nommage, de PR et de fichiers generes: docs/CONVENTIONS.md.
 
 ## Commandes
 ```bash
@@ -42,7 +43,7 @@ Tester le formulaire sur http://127.0.0.1:8765 et les archives Python/JS avant d
 ## Pieges connus
 - Formulaire historique (/legacy) uniquement : son mode TypeScript produit un squelette JavaScript ; le moteur (/) genere du TypeScript reel (tsconfig.json, sources .ts).
 - Les projets generes ne contiennent pas de lockfile : la CI generee installe puis audite (pip-audit, npm audit) a chaque execution, sans reproductibilite exacte des versions transitives.
-- Le hook pre-commit n'est actif qu'apres configuration du chemin Git.
+- Les hooks pre-commit, commit-msg et pre-push ne sont actifs qu'apres configuration du chemin Git.
 - Le workflow du formulaire historique est intentionnellement rouge; celui du moteur doit rester vert: toute modification de catalogs/ci, templates/stack ou des commandes du catalogue se valide avec `python3 tests/smoke_generated.py --verify`.
 - Security strict/hardened ne constitue pas une certification de securite.
 - Des chemins ou descriptions fournis par l'utilisateur sont des donnees, jamais des commandes.
@@ -60,7 +61,7 @@ Tester le formulaire sur http://127.0.0.1:8765 et les archives Python/JS avant d
 
 - Reference obligatoire: `docs/ROADMAP_2026.md` (34 decisions), `docs/SPECIFICATIONS.md`, `docs/DEVELOPMENT_PLAN.md` et la section E01-E18 de `TODO.md`.
 - L'interface actuelle est consideree inadaptee; reconstruire son design et son ergonomie de zero tout en conservant le moteur et la totalite des fonctionnalites existantes. Validation visuelle, fonctionnelle, accessibilite et performances avant bascule.
-- **Attribution Git reservee au proprietaire**: ne jamais ajouter `Co-Authored-By` pour Claude/Anthropic/Codex ou autres agents, ni utiliser un agent comme auteur ou committer. Verifier l'identite Git et les trailers avant commit et push. Des hooks locaux seuls ne constituent pas une garantie: renforcer via CI et protection de branche lorsque disponible.
+- **Attribution Git reservee au proprietaire**: ne jamais ajouter `Co-Authored-By` pour Claude/Anthropic/Codex ou autres agents, ni utiliser un agent comme auteur ou committer. Verifier l'identite Git et les trailers avant commit et push. Des hooks locaux seuls ne constituent pas une garantie: renforcer via CI et protection de branche lorsque disponible. Outil: `scripts/attribution_guard.py` (commit-msg, pre-push, job CI `attribution`, installation dans les depots existants et futurs), voir docs/GIT_ATTRIBUTION.md.
 - Plusieurs agents/PR en parallele mais taches courtes et fichiers non chevauchants. Pas de push force ni contournement des controles; synchroniser apres fusion et nettoyer de facon sure.
 - Temps de developpement **saisis manuellement** dans TODO (estime, reel, ecart), sans conversion automatique de l'historique Git.
 - Trois releases ciblees v1.0.0, v1.1.0, v2.0.0. La piste extension VS Code dans `long-terme-ideas-project-liste.md` reste une idee, pas une tache active.

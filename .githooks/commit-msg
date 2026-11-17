@@ -1,0 +1,5 @@
+#!/bin/sh
+# Activation explicite: git config core.hooksPath .githooks
+# commit-msg : aucun agent IA auteur, committer ou co-auteur (docs/GIT_ATTRIBUTION.md).
+set -eu
+python3 "$(git rev-parse --show-toplevel)/scripts/attribution_guard.py" commit-msg "$1"

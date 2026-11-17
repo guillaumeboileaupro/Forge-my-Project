@@ -93,9 +93,9 @@ Ne jamais executer un script fourni par un skill sans l'avoir lu et approuve.
 ## Hooks
 Activation (une fois par clone) : `git config core.hooksPath .githooks`.
 - pre-commit : secrets dans les fichiers indexes (gitleaks, sinon controle reduit signale), formatage et lint.
-- commit-msg : Conventional Commits.
-- pre-push : typage et tests.
-- La CI reexecute tout, avec audits des dependances, SBOM et historique complet des secrets.
+- commit-msg : attribution Git (aucun agent IA auteur, committer ou co-auteur) puis Conventional Commits.
+- pre-push : attribution Git des commits publies, typage et tests.
+- La CI reexecute tout, avec audits des dependances, SBOM, historique complet des secrets et job attribution (`scripts/hooks/attribution_guard.py ci`).
 {{#if agent_hooks}}
 Garde-fou des agents (PreToolUse, `scripts/hooks/agent_guard.py`, Python 3 requis) : refuse `--no-verify`, `commit -n`, le push force, la modification de `core.hooksPath` et l'ecriture de `.env` ou de cles privees.
 {{#each agent_hooks}}

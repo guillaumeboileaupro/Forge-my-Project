@@ -1,8 +1,11 @@
 #!/bin/sh
 # Genere par Forge-my-Project. Activation : git config core.hooksPath .githooks
-# pre-push : typage et tests avant publication (les controles de pre-commit ne sont pas repetes).
+# pre-push : attribution Git, typage et tests avant publication (les controles de pre-commit ne sont pas repetes).
 set -eu
 fail() { echo "pre-push: $1" >&2; exit 1; }
+
+echo "pre-push: attribution Git des commits publies"
+python3 "$(git rev-parse --show-toplevel)/scripts/hooks/attribution_guard.py" pre-push "$@" || fail "attribution Git interdite"
 {{#each hooks.pre_push}}
 
 echo "pre-push: {{ this.label }}"
