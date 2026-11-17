@@ -15,5 +15,14 @@
     "cyclonedx-bom": "8.0.1"
   },
   "sast_severity": {"strict": "medium", "hardened": "low"},
-  "npm_audit_level": {"strict": "high", "hardened": "moderate"}
+  "npm_audit_level": {"strict": "high", "hardened": "moderate"},
+  "npm_audit_exceptions": [
+    {
+      "id": "GHSA-fc5q-39xc-vjpf",
+      "package": "picomatch",
+      "added": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "ReDoS high sans version corrigee (picomatch 4.0.7 est la derniere publiee); dependance de developpement transitive (eslint, vite, vitest), non executee en production. A retirer des la publication d une version corrigee."
+    }
+  ]
 }

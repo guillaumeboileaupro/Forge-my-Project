@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+"""Passerelle de l'audit npm : exceptions datees et ciblees, jamais silencieuses.
+
+Genere par Forge-my-Project. N'est appelee que si `npm audit --audit-level=<niveau>`
+echoue. Relit son rapport JSON et echoue, sauf si chaque avis de severite >= <niveau>
+est couvert par une exception non expiree de la liste ci-dessous (identifiant GHSA et
+paquet exacts). Une exception expiree, un avis inconnu ou un rapport illisible bloquent.
+Modifier cette liste demande une PR justifiee ; ne jamais l'etendre pour obtenir une CI verte.
+"""
+
+import datetime
+import json
+import sys
+
+EXCEPTIONS = [
+{{#each security.npm_exceptions}}
+    {
+        "id": "{{ this.id }}",
+        "package": "{{ this.package }}",
+        "expires": "{{ this.expires }}",
+        "reason": "{{ this.reason }}",
+    },
+{{/each}}
+]
+LEVELS = ["info", "low", "moderate", "high", "critical"]
+
+
+def advisories(report):
+    """Avis (objets `via`) de toutes les vulnerabilites du rapport."""
+    vulnerabilities = report.get("vulnerabilities")
+    if not isinstance(vulnerabilities, dict):
+        raise ValueError("rapport npm audit sans section vulnerabilities")
+    found = []
+    for entry in vulnerabilities.values():
+        for via in entry.get("via", []):
+            if isinstance(via, dict):
+                found.append(via)
+    if vulnerabilities and not found:
+        raise ValueError("vulnerabilites sans avis identifiable")
+    return found
+
+
+def covering(advisory, today):
+    url = str(advisory.get("url", ""))
+    for exception in EXCEPTIONS:
+        if url.endswith("/" + exception["id"]) and advisory.get("name") == exception["package"]:
+            return exception, datetime.date.fromisoformat(exception["expires"]) >= today
+    return None, False
+
+
+def main(argv):
+    if len(argv) != 2 or argv[1] not in LEVELS:
+        print("usage : npm_audit_gate.py RAPPORT.json NIVEAU", file=sys.stderr)
+        return 1
+    try:
+        with open(argv[0], encoding="utf-8") as handle:
+            found = advisories(json.load(handle))
+    except (OSError, ValueError) as exc:
+        print("npm audit : rapport inexploitable (%s) : refus" % exc, file=sys.stderr)
+        return 1
+    today, threshold, blocking = datetime.date.today(), LEVELS.index(argv[1]), []
+    for advisory in found:
+        if advisory.get("severity") not in LEVELS or LEVELS.index(advisory["severity"]) < threshold:
+            continue
+        exception, valid = covering(advisory, today)
+        label = "%s %s (%s)" % (advisory.get("name"), advisory.get("url"), advisory.get("severity"))
+        if exception and valid:
+            print("npm audit : EXCEPTION %s jusqu'au %s : %s"
+                  % (label, exception["expires"], exception["reason"]))
+        elif exception:
+            blocking.append("%s : exception expiree le %s" % (label, exception["expires"]))
+        else:
+            blocking.append(label)
+    if blocking:
+        print("npm audit : vulnerabilites bloquantes (severite >= %s) :" % argv[1], file=sys.stderr)
+        for item in sorted(set(blocking)):
+            print("  - " + item, file=sys.stderr)
+        return 1
+    print("npm audit : seuls des avis sous exception datee restent ; voir SECURITY.md.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
