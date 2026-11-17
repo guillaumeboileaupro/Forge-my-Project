@@ -12,7 +12,7 @@ Statuts des taches : [../TODO.md](../TODO.md). Criteres d'acceptation detailles 
 | Attribution Git reservee au proprietaire, controlee en local et en CI | E02 | docs/GIT_ATTRIBUTION.md, PR #26 | fait |
 | Fichiers du depot audites, aucune suppression sans preuve | E03 | docs/E03_CLEANUP_AUDIT.md, PR #28 | fait |
 | Installation et demarrage Linux valides depuis un clone propre | E04 | `installer.sh` / `start.sh` testes, PR #25 | en cours (PR #25 ouverte) |
-| Maintenance, anomalies, changelog et plan de releases documentes et controles par CI | E05 | docs/MAINTENANCE.md, CHANGELOG.md, `tests/test_release_policy.py` | en cours |
+| Maintenance, anomalies, changelog et plan de releases documentes et controles par CI | E05 | docs/MAINTENANCE.md, CHANGELOG.md, `tests/test_release_policy.py`, PR #29 | fait |
 | Tests et CI verts sur le commit etiquete | - | 4 jobs CI verts, `smoke_generated.py --verify` | a verifier a la release |
 | Aucune anomalie bloquante | - | aucune issue P0/P1 ouverte | a verifier a la release |
 

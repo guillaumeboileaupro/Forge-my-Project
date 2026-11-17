@@ -206,7 +206,7 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 | Q20 | A | Temps manuels uniquement; conserver estime/reel/ecart sans chronometre ni mesure Git | Toutes E, pas de fonctionnalite nouvelle | REGLE |
 | Q21 | B puis C puis D | Trois releases: v1.0.0 nettoyage; v1.1.0 PARTIEL; v2.0.0 ameliorations+refonte | E05, E07-E09, E18 | TODO (plan pret: docs/RELEASES.md; aucune release publiee) |
 | Q22 | C | Codex et Claude en parallele, composants et worktrees distincts | E05, E14-E18 | REGLE |
-| Q23 | B + C | Releases, bugs, mises a jour securite, controles reguliers dependances et regression | E05 | IN PROGRESS (E05, PR #29) |
+| Q23 | B + C | Releases, bugs, mises a jour securite, controles reguliers dependances et regression | E05 | DONE (E05, PR #29: docs/MAINTENANCE.md, docs/RELEASES.md, CHANGELOG.md) |
 | Q24 | A+B+C+D | Plan detaille, missions agents, petites PR progressives et execution avec tests/CI | E05 + plan | REGLE |
 
 ### 10 decisions de refonte UI - remplacement complet, pas un relooking
@@ -244,7 +244,7 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 | E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | Claude | - | 1 j | 0 h 40 (Claude, attente CI comprise) | non renseigne | non calculable | DONE | PR #26 fusionnee (140bdb2); docs/GIT_ATTRIBUTION.md |
 | E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | 0 h 12 (Claude) ; Codex non mesure | non renseigne | non calculable | DONE | PR #28 fusionnee (e7ce436); CI 6/6 profils; docs/E03_CLEANUP_AUDIT.md |
 | E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 1 j | non mesure (Codex) | non renseigne | non calculable | IN PROGRESS | PR #25 ouverte; fusion en attente |
-| E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | Claude | E01 | 1 j | @@E05IA@@ | non renseigne | non calculable | IN PROGRESS | PR #29; docs/MAINTENANCE.md, docs/RELEASES.md, CHANGELOG.md |
+| E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | Claude | E01 | 1 j | 0 h 14 (Claude, attente CI comprise) | non renseigne | non calculable | DONE | PR #29 (statut effectif a sa fusion); docs/MAINTENANCE.md, docs/RELEASES.md, CHANGELOG.md |
 | E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | Claude | - | 1 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | Codex | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E08 | Infrastructure E2E des projets generes, adaptee a la stack, sans scenarios metier inventes | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
@@ -286,6 +286,14 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 - CI PR #28 (0e62860): runs 43964140186 (push) et 43964178570 (pull_request) verts; CI generee 6/6 profils PASS, dont typescript-api-express et typescript-web-react: la limite npm est locale.
 - Execution IA mesuree (horloge, pas du temps humain): Claude 22 h 47 -> 22 h 53 puis 22 h 54 -> 23 h 00 (0 h 12); partie Codex (commit 0e62860, PR #28) non mesuree, donc ecart partiel.
 - Corrections de la reprise: Q15 remis a TODO (nettoyage automatise des worktrees non construit), Q14 PARTIEL; doublon de lien vers docs/CONVENTIONS.md retire d'AGENTS.md.
+
+### E05 - 17 novembre 2026 (Claude Code, branche docs/e05-maintenance-releases)
+- Charge humaine estimee: 1 j (8 h). Execution IA mesuree (horloge, pas du temps humain): 19 h 36 -> 19 h 49 (0 h 14 (Claude, attente CI comprise)). Temps humain reel: non renseigne. Ecart humain: non calculable.
+- Livre: [docs/MAINTENANCE.md](docs/MAINTENANCE.md) (anomalies P0-P3 en issues GitHub, controles reguliers, dependances et epinglages, regressions, SemVer et changelog, conditions de release, rollback), [docs/RELEASES.md](docs/RELEASES.md) (v1.0.0, v1.1.0, v2.0.0 avec taches et preuves), [CHANGELOG.md](CHANGELOG.md) (`[Unreleased]`, aucune version publiee). Aucun mecanisme automatique ajoute hors un test.
+- Controle CI: `tests/test_release_policy.py` (8 tests, job `python`): format du changelog, statuts E01-E18 identiques dans TODO.md et ROADMAP, dependances respectees, aucune execution IA dans la colonne de temps humain, chaque tache rattachee a un jalon, liste de controle des releases alignee sur les jobs CI reels. 7 mutations injectees, toutes detectees.
+- Suivi: colonnes E01-E18 remplacees par charge humaine estimee / execution IA mesuree / temps humain reel / ecart humain; donnees T01-T18 inchangees avec note de lecture; libelles des notes E01-E03 precises. Statuts corriges sur preuve: ROADMAP E03 DONE (PR #28) et E04 IN PROGRESS (PR #25 ouverte); Q03 PARTIEL, Q21 TODO (plan pret), Q23 DONE a la fusion.
+- Verifications: 273 tests locaux OK (12 ignores); `attribution_guard.py audit` conforme; aucune release, aucun tag.
+- Coordination Codex: la PR #25 etait deja en conflit avec main sur TODO.md (ligne E04 modifiee par ab23081). Resolution attendue cote E04: garder les colonnes E05 et le texte E04 de Codex. Branche et worktree de Codex non modifies.
 
 Les priorites et les criteres d'acceptation propres a chaque ligne sont maintenus dans [docs/ROADMAP_2026.md](docs/ROADMAP_2026.md); cette reference fait partie du contrat de la tache, pas d'un critere generique. Charge totale estimee: **36,5 j**. Regle de suivi (E01-E18) : la charge humaine estimee est en jours (1 j = 8 h de travail humain). L'execution IA mesuree est le temps horloge d'une session d'agent, releve manuellement a partir des heures de debut et de fin ; elle n'est jamais convertie en charge humaine. Le temps humain reel n'est renseigne que s'il est connu du proprietaire. L'ecart humain (temps humain reel ou charge reestimee moins charge estimee) n'est calcule que lorsque ces donnees existent ; sinon `non calculable`. Toute PR renseigne preuve CI, revue, tests et limites. Ne pas marquer DONE avant verification.
 
