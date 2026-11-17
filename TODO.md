@@ -241,7 +241,7 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 | E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | Claude | - | 0,5 j | 0 h 04 | -3 h 56 (base 8 h/j) | DONE | PR #27 fusionnee; docs/E01_REFS_AUDIT.md |
 | E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | Claude | - | 1 j | 0 h 40 | -7 h 20 (base 8 h/j) | DONE | PR #26 fusionnee (140bdb2, 16/11); branche et worktree nettoyes en E01 |
 | E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | 0 h 12 (Claude) + Codex non mesure | -7 h 48 sur la part mesuree (base 8 h/j) | DONE | PR #28 fusionnee (e7ce436, 16/11); CI push/PR verte (6/6 profils); docs/E03_CLEANUP_AUDIT.md |
-| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 8 h | Humain inconnu; IA a mesurer | Non calculable | IN PROGRESS | PR #25 ouverte; installation Linux et tests realises; fusion en attente |
+| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 8 h | Humain inconnu; IA 0 h 10 mesure jusqu'au blocage CI | Non calculable | IN PROGRESS | PR #25 ouverte; code et revue valides; audit npm bloque sans version corrigee |
 | E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | Claude | E01 | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | Claude | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
 | E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | Codex | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
@@ -290,10 +290,13 @@ Les priorites et les criteres d'acceptation propres a chaque ligne sont maintenu
 ### E04 - 16 novembre 2026
 
 - PR #25: scripts Linux sans privilege, paquet ni acces reseau, reutilisant `start.py` de la PR #20.
-- Tests locaux: 250 PASS, 12 SKIP; tests E04 cibles 14 PASS; syntaxe shell et compilation Python PASS.
-- CI: six checks PASS (push et pull request); revue independante APPROVED sans constat P0-P2.
-- Temps: charge humaine estimee 8 h; temps humain reel inconnu et non invente; temps d'execution IA a mesurer. L'ecart humain reste non calculable.
+- Tests locaux initiaux: 250 PASS, 12 SKIP; tests E04 cibles 14 PASS; syntaxe shell et compilation Python PASS.
+- CI initiale avant synchronisation: six checks PASS (push et pull request); revue independante APPROVED sans constat P0-P2.
+- Temps: charge humaine estimee 8 h; temps humain reel inconnu et non invente; temps d'execution IA de la reprise mesure ci-dessous. L'ecart humain reste non calculable.
 - Limites: ShellCheck non execute car absent; Ubuntu valide par CI, autres distributions Linux non executees dans cette mission.
+- Reprise du 17 novembre 2026: conflit avec `main` resolu sans rebase; recherche Python dans `$HOME/.local/bin` restauree apres revue; 15 tests cibles PASS, suite complete 271 PASS et 12 ignores; revue independante du SHA `d30c2f3` APPROVED.
+- Temps d'execution IA mesure pour cette reprise jusqu'au diagnostic CI: 0 h 10. Temps humain reel toujours inconnu.
+- Blocage CI externe: les runs push `44151087314` et pull request `44151098797` echouent uniquement sur `npm audit --audit-level=high`: GHSA-fc5q-39xc-vjpf affecte `picomatch` jusqu'a 4.0.7, sans version corrigee publiee le 17 novembre 2026. Aucun seuil abaisse, audit contourne ou override non verifie. E04 reste IN PROGRESS et non fusionnee.
 
 ## Idees hors suivi actif
 
