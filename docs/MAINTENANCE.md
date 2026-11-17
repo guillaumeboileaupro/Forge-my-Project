@@ -25,6 +25,7 @@ Une anomalie est **fermee** seulement avec un test qui echouait avant la correct
 | Mensuel, et avant chaque release | verification en ligne des versions et des actions epinglees | `python3 tests/smoke_generated.py --verify` | 6/6 profils PASS ; sinon PR de mise a jour |
 | Mensuel | audit d'attribution de toutes les refs | `python3 scripts/attribution_guard.py audit` | aucune attribution interdite |
 | Mensuel | dependances et epinglages (section 3) | catalogues `verified_at` | dates de moins de 90 jours |
+| Avant chaque expiration d'exception d'audit | avis toujours sans correctif ? | registre de docs/SECURITY.md | exception retiree ou renouvelee par PR |
 | A chaque avis de securite visant un outil epingle | remplacement de la version, de l'empreinte et des SHA d'actions | PR dediee `fix(security): ...` | CI verte avec la nouvelle version |
 
 Un controle regulier non execute est note `NON VERIFIE` dans la PR ou la release concernee ; il n'est jamais presente comme reussi. Le resultat de chaque controle mensuel est consigne en une ligne dans TODO.md (date, commande, resultat).
@@ -36,6 +37,7 @@ Un controle regulier non execute est note `NON VERIFIE` dans la PR ou la release
 - **Versions proposees aux projets generes** : catalogues `catalogs/technologies/*.json`, controles par la verification en ligne.
 - **Revue d'une mise a jour** : changelog amont, compatibilite, empreinte, CI verte, entree `Securite` ou `Modifie` dans CHANGELOG.md. Pas de mise a jour groupee : un outil ou une famille par PR.
 - Un epinglage verifie depuis plus de 90 jours est revu au controle mensuel suivant.
+- **Avis sans version corrigee** : seule une exception datee et ciblee est admise (un avis GHSA, un paquet, une justification, 90 jours au plus), inscrite dans `catalogs/security/tools.json` et le registre de docs/SECURITY.md, sur decision du proprietaire. A son expiration la CI redevient rouge : retirer l'exception ou la renouveler par une PR justifiee.
 
 ## 4. Correction d'une regression
 

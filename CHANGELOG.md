@@ -10,5 +10,9 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 - Audit des fichiers du depot (E03, PR #28).
 - Politique de maintenance, plan des releases et controle CI du changelog et des statuts (E05).
 
+### Corrige
+- CI de main rouge depuis l'avis GHSA-fc5q-39xc-vjpf sur les profils TypeScript generes (PR #30).
+
 ### Securite
+- Exception datee et ciblee de l'audit npm des projets generes pour GHSA-fc5q-39xc-vjpf (picomatch <= 4.0.7, aucune version corrigee), expiration le 2026-12-17 ; tout autre avis reste bloquant (PR #30).
 - Aucun agent IA ne peut apparaitre comme auteur, committer ou co-auteur sans etre refuse localement et en CI (E02).

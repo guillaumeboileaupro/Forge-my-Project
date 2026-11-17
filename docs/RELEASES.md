@@ -16,7 +16,7 @@ Statuts des taches : [../TODO.md](../TODO.md). Criteres d'acceptation detailles 
 | Tests et CI verts sur le commit etiquete | - | 4 jobs CI verts, `smoke_generated.py --verify` | a verifier a la release |
 | Aucune anomalie bloquante | - | aucune issue P0/P1 ouverte | a verifier a la release |
 
-Limites a reporter dans le changelog de v1.0.0 : la protection de branche de main n'est pas configuree (le job attribution n'est donc pas obligatoire) ; Q14 partiel et Q15 non construit (nettoyage automatise des worktrees) ; refs GitHub `refs/pull/*` contenant d'anciens trailers.
+Limites a reporter dans le changelog de v1.0.0 : exceptions d'audit actives (registre de docs/SECURITY.md, actuellement GHSA-fc5q-39xc-vjpf jusqu'au 2026-12-17) ; la protection de branche de main n'est pas configuree (le job attribution n'est donc pas obligatoire) ; Q14 partiel et Q15 non construit (nettoyage automatise des worktrees) ; refs GitHub `refs/pull/*` contenant d'anciens trailers.
 
 ## v1.1.0 - lever les trois exigences partielles
 
