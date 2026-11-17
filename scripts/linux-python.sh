@@ -36,6 +36,16 @@ forge_find_python() {
         fi
     done
 
+    if [ -n "${HOME:-}" ]; then
+        for forge_candidate in python3.14 python3.13 python3.12 python3.11 python3 python; do
+            forge_path="$HOME/.local/bin/$forge_candidate"
+            if [ -x "$forge_path" ] && forge_python_supported "$forge_path"; then
+                printf '%s\n' "$forge_path"
+                return 0
+            fi
+        done
+    fi
+
     echo "Erreur : Python 3.11 ou plus recent est requis." >&2
     echo "Installez Python avec le gestionnaire de paquets de votre distribution, puis relancez installer.sh." >&2
     return 1

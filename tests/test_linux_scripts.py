@@ -62,6 +62,7 @@ class InstallerTests(unittest.TestCase):
                 (tools / name).symlink_to(executable)
             environment = os.environ.copy()
             environment.pop("FORGE_PYTHON", None)
+            environment["HOME"] = str(Path(directory) / "empty-home")
             environment["PATH"] = str(tools)
             completed = subprocess.run(
                 [str(ROOT / "installer.sh")],
@@ -71,6 +72,34 @@ class InstallerTests(unittest.TestCase):
             )
         self.assertNotEqual(completed.returncode, 0)
         self.assertIn("Python 3.11 ou plus recent est requis", completed.stderr)
+
+    def test_python_in_local_bin_is_found_outside_path(self):
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory) / "home with spaces"
+            local_bin = home / ".local" / "bin"
+            local_bin.mkdir(parents=True)
+            (local_bin / "python3.12").symlink_to(sys.executable)
+
+            tools = Path(directory) / "tools"
+            tools.mkdir()
+            for name in ("dirname", "uname"):
+                executable = shutil.which(name)
+                self.assertIsNotNone(executable)
+                (tools / name).symlink_to(executable)
+
+            environment = os.environ.copy()
+            environment.pop("FORGE_PYTHON", None)
+            environment["HOME"] = str(home)
+            environment["PATH"] = str(tools)
+            completed = subprocess.run(
+                [str(ROOT / "installer.sh")],
+                env=environment,
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+
+        self.assertIn(str(local_bin / "python3.12"), completed.stdout)
 
 
 class StartScriptTests(unittest.TestCase):
