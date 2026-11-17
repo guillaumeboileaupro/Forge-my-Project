@@ -37,6 +37,8 @@ Le graphe est indicatif: la colonne Depend de fait foi.
 | T18 | P7 | Tests finaux, corrections, docs et rapport | T01-T17 | 3 j | 1 h 36 | -22 h 24 (base 8 h/j) | DONE | Critères de finalisation valides |
 | **Total** | | | | **30 j** | **3 h 57** | **-236 h 03** (base 8 h/j) | | 18 taches DONE |
 
+Lecture des donnees historiques T01-T18 (conservees telles quelles) : la colonne Reel contient le temps d'execution de l'agent IA, pas du temps de developpement humain ; l'Ecart compare donc des minutes d'agent a une charge humaine en jours et ne mesure pas une productivite humaine. Le cycle E01-E18 separe ces grandeurs (voir plus bas).
+
 ## Ordre de travail
 T01-T18 sont terminees. Pour E01-E18, plusieurs petites PR sont autorisees en parallele avec worktrees independants, revue et CI verte. Actualiser les colonnes Reel/Ecart apres chaque tache et noter les preuves CI dans la PR.
 
@@ -184,7 +186,7 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 | --- | --- | --- | --- | --- |
 | Q01 | A | Linux uniquement, sans promesse Windows/macOS | E04, v1.0.0 | TODO |
 | Q02 | B, recadree Linux | Ecriture directe dans les dossiers Linux; ne pas developper Windows | E04, E07 | TODO |
-| Q03 | A + B | GitHub Actions et tests manuels Linux | E05, E18 | TODO |
+| Q03 | A + B | GitHub Actions et tests manuels Linux | E05, E18 | PARTIEL (E05: controles reguliers definis dans docs/MAINTENANCE.md; recette manuelle E18 a faire) |
 | Q04 | B | `installer.sh` et `start.sh`; examiner la PR existante de `start.py` avant doublon | E04 | TODO |
 | Q05 | Reportee | MCP GitHub authentifie NON VERIFIE; conserver dans les pistes futures sans PR maintenant | Backlog long terme | REPORTE |
 | Q06 | A puis B puis C | Maintenir GitHub/Playwright, puis MCP officiels, enfin recherche libre verifiee | Backlog MCP progressif | FUTUR |
@@ -202,9 +204,9 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 | Q18 | C | Skills: cache expire, recherches paralleles, classement et reverification avant copie | E12 | TODO |
 | Q19 | B + C, usage personnel | Stacks Python/JS/Rust/Go/Java et catalogue/regles personnels editables localement | E13 | TODO |
 | Q20 | A | Temps manuels uniquement; conserver estime/reel/ecart sans chronometre ni mesure Git | Toutes E, pas de fonctionnalite nouvelle | REGLE |
-| Q21 | B puis C puis D | Trois releases: v1.0.0 nettoyage; v1.1.0 PARTIEL; v2.0.0 ameliorations+refonte | E05, E07-E09, E18 | TODO |
+| Q21 | B puis C puis D | Trois releases: v1.0.0 nettoyage; v1.1.0 PARTIEL; v2.0.0 ameliorations+refonte | E05, E07-E09, E18 | TODO (plan pret: docs/RELEASES.md; aucune release publiee) |
 | Q22 | C | Codex et Claude en parallele, composants et worktrees distincts | E05, E14-E18 | REGLE |
-| Q23 | B + C | Releases, bugs, mises a jour securite, controles reguliers dependances et regression | E05 | TODO |
+| Q23 | B + C | Releases, bugs, mises a jour securite, controles reguliers dependances et regression | E05 | DONE (E05, PR #29: docs/MAINTENANCE.md, docs/RELEASES.md, CHANGELOG.md) |
 | Q24 | A+B+C+D | Plan detaille, missions agents, petites PR progressives et execution avec tests/CI | E05 + plan | REGLE |
 
 ### 10 decisions de refonte UI - remplacement complet, pas un relooking
@@ -236,29 +238,29 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 
 Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](docs/ROADMAP_2026.md). Le tableau de suivi des nouvelles taches (E01-E18) est maintenu ci-dessous; les 18 taches T01-T18 ci-dessus restent intactes et terminees.
 
-| ID | Travail | Responsable | Depend de | Estime | Reel | Ecart | Statut | Validation |
-| --- | --- | --- | --- | ---: | ---: | ---: | --- | --- |
-| E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | Claude | - | 0,5 j | 0 h 04 | -3 h 56 (base 8 h/j) | DONE | PR #27 fusionnee; docs/E01_REFS_AUDIT.md |
-| E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | Claude | - | 1 j | 0 h 40 | -7 h 20 (base 8 h/j) | DONE | PR #26 fusionnee (140bdb2, 16/11); branche et worktree nettoyes en E01 | 
-| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | 0 h 12 (Claude) + Codex non mesure | -7 h 48 sur la part mesuree (base 8 h/j) | DONE | PR #28 fusionnee (e7ce436, 16/11); CI push/PR verte (6/6 profils); docs/E03_CLEANUP_AUDIT.md |
-| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 1 j | Non renseigne | Non calculable | IN PROGRESS | PR #25 ouverte; installation Linux et tests realises; fusion en attente | 
-| E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | Claude | E01 | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | Claude | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | Codex | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E08 | Infrastructure E2E des projets generes, adaptee a la stack, sans scenarios metier inventes | Claude | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E09 | Assistant de protection de branche GitHub: preparer les commandes, ne pas appliquer automatiquement | Claude | - | 1 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E10 | Scanner d'images Docker et SAST complementaire dont Semgrep, sans retrait des controles actuels | Claude | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E11 | Verification statique des API Python/JS/TS lorsque possible; PASS/FAIL/NON VERIFIE | Claude | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E12 | Recherche des skills: cache expire, parallelisme, classement, reverification avant copie | Claude | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E13 | Enrichir les stacks Python/JS/Rust/Go/Java et permettre les catalogues/regles personnalises localement | Claude | - | 4 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E14 | Definir le design system et les contrats de la nouvelle UI avant de coder | Codex + Claude | - | 2 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E15 | Nouvelle coque UI: look professionnel minimal, themes clair/sombre, densite, panneaux deplacables et redimensionnables, onglets, navigation, palette | Codex | E14 | 4 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E16 | Parcours questionnaire progressif et conditionnel avec apercu dynamique, arbre et diagramme synchronises | Claude | E14 | 4 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E17 | Editeur leger coloration/lignes/recherche/remplacement, panneau diagnostics et integration des flux securises existants | Codex + Claude (fichiers separes) | E15,E16 | 3 j | - | - | TODO | Voir ROADMAP_2026.md | 
-| E18 | Validation visuelle et fonctionnelle progressive, accessibilite, performances, resolutions, recette globale; migration finale apres validation | Codex + Claude | E15,E16,E17 | 3 j | - | - | TODO | Voir ROADMAP_2026.md | 
+| ID | Travail | Responsable | Depend de | Charge humaine estimee | Execution IA mesuree | Temps humain reel | Ecart humain | Statut | Validation |
+| --- | --- | --- | --- | ---: | ---: | ---: | ---: | --- | --- |
+| E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | Claude | - | 0,5 j | 0 h 04 (Claude) | non renseigne | non calculable | DONE | PR #27 fusionnee; docs/E01_REFS_AUDIT.md |
+| E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | Claude | - | 1 j | 0 h 40 (Claude, attente CI comprise) | non renseigne | non calculable | DONE | PR #26 fusionnee (140bdb2); docs/GIT_ATTRIBUTION.md |
+| E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | 0 h 12 (Claude) ; Codex non mesure | non renseigne | non calculable | DONE | PR #28 fusionnee (e7ce436); CI 6/6 profils; docs/E03_CLEANUP_AUDIT.md |
+| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 1 j | non mesure (Codex) | non renseigne | non calculable | IN PROGRESS | PR #25 ouverte; fusion en attente |
+| E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | Claude | E01 | 1 j | 0 h 32 (Claude, dont anomalie P0 PR #30; hors attente CI finale) | non renseigne | non calculable | DONE | PR #29 (statut effectif a sa fusion); docs/MAINTENANCE.md, docs/RELEASES.md, CHANGELOG.md |
+| E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | Claude | - | 1 j | - | - | - | TODO | Voir ROADMAP_2026.md |
+| E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | Codex | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
+| E08 | Infrastructure E2E des projets generes, adaptee a la stack, sans scenarios metier inventes | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
+| E09 | Assistant de protection de branche GitHub: preparer les commandes, ne pas appliquer automatiquement | Claude | - | 1 j | - | - | - | TODO | Voir ROADMAP_2026.md |
+| E10 | Scanner d'images Docker et SAST complementaire dont Semgrep, sans retrait des controles actuels | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
+| E11 | Verification statique des API Python/JS/TS lorsque possible; PASS/FAIL/NON VERIFIE | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
+| E12 | Recherche des skills: cache expire, parallelisme, classement, reverification avant copie | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
+| E13 | Enrichir les stacks Python/JS/Rust/Go/Java et permettre les catalogues/regles personnalises localement | Claude | - | 4 j | - | - | - | TODO | Voir ROADMAP_2026.md |
+| E14 | Definir le design system et les contrats de la nouvelle UI avant de coder | Codex + Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
+| E15 | Nouvelle coque UI: look professionnel minimal, themes clair/sombre, densite, panneaux deplacables et redimensionnables, onglets, navigation, palette | Codex | E14 | 4 j | - | - | - | TODO | Voir ROADMAP_2026.md |
+| E16 | Parcours questionnaire progressif et conditionnel avec apercu dynamique, arbre et diagramme synchronises | Claude | E14 | 4 j | - | - | - | TODO | Voir ROADMAP_2026.md |
+| E17 | Editeur leger coloration/lignes/recherche/remplacement, panneau diagnostics et integration des flux securises existants | Codex + Claude (fichiers separes) | E15,E16 | 3 j | - | - | - | TODO | Voir ROADMAP_2026.md |
+| E18 | Validation visuelle et fonctionnelle progressive, accessibilite, performances, resolutions, recette globale; migration finale apres validation | Codex + Claude | E15,E16,E17 | 3 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 
 ### E02 - 15 novembre 2026 (Claude Code, branche feat/e02-git-attribution-guard)
-- Temps reel: 22 h 09 -> 22 h 49 (0 h 40, attente CI comprise), worktree dedie `Forge-my-Project-e02` depuis origin/main 1d7116e (PR #22 fusionnee).
+- Execution IA mesuree (horloge, pas du temps humain): 22 h 09 -> 22 h 49 (0 h 40, attente CI comprise), worktree dedie `Forge-my-Project-e02` depuis origin/main 1d7116e (PR #22 fusionnee).
 - Audit initial: PR #23 n'avait livre que `.claude/settings.json` et la documentation; aucun hook ni job CI ne controlait l'attribution. `main` sans protection de branche ni ruleset (API GitHub 404 / liste vide): la CI n'y est pas encore obligatoire.
 - Livre: `templates/hooks/attribution_guard.py.tmpl` (source unique, stdlib, Python 3.7+; lien `scripts/attribution_guard.py`): commit-msg (identite effective via `git var`, trailers, pied automatique), pre-push, check-range, audit, ci (plage de l'evenement + titre/description de PR), install/uninstall (hooks existants conserves en `.local`, refus sur hooks versionnes sans `--allow-tracked`), install-template (`init.templateDir` global modifie seulement apres confirmation).
 - Forge-my-Project: `.githooks/commit-msg` et `.githooks/pre-push` ajoutes, `.githooks/pre-commit` inchange; job CI `attribution`. Projets generes: garde copie, commit-msg/pre-push, job CI, regle AGENTS.md, contexte de protection CONTRIBUTING.md, attribution Claude desactivee.
@@ -268,7 +270,7 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 - Limites: hooks locaux contournables (`--no-verify`); job CI bloquant seulement apres protection de branche par le proprietaire (commande dans docs/GIT_ATTRIBUTION.md); detection par liste d'agents a maintenir; titre/description de PR controles aux evenements opened/synchronize/reopened seulement; installation dans les autres depots et modele global non executes sur la machine (commandes fournies).
 
 ### E01 - 16 novembre 2026 (Claude Code, branche docs/e01-refs-audit)
-- Temps reel: 22 h 32 -> 22 h 36 (0 h 04, hors attente CI), worktree dedie `Forge-my-Project-e01` depuis origin/main 140bdb2 (PR #26 fusionnee).
+- Execution IA mesuree (horloge, pas du temps humain): 22 h 32 -> 22 h 36 (0 h 04, hors attente CI), worktree dedie `Forge-my-Project-e01` depuis origin/main 140bdb2 (PR #26 fusionnee).
 - Rapport complet: [docs/E01_REFS_AUDIT.md](docs/E01_REFS_AUDIT.md) (inventaire, methode, archive nom/SHA des branches docs/*, simulation, execution).
 
 - Preuves: chaque branche testee par ascendance, `git cherry`, simulation de fusion dans un worktree jetable (detecte squash et reecritures) et `attribution_guard.py check-range`; worktrees controles (modifications, non suivis, ignores, stash). 7 branches distantes integrees supprimees apres `push --dry-run` (docs/development-roadmap-todo, docs/validated-project-specification, docs/roadmap-34-decisions-2026, fix/no-ai-coauthor-attribution, feat/e02-git-attribution-guard, claude/start-launcher, codex/file-preview); branche locale et worktree E02 retires (`worktree remove` sans force, `branch -d`). Distant: 9 -> 2 branches (main, feat/e04-linux-launcher).
@@ -282,10 +284,19 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 - Caches Python ignores produits par les tests supprimes uniquement dans le worktree E03; aucun autre worktree touche.
 - Tests locaux: 265 PASS, 12 ignores; quatre profils Python PASS; profil TypeScript bloque localement a `npm install` (`edgesOut`, npm 10.8.2/Node 20), sans lien avec E03.
 - CI PR #28 (0e62860): runs 43964140186 (push) et 43964178570 (pull_request) verts; CI generee 6/6 profils PASS, dont typescript-api-express et typescript-web-react: la limite npm est locale.
-- Temps reel: Claude 22 h 47 -> 22 h 53 puis 22 h 54 -> 23 h 00 (0 h 12); partie Codex (commit 0e62860, PR #28) non mesuree, donc ecart partiel.
+- Execution IA mesuree (horloge, pas du temps humain): Claude 22 h 47 -> 22 h 53 puis 22 h 54 -> 23 h 00 (0 h 12); partie Codex (commit 0e62860, PR #28) non mesuree, donc ecart partiel.
 - Corrections de la reprise: Q15 remis a TODO (nettoyage automatise des worktrees non construit), Q14 PARTIEL; doublon de lien vers docs/CONVENTIONS.md retire d'AGENTS.md.
 
-Les priorites et les criteres d'acceptation propres a chaque ligne sont maintenus dans [docs/ROADMAP_2026.md](docs/ROADMAP_2026.md); cette reference fait partie du contrat de la tache, pas d'un critere generique. Charge totale estimee: **36,5 j**. Regle de suivi: temps reels saisis manuellement. L'ecart est calcule en heures selon 1 j = 8 h. Toute PR renseigne preuve CI, revue, tests et limites. Ne pas marquer DONE avant verification.
+### E05 - 17 novembre 2026 (Claude Code, branche docs/e05-maintenance-releases)
+- Charge humaine estimee: 1 j (8 h). Execution IA mesuree (horloge, pas du temps humain): 19 h 36 -> 20 h 07 (0 h 32), dont 19 h 47 -> 20 h 06 pour l'anomalie P0 (PR #30); attente de la CI finale non comptee. Temps humain reel: non renseigne. Ecart humain: non calculable.
+- Livre: [docs/MAINTENANCE.md](docs/MAINTENANCE.md) (anomalies P0-P3 en issues GitHub, controles reguliers, dependances et epinglages, regressions, SemVer et changelog, conditions de release, rollback), [docs/RELEASES.md](docs/RELEASES.md) (v1.0.0, v1.1.0, v2.0.0 avec taches et preuves), [CHANGELOG.md](CHANGELOG.md) (`[Unreleased]`, aucune version publiee). Aucun mecanisme automatique ajoute hors un test.
+- Controle CI: `tests/test_release_policy.py` (8 tests, job `python`): format du changelog, statuts E01-E18 identiques dans TODO.md et ROADMAP, dependances respectees, aucune execution IA dans la colonne de temps humain, chaque tache rattachee a un jalon, liste de controle des releases alignee sur les jobs CI reels. 7 mutations injectees, toutes detectees.
+- Suivi: colonnes E01-E18 remplacees par charge humaine estimee / execution IA mesuree / temps humain reel / ecart humain; donnees T01-T18 inchangees avec note de lecture; libelles des notes E01-E03 precises. Statuts corriges sur preuve: ROADMAP E03 DONE (PR #28) et E04 IN PROGRESS (PR #25 ouverte); Q03 PARTIEL, Q21 TODO (plan pret), Q23 DONE a la fusion.
+- Verifications: tests locaux OK apres fusion de main (283, 12 ignores); `attribution_guard.py audit` conforme; aucune release, aucun tag.
+- Anomalie P0 rencontree: premiere CI de la PR #29 rouge (`CI generee des profils predefinis`), reproduite sur main (relance du run 43966479454, tentative 2: rouge) car GHSA-fc5q-39xc-vjpf (picomatch <= 4.0.7, high, aucune version corrigee) bloque l'audit npm des profils TypeScript. Decision du proprietaire: exception datee et ciblee. PR #30 fusionnee (2995c81): passerelle `scripts/security/npm_audit_gate.py`, exception jusqu'au 2026-12-17, registre dans docs/SECURITY.md; CI verte, 6/6 profils, dependance vulnerable injectee toujours bloquee. Branche et worktree du correctif nettoyes.
+- Coordination Codex: la PR #25 etait deja en conflit avec main sur TODO.md (ligne E04 modifiee par ab23081). Resolution attendue cote E04: garder les colonnes E05 et le texte E04 de Codex. Branche et worktree de Codex non modifies.
+
+Les priorites et les criteres d'acceptation propres a chaque ligne sont maintenus dans [docs/ROADMAP_2026.md](docs/ROADMAP_2026.md); cette reference fait partie du contrat de la tache, pas d'un critere generique. Charge totale estimee: **36,5 j**. Regle de suivi (E01-E18) : la charge humaine estimee est en jours (1 j = 8 h de travail humain). L'execution IA mesuree est le temps horloge d'une session d'agent, releve manuellement a partir des heures de debut et de fin ; elle n'est jamais convertie en charge humaine. Le temps humain reel n'est renseigne que s'il est connu du proprietaire. L'ecart humain (temps humain reel ou charge reestimee moins charge estimee) n'est calcule que lorsque ces donnees existent ; sinon `non calculable`. Toute PR renseigne preuve CI, revue, tests et limites. Ne pas marquer DONE avant verification.
 
 ## Idees hors suivi actif
 
