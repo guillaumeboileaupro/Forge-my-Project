@@ -11,8 +11,8 @@ L'archive ZIP reste disponible. L'ecriture locale est une alternative optionnell
    - conflit : un fichier different existe ; le diff (existant -> prepare) s'affiche en cliquant le fichier ;
    - bloque : lien symbolique, fichier special ou chemin non sur ; l'ecriture est refusee tant que l'entree n'est pas corrigee a la main.
 4. Pour chaque conflit, choisir : « Conserver l'existant », « Remplacer » ou « Fusionner manuellement » (zone d'edition pre-remplie avec le fichier existant ; reprendre les ajouts voulus depuis le diff). Aucun fichier n'est jamais ecrase sans decision explicite.
-5. Cocher la confirmation, puis « Ecrire les fichiers » et confirmer la boite de dialogue.
-6. Le rapport final liste chaque fichier (cree, remplace, fusionne, conserve, identique), l'emplacement de la sauvegarde et les avertissements non bloquants.
+5. Cocher la confirmation, puis « Ecrire les fichiers » et confirmer la boite de dialogue. Les controles NON VERIFIE et les avertissements, confirmes lors de la validation, sont reverifies par le serveur : si la configuration ou ces controles ont change, l'ecriture est refusee et la liste s'affiche a nouveau pour une nouvelle confirmation. Un controle critique NON VERIFIE (niveau hardened) bloque l'ecriture.
+6. Le rapport final liste chaque fichier (cree, remplace, fusionne, conserve, identique), l'emplacement de la sauvegarde, les avertissements non bloquants et les elements acceptes, toujours marques NON VERIFIE.
 
 Les fichiers du dossier qui ne font pas partie de la generation ne sont jamais lus en dehors des chemins prepares, ni modifies, ni supprimes.
 

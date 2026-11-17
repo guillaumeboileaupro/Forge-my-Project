@@ -498,6 +498,58 @@ class FirefoxFormTests(unittest.TestCase):
         self.cmd("POST", "/element/%s/value" % self.find("#description"), {"text": "x"})
         self.assertTrue(self.js("return document.querySelector('#local-write').disabled"))
 
+    def test_unverified_checks_confirmation_and_critical_block(self):
+        """E06 : NON VERIFIE detaille, refus serveur sans confirmation, statut conserve, blocage critique."""
+        from pathlib import Path
+        dest = Path(self.write_root) / "unverified-demo"
+        self.type_text("#name", "unverified-demo")
+        self.js("const s=document.querySelector('#project_type'); s.value='web'; s.dispatchEvent(new Event('change',{bubbles:true}))")
+        self.click('[data-goto="1"]')
+        for css in ("#tech-node", "#tech-typescript", "#tech-vitest"):
+            self.click(css)
+        self.click('[data-goto="2"]')
+        self.click('input[name="agent"][value="claude"]')
+        self.click('[data-goto="4"]')
+        self.click("#mcp-playwright")  # sans verification en ligne : serveur MCP NON VERIFIE
+        self.click('[data-goto="5"]')
+        self.click("#check")
+        self.wait("return document.querySelector('#unverified') !== null")
+        item = self.text('[data-unverified^="mcp-unverified"]')
+        self.assertIn("NON VERIFIE", item)
+        self.assertIn("Raison : Serveurs MCP NON VERIFIES", item)
+        self.assertIn("Risque :", item)
+        self.validate_files()
+        self.wait("return !document.querySelector('#local-write').disabled")
+        # La case est decochee apres validation : le serveur refuse l'ecriture (409) et rien n'est ecrit.
+        self.click("#ack-warnings")
+        self.js("document.querySelector('#destination').value = arguments[0]", str(dest))
+        self.click("#compare")
+        self.wait("return !document.querySelector('#comparison').hidden")
+        self.click("#write-confirm")
+        self.js("window.confirm = () => true")
+        self.click("#write")
+        self.wait("return document.querySelector('#status').textContent.includes('Confirmation explicite requise')")
+        self.assertFalse(dest.exists())
+        # Confirmation donnee : ecriture, et le journal garde le statut NON VERIFIE.
+        self.click("#ack-warnings")
+        self.click("#compare")
+        self.wait("return !document.querySelector('#comparison').hidden")
+        self.click("#write-confirm")
+        self.click("#write")
+        self.wait("return document.querySelector('#write-report').textContent.includes('Ecriture terminee')")
+        self.assertIn("NON VERIFIE (confirme)", self.text("#write-confirmations"))
+        self.assertTrue((dest / "AGENTS.md").exists())
+        # Niveau hardened sans verification en ligne : controle critique, aucune confirmation possible.
+        self.click('[data-goto="3"]')
+        self.click('input[name="security"][value="hardened"]')
+        self.click('[data-goto="5"]')
+        self.click("#check")
+        self.wait("return document.querySelector('#unverified-blocking') !== null")
+        self.assertIsNone(self.js("return document.querySelector('#ack-warnings')"))
+        self.click("#validate-files")
+        self.assertIn("bloquee", self.text("#status"))
+        self.assertTrue(self.js("return document.querySelector('#download').disabled"))
+
     def test_questionnaire_search_suggestion_and_warning_confirmation(self):
         """T03/T04 : recherche, retour arriere, cascade des dependances, suggestion d'architecture, avertissements."""
         self.type_text("#name", "quest-demo")
