@@ -1,5 +1,7 @@
 # Forge-my-Project
 
+![Logo Forge-my-Project](assets/logo.svg)
+
 Outil local qui prepare l'environnement de developpement d'un nouveau projet (AGENTS.md, skills, documentation, hooks, CI, securite, MCP optionnels) a partir d'un questionnaire dans Firefox. Sans IA embarquee, sans code metier, sans creation ni push de depot.
 
 ## Demarrage
