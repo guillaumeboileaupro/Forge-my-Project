@@ -24,7 +24,9 @@ class WriteTestCase(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name).resolve()
-        patch = mock.patch.dict(os.environ, {"FORGE_WRITE_ROOT": str(self.root)})
+        state = tempfile.TemporaryDirectory()  # bases de fusion E07 hors du dossier personnel
+        self.addCleanup(state.cleanup)
+        patch = mock.patch.dict(os.environ, {"FORGE_WRITE_ROOT": str(self.root), "FORGE_STATE_DIR": state.name})
         patch.start()
         self.addCleanup(patch.stop)
         self.dest = self.root / "projets" / "demo"
@@ -281,7 +283,7 @@ class ContentCheckTests(unittest.TestCase):
             validate_preview(edited, self.generated)
 
     def test_merge_content_is_checked(self):
-        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"FORGE_WRITE_ROOT": tmp}):
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"FORGE_WRITE_ROOT": tmp, "FORGE_STATE_DIR": os.path.join(tmp, ".forge-state")}):
             dest = Path(tmp).resolve() / "p"
             (dest / "docs").mkdir(parents=True)
             (dest / "docs/GUIDE.md").write_text("autre\n")

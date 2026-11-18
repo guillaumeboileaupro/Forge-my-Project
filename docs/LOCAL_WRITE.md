@@ -16,6 +16,14 @@ L'archive ZIP reste disponible. L'ecriture locale est une alternative optionnell
 
 Les fichiers du dossier qui ne font pas partie de la generation ne sont jamais lus en dehors des chemins prepares, ni modifies, ni supprimes.
 
+## Fusion a trois voies (E07)
+- **Base commune** : le contenu que Forge a reellement ecrit, ou trouve identique, lors de la derniere ecriture reussie dans ce dossier. Rien d'autre n'est considere comme une base : ni un fichier fourni par le navigateur, ni une supposition. Les bases sont conservees hors du projet (voir CONTRACTS.md), avec une empreinte par fichier. Une base alteree est ignoree.
+- **Avec une base** : si les modifications locales et generees ne se chevauchent pas, une fusion automatique est proposee. Elle n'est appliquee qu'apres le choix « Appliquer la fusion automatique proposee », et elle passe les memes controles de contenu (secrets, fichiers proteges) qu'une fusion manuelle. Sinon, le detail des conflits s'affiche (lignes de la base, version locale, version generee) et la resolution reste manuelle.
+- **Sans base** (premiere ecriture, fichier jamais ecrit par Forge, base perdue) : conserver, remplacer ou fusionner a la main, comme avant.
+- **Apres l'ecriture** : seules les ecritures reussies mettent a jour les bases. Un fichier conserve garde son ancienne base, et un echec suivi d'un rollback ne change rien.
+- **Permissions** : un fichier remplace ou fusionne garde son mode, y compris apres un rollback. Un script genere (`.githooks/`, `scripts/hooks/`) recoit en plus le bit d'execution la ou il est lisible.
+- **Reinitialisation** : supprimer `merge-bases/` dans le dossier d'etat. La prochaine ecriture repart alors en mode manuel.
+
 ## Racine autorisee
 Seuls les sous-dossiers de la racine autorisee sont acceptes : le dossier personnel par defaut, ou la valeur de `FORGE_WRITE_ROOT` au lancement (`FORGE_WRITE_ROOT=/chemin python3 server.py`). La racine elle-meme, le dossier de Forge-my-Project, les chemins relatifs, `.` et `..`, et tout lien symbolique sur le chemin (destination ou fichier cible) sont refuses.
 

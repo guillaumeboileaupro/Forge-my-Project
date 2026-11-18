@@ -49,9 +49,11 @@ def three_way_merge(base_text, current_text, generated_text):
     local_changes = _changes(base, current)
     generated_changes = _changes(base, generated)
     conflicts = []
+    shared = [change for change in generated_changes if change in local_changes]
+    generated_changes = [change for change in generated_changes if change not in shared]  # appliquee une fois
     for local in local_changes:
         for remote in generated_changes:
-            if _overlap(local, remote) and local != remote:
+            if _overlap(local, remote):
                 conflicts.append({"base_start": min(local[0], remote[0]) + 1,
                                   "base_end": max(local[1], remote[1]),
                                   "current": "".join(local[2]),

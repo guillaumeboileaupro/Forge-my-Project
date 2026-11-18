@@ -9,8 +9,8 @@ import hashlib
 import hmac
 import json
 import secrets
-from collections import OrderedDict
 
+from forge.filesystem import bases as base_store
 from forge.filesystem.compare import MAX_MERGEABLE, compare, sha256
 from forge.filesystem.content import ContentError, check_modified, check_paths
 from forge.filesystem.destination import Destination
@@ -18,8 +18,6 @@ from forge.filesystem.writer import apply_changes
 
 ACTIONS = ("keep", "replace", "merge", "auto")
 _KEY = secrets.token_bytes(32)  # propre au processus : un jeton ne survit pas a un redemarrage
-_BASES = OrderedDict()
-MAX_BASE_DESTINATIONS = 32
 
 
 class DecisionError(ValueError):
@@ -38,19 +36,21 @@ def _token(destination, files, states, bases=None):
 
 
 def _known_bases(destination, files):
-    known = _BASES.get(destination.path, {})
-    return {path: known[path] for path in files if path in known}
+    """Bases fiables : contenus generes enregistres apres une ecriture reussie (forge.filesystem.bases)."""
+    return base_store.load(destination.path, files)
 
 
 def _remember_bases(destination, generated, operations):
-    known = dict(_BASES.get(destination.path, {}))
-    for operation in operations:
-        if operation["action"] != "kept" and operation["path"] in generated:
-            known[operation["path"]] = generated[operation["path"]]
-    _BASES[destination.path] = known
-    _BASES.move_to_end(destination.path)
-    while len(_BASES) > MAX_BASE_DESTINATIONS:
-        _BASES.popitem(last=False)
+    """Le contenu genere devient la base des fichiers ecrits ou deja identiques ; un fichier
+    conserve garde son ancienne base. Un echec d'enregistrement n'annule pas l'ecriture
+    reussie : la prochaine comparaison proposera seulement la fusion manuelle."""
+    written = {op["path"]: generated[op["path"]] for op in operations
+               if op["action"] in ("created", "replaced", "merged", "identical") and op["path"] in generated}
+    try:
+        saved = base_store.record(destination.path, written) if written else True
+    except OSError as exc:
+        return "non enregistrees (%s) : fusion automatique indisponible a la prochaine ecriture" % exc.strerror
+    return "enregistrees" if saved else "non enregistrees (trop volumineuses) : fusion manuelle a la prochaine ecriture"
 
 
 def _scan(destination, files, bases=None):
@@ -143,5 +143,5 @@ def write_destination(value, files, generated, token, decisions, confirm):
     report["operations"] = sorted(report["operations"] + skipped, key=lambda op: op["path"])
     report["summary"] = {action: sum(1 for op in report["operations"] if op["action"] == action)
                          for action in ("created", "replaced", "merged", "kept", "identical")}
-    _remember_bases(destination, generated, report["operations"])
+    report["merge_bases"] = _remember_bases(destination, generated, report["operations"])
     return report

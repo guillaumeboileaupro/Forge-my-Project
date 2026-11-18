@@ -199,7 +199,7 @@ class ApiServerTests(unittest.TestCase):
     def test_local_write_flow_compare_confirm_backup(self):
         import os
         import tempfile
-        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"FORGE_WRITE_ROOT": tmp}):
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"FORGE_WRITE_ROOT": tmp, "FORGE_STATE_DIR": os.path.join(tmp, ".forge-state")}):
             root = Path(tmp).resolve()
             (root / "existant").mkdir()
             dest = root / "existant"

@@ -35,6 +35,11 @@ A l'expiration, la CI redevient rouge : verifier l'avis, puis retirer l'exceptio
 - La confirmation est verifiee par le serveur, jamais par le seul navigateur. Elle est liee a la configuration et aux controles exacts, et elle est perimee au redemarrage ou a tout changement.
 - Seuils inchanges : npm audit `high` ou `moderate`, Bandit `medium` ou `low`. L'exception datee GHSA-fc5q-39xc-vjpf (picomatch, 2026-12-17) n'est ni elargie ni confirmable autrement.
 
+## Bases de fusion (E07)
+- Le dossier d'etat local (0700, fichiers 0600) contient le contenu genere ecrit dans chaque destination, y compris les editions faites dans l'apercu. Ce sont des donnees locales de l'utilisateur, jamais transmises.
+- Une base n'est utilisee que si son empreinte SHA-256 et sa destination concordent. Le jeton de comparaison couvre les bases : une base changee entre la comparaison et l'ecriture rend la validation perimee (409).
+- Une fusion automatique ne peut ni introduire de secret ni modifier un fichier protege : memes controles que la fusion manuelle.
+
 ## Donnees locales du questionnaire (T05)
 - Brouillon: `localStorage` du navigateur (cle `forge-my-project.draft.v1`), revalide par le serveur avant restauration; un brouillon incompatible est supprime, jamais applique.
 - Profils personnels: `$FORGE_PROFILES_FILE`, sinon `$XDG_CONFIG_HOME/forge-my-project/profiles.json`, sinon `~/.config/forge-my-project/profiles.json`; dossier 0700, fichier 0600, ecriture atomique, liens symboliques et fichiers illisibles refuses sans ecrasement. Aucun nom ni description de projet n'y est stocke.

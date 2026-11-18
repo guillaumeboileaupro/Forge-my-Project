@@ -40,7 +40,8 @@ class FirefoxFormTests(unittest.TestCase):
         cls.profiles_dir = tempfile.mkdtemp(prefix="forge-e2e-profiles-")
         cls.write_root = os.path.realpath(tempfile.mkdtemp(prefix="forge-e2e-write-"))
         cls.env = mock.patch.dict(os.environ, {"FORGE_PROFILES_FILE": os.path.join(cls.profiles_dir, "profiles.json"),
-                                               "FORGE_WRITE_ROOT": cls.write_root})
+                                               "FORGE_WRITE_ROOT": cls.write_root,
+                                               "FORGE_STATE_DIR": tempfile.mkdtemp(prefix="forge-e2e-state-")})
         cls.env.start()
         # GitHub remplace par un faux client : aucun acces reseau pendant la recette.
         cls.skill_client = FakeGh()

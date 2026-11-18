@@ -605,7 +605,10 @@ function selectConflict(path) {
     ? 'Une fusion automatique sans conflit est disponible. Relisez le diff avant de la valider.'
     : entry.base_available ? 'Les changements se chevauchent : une resolution manuelle est requise.'
       : 'Aucune base commune fiable : conserver, remplacer ou fusionner manuellement.');
-  $('#diff').textContent = entry.diff || '(diff indisponible : contenu binaire ou trop volumineux)';
+  const conflicts = (entry.merge_conflicts || []).map(c =>
+    `Lignes ${c.base_start}-${Math.max(c.base_start, c.base_end)} de la base :\n  local    : ${c.current.trimEnd() || '(supprime)'}\n  genere   : ${c.generated.trimEnd() || '(supprime)'}`);
+  $('#diff').textContent = (conflicts.length ? `Conflits a resoudre manuellement :\n${conflicts.join('\n')}\n\n` : '')
+    + (entry.diff || '(diff indisponible : contenu binaire ou trop volumineux)');
   document.querySelector('input[name="resolution"][value="merge"]').disabled = !entry.mergeable;
   document.querySelector('input[name="resolution"][value="auto"]').disabled = entry.auto_merge === null;
   const current = state.resolutions[path];
@@ -681,6 +684,7 @@ function renderWriteReport(report, title) {
   const container = $('#write-report');
   container.replaceChildren(element('p', {class: report.status === 'ok' ? 'ok' : 'error'}, title));
   if (report.backup) container.append(element('p', {}, `Sauvegarde des fichiers remplaces : ${report.destination}/${report.backup} (voir MANIFEST.json pour restaurer).`));
+  if (report.merge_bases) container.append(element('p', {id: 'merge-bases'}, `Bases de fusion a trois voies : ${report.merge_bases}.`));
   if (report.summary) {
     const s = report.summary;
     container.append(element('p', {}, `${s.created} cree(s), ${s.replaced} remplace(s), ${s.merged} fusionne(s), ${s.kept} conserve(s), ${s.identical} identique(s).`));

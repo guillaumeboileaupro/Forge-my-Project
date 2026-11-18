@@ -31,8 +31,27 @@ class WriteFailure(RuntimeError):
         self.report = report
 
 
-def mode_for(path):
-    return 0o755 if path.startswith(EXECUTABLE_PREFIXES) else 0o644
+def mode_for(path, existing=None):
+    """Mode d'un fichier ecrit : celui du fichier existant s'il y en a un (permissions de
+    l'utilisateur conservees), complete du bit d'execution pour les scripts generes."""
+    executable = path.startswith(EXECUTABLE_PREFIXES)
+    if existing is None:
+        return 0o755 if executable else 0o644
+    mode = existing & 0o777
+    if executable:
+        mode |= 0o100 | ((mode & 0o044) >> 2)  # executable la ou il est lisible
+    return mode
+
+
+def _existing_mode(dest_fd, path):
+    parts = path.split("/")
+    parent = walk(os.dup(dest_fd), parts[:-1])
+    if parent is None:
+        return None
+    try:
+        return os.stat(parts[-1], dir_fd=parent, follow_symlinks=False).st_mode
+    finally:
+        os.close(parent)
 
 
 def _commit(dir_fd, name, data, mode):
@@ -84,7 +103,7 @@ def _stamp():
 
 def apply_changes(destination, writes, states):
     """writes : {chemin: (action, bytes)} avec action create|replace|merge ; states : etats compares."""
-    dest_created, created_dirs, done, previous = [], [], [], {}
+    dest_created, created_dirs, done, previous, modes = [], [], [], {}, {}
     report = {"destination": destination.path, "backup": None, "operations": [], "status": "ok"}
     with destination.open(create=True, created=dest_created) as dest_fd:
         try:
@@ -93,12 +112,13 @@ def apply_changes(destination, writes, states):
             for path in sorted(writes):
                 if states[path] != ABSENT:
                     previous[path] = read_existing(dest_fd, path, keep_data=None).data
+                    modes[path] = _existing_mode(dest_fd, path)
             if previous:
                 report["backup"] = _backup(dest_fd, previous, writes, created_dirs)
             for path in sorted(writes):
                 action, data = writes[path]
                 _check_state(dest_fd, path, states[path])
-                _write_file(dest_fd, path, data, mode_for(path), created_dirs)
+                _write_file(dest_fd, path, data, mode_for(path, modes.get(path)), created_dirs)
                 done.append(path)
                 entry = {"path": path, "action": "created" if path not in previous else
                          ("merged" if action == "merge" else "replaced")}
@@ -106,7 +126,7 @@ def apply_changes(destination, writes, states):
                     entry["backup"] = "%s/%s" % (report["backup"], path)
                 report["operations"].append(entry)
         except (StaleError, OSError, ValueError) as exc:
-            _rollback(dest_fd, done, previous, created_dirs, report)
+            _rollback(dest_fd, done, previous, created_dirs, report, modes)
             failure = exc
         else:
             failure = None
@@ -148,13 +168,14 @@ def _backup(dest_fd, previous, writes, created_dirs):
     return root
 
 
-def _rollback(dest_fd, done, previous, created_dirs, report):
+def _rollback(dest_fd, done, previous, created_dirs, report, modes=None):
     """Restaure les fichiers remplaces, supprime ceux crees puis les dossiers crees vides."""
     errors = []
     for path in reversed(done):
         try:
             if path in previous:
-                _write_file(dest_fd, path, previous[path], mode_for(path), [])
+                original = (modes or {}).get(path)  # octets et mode d'origine restaures
+                _write_file(dest_fd, path, previous[path], original & 0o777 if original is not None else mode_for(path), [])
             else:
                 parent, name = _parent(dest_fd, path, [])
                 try:

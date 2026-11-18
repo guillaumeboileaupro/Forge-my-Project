@@ -188,7 +188,7 @@ class SkillsApiTests(unittest.TestCase):
     def test_local_write_preserves_approved_skill_and_mcp(self):
         import tempfile as tf
         request, files = self.edited_request()
-        with tf.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"FORGE_WRITE_ROOT": tmp}):
+        with tf.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"FORGE_WRITE_ROOT": tmp, "FORGE_STATE_DIR": os.path.join(tmp, ".forge-state")}):
             dest = os.path.join(os.path.realpath(tmp), "shop-web")
             status, data = self.post_json("/api/write/compare", dict(request, files=files, destination=dest))
             self.assertEqual(status, 200, data)
