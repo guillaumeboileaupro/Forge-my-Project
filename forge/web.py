@@ -268,8 +268,8 @@ def destination_browse_payload(raw):
 def write_compare_payload(raw):
     """Regenere, revalide les editions puis compare a la destination ; aucune ecriture."""
     try:
-        result, body, files = _validated_files(raw, ("destination",))
-        comparison = workflow.compare_destination(body.get("destination"), files)
+        result, body, files = _validated_files(raw, ("destination", "bases"))
+        comparison = workflow.compare_destination(body.get("destination"), files, body.get("bases"))
     except (ForgeError, ValueError) as exc:
         return _failure(exc)
     except OSError as exc:
@@ -295,9 +295,9 @@ def _journal(report, result):
 def write_apply_payload(raw):
     """Repete generation, controles, validation et comparaison, puis ecrit apres confirmation."""
     try:
-        result, body, files = _validated_files(raw, ("destination", "token", "decisions", "confirm"))
+        result, body, files = _validated_files(raw, ("destination", "token", "decisions", "confirm", "bases"))
         report = workflow.write_destination(body.get("destination"), files, result.files, body.get("token"),
-                                            body.get("decisions", {}), body.get("confirm"))
+                                            body.get("decisions", {}), body.get("confirm"), body.get("bases"))
     except (workflow.StaleValidation, StaleError) as exc:
         return _json(409, {"ok": False, "error": str(exc), "stale": True,
                            "report": getattr(exc, "report", None), "diagnostics": []})

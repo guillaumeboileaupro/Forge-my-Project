@@ -10,7 +10,7 @@ L'archive ZIP reste disponible. L'ecriture locale est une alternative optionnell
    - identique : contenu deja present, laisse tel quel ;
    - conflit : un fichier different existe ; le diff (existant -> prepare) s'affiche en cliquant le fichier ;
    - bloque : lien symbolique, fichier special ou chemin non sur ; l'ecriture est refusee tant que l'entree n'est pas corrigee a la main.
-4. Pour chaque conflit, choisir : « Conserver l'existant », « Remplacer » ou « Fusionner manuellement » (zone d'edition pre-remplie avec le fichier existant ; reprendre les ajouts voulus depuis le diff). Aucun fichier n'est jamais ecrase sans decision explicite.
+4. Pour chaque conflit, choisir : « Conserver l'existant », « Remplacer », appliquer la fusion automatique proposee lorsqu'une base commune fiable permet une fusion sans chevauchement, ou « Fusionner manuellement » (zone d'edition pre-remplie avec le fichier existant ; reprendre les ajouts voulus depuis le diff). Aucun fichier n'est jamais ecrase sans decision explicite.
 5. Cocher la confirmation, puis « Ecrire les fichiers » et confirmer la boite de dialogue.
 6. Le rapport final liste chaque fichier (cree, remplace, fusionne, conserve, identique), l'emplacement de la sauvegarde et les avertissements non bloquants.
 
@@ -39,9 +39,15 @@ Avant toute modification, chaque fichier remplace ou fusionne est copie dans `.f
   ```
   Relire la liste `created` avant de supprimer ces fichiers.
 
+# Fusion a trois voies (E07)
+
+Une base commune explicite peut etre fournie lors de la comparaison. Forge la limite aux chemins prepares, la revalide et lie son empreinte au jeton de validation. Les modifications de l'utilisateur et celles du nouveau rendu sont fusionnees automatiquement seulement si leurs plages ne se chevauchent pas. Le resultat propose et le diff restent visibles avant la confirmation.
+
+En cas de chevauchement, de contenu non textuel, de fichier trop volumineux ou d'absence de base commune, Forge revient au choix manuel existant (`conserver`, `remplacer` ou `fusionner manuellement`). L'action `auto` exige une proposition sans conflit; elle conserve les sauvegardes, l'ecriture atomique, la detection des modifications concurrentes et le rollback.
+
 ## Limites
 - Linux (teste) et macOS (non teste, memes API POSIX dir_fd et `O_NOFOLLOW`) ; ailleurs, dont Windows, l'ecriture est refusee et le ZIP reste disponible.
-- La fusion est manuelle (pas de fusion a trois voies automatique). Un fichier existant binaire ou de plus de 256 Kio ne peut qu'etre conserve ou remplace.
+- Un fichier existant binaire ou de plus de 256 Kio ne peut qu'etre conserve ou remplace.
 - Les configurations MCP et hooks d'agents existantes ne peuvent pas etre fusionnees avec les fichiers generes : conserver l'existant ou remplacer.
 - La detection de secrets repose sur des motifs connus ; elle ne remplace pas Gitleaks, execute par la CI et le hook pre-commit generes.
 - Les droits sont verifies avant l'ecriture ; un changement de droits pendant l'ecriture est traite comme un echec avec restauration.

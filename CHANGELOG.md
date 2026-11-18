@@ -4,6 +4,8 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 
 ## [Unreleased]
 
+- Ajoute une fusion textuelle a trois voies conservatrice avec base explicite revalidee, conflits localises et retour au mode manuel, sans retirer sauvegarde ni rollback.
+
 ### Ajoute
 - Garde d'attribution Git (`scripts/attribution_guard.py`) : hooks commit-msg et pre-push, job CI `attribution`, installation dans les depots existants et futurs, integration aux projets generes (E02, PR #26).
 - Audit des refs Git et archive des branches `docs/*` (E01, PR #27).
