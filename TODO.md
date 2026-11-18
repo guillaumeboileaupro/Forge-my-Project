@@ -191,7 +191,7 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 | Q05 | Reportee | MCP GitHub authentifie NON VERIFIE; conserver dans les pistes futures sans PR maintenant | Backlog long terme | REPORTE |
 | Q06 | A puis B puis C | Maintenir GitHub/Playwright, puis MCP officiels, enfin recherche libre verifiee | Backlog MCP progressif | FUTUR |
 | Q07 | Tout (A+B+C+D) | Maintenir les scans existants, ajouter analyse Docker et Semgrep, bloquer sev. haute/critique | E10 | TODO |
-| Q08 | B | Expliquer et faire confirmer explicitement chaque NON VERIFIE, trace et revalidation | E06 | IN PROGRESS (E06, PR #31) |
+| Q08 | B | Expliquer et faire confirmer explicitement chaque NON VERIFIE, trace et revalidation | E06 | DONE (E06, PR #31) |
 | Q09 | B | Fusion trois voies seulement avec base fiable; garder diff, fusion manuelle et rollback | E07, v1.1.0 | TODO |
 | Q10 | A + B | TESTING.md et infrastructure E2E cible prete a completer sans tests metier inventes | E08, v1.1.0 | TODO |
 | Q11 | B | Assistant qui prepare les commandes de protection GitHub, sans les executer | E09, v1.1.0 | TODO |
@@ -245,7 +245,7 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 | E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | 0 h 12 (Claude) ; Codex non mesure | non renseigne | non calculable | DONE | PR #28 fusionnee (e7ce436); CI 6/6 profils; docs/E03_CLEANUP_AUDIT.md |
 | E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 8 h | 0 h 19 (Codex, reprises cumulees) | inconnu | non calculable | DONE | PR #25: 289 tests, 12 ignores; CI push/PR 8/8 verte; revue independante APPROVED |
 | E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | Claude | E01 | 1 j | 0 h 32 (Claude, dont anomalie P0 PR #30; hors attente CI finale) | non renseigne | non calculable | DONE | PR #29 (statut effectif a sa fusion); docs/MAINTENANCE.md, docs/RELEASES.md, CHANGELOG.md |
-| E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | Claude | - | 1 j | 0 h 17 (Claude) | non renseigne | non calculable | IN PROGRESS | PR #31 (DONE a sa fusion); docs/ENGINE.md section E06 |
+| E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | Claude | - | 1 j | 0 h 17 (Claude) | non renseigne | non calculable | DONE | PR #31 (statut effectif a sa fusion); CI 8/8, 12/12 recettes Firefox; docs/ENGINE.md section E06 |
 | E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | Codex | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E08 | Infrastructure E2E des projets generes, adaptee a la stack, sans scenarios metier inventes | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E09 | Assistant de protection de branche GitHub: preparer les commandes, ne pas appliquer automatiquement | Claude | - | 1 j | - | - | - | TODO | Voir ROADMAP_2026.md |
