@@ -9,6 +9,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 - Audit des refs Git et archive des branches `docs/*` (E01, PR #27).
 - Audit des fichiers du depot (E03, PR #28).
 - Politique de maintenance, plan des releases et controle CI du changelog et des statuts (E05).
+- Controles NON VERIFIE detailles (raison, risque, criticite) et confirmation explicite verifiee par le serveur, perimee si la configuration ou les controles changent ; blocage des NON VERIFIE critiques en niveau hardened (E06).
 
 ### Corrige
 - CI de main rouge depuis l'avis GHSA-fc5q-39xc-vjpf sur les profils TypeScript generes (PR #30).

@@ -29,6 +29,12 @@ Source unique : `catalogs/security/tools.json`, cle `npm_audit_exceptions`. Chaq
 
 A l'expiration, la CI redevient rouge : verifier l'avis, puis retirer l'exception (version corrigee disponible) ou la renouveler par une PR justifiee.
 
+## Controles NON VERIFIE (E06)
+- Un controle impossible a etablir reste NON VERIFIE. Une confirmation ne le transforme jamais en PASS, ni dans l'interface ni dans le journal.
+- Au niveau hardened, les controles de securite (vulnerabilites, outils de securite, actions epinglees, serveurs MCP) doivent reussir. NON VERIFIE ou verification en ligne absente bloquent l'archive et l'ecriture.
+- La confirmation est verifiee par le serveur, jamais par le seul navigateur. Elle est liee a la configuration et aux controles exacts, et elle est perimee au redemarrage ou a tout changement.
+- Seuils inchanges : npm audit `high` ou `moderate`, Bandit `medium` ou `low`. L'exception datee GHSA-fc5q-39xc-vjpf (picomatch, 2026-12-17) n'est ni elargie ni confirmable autrement.
+
 ## Donnees locales du questionnaire (T05)
 - Brouillon: `localStorage` du navigateur (cle `forge-my-project.draft.v1`), revalide par le serveur avant restauration; un brouillon incompatible est supprime, jamais applique.
 - Profils personnels: `$FORGE_PROFILES_FILE`, sinon `$XDG_CONFIG_HOME/forge-my-project/profiles.json`, sinon `~/.config/forge-my-project/profiles.json`; dossier 0700, fichier 0600, ecriture atomique, liens symboliques et fichiers illisibles refuses sans ecrasement. Aucun nom ni description de projet n'y est stocke.

@@ -60,7 +60,8 @@ Ajouter une technologie : une entree JSON dans le bon fichier de categorie, puis
 | --- | --- |
 | Technologie inconnue, dependance manquante, conflit, version non supportee ou hors contrainte | erreur bloquante |
 | Package inexistant, version absente/retiree, vulnerabilite haute ou critique, runtime en fin de vie | erreur bloquante (avec `verify`) |
-| Registre ou service injoignable, severite inconnue, API d'un package | NON VERIFIE (avertissement), jamais PASS |
+| Registre ou service injoignable, severite inconnue, API d'un package | NON VERIFIE (avertissement), jamais PASS ; confirmation explicite avant ecriture (E06) |
+| Controle de securite NON VERIFIE au niveau hardened (vulnerabilites, outil de securite, action epinglee, MCP), ou hardened sans verification en ligne | NON VERIFIE critique : archive et ecriture bloquees, aucune confirmation possible |
 | Commande de test inconnue, description vide, architecture non definie | avertissement ; rendu `NON DEFINI` |
 | Skill absent, rejete, indisponible ou contenant une commande a risque | avertissement |
 | Skill modifie depuis son approbation, ou contenu telecharge different du blob du commit | erreur (`skill-modified`) |
@@ -121,3 +122,13 @@ Uniquement sur demande (`verify`, `skills`, `skills-search`), en HTTPS vers une 
 - Le moteur est branche sur le formulaire hybride (`/`, API `/api/*`, voir docs/CONTRACTS.md) ; `generator.py` et `/legacy` restent l'ancien parcours, inchange.
 - L'interface permet d'editer les fichiers en memoire (T16) puis de produire le ZIP ou d'ecrire dans un dossier local apres comparaison et confirmation (T17, docs/LOCAL_WRITE.md). Le moteur lui-meme n'ecrit rien. Les editions ne sont acceptees que pour l'ensemble exact des chemins regeneres : changer les skills approuves, les serveurs MCP ou les agents oblige a regenerer l'apercu.
 - L'empreinte des skills s'appuie sur les SHA-1 de blobs Git fournis par GitHub (protection anti-collision de GitHub) ; la confiance repose sur l'examen humain du contenu, que l'outil ne remplace pas.
+
+## Controles NON VERIFIE et confirmation (E06)
+
+`forge/verification/unverified.py` inventorie chaque controle NON VERIFIE et chaque avertissement : identifiant stable, nom, statut (`NON VERIFIE` ou `AVERTISSEMENT`), raison exacte, risque et criticite.
+- Un FAIL bloque la generation : il n'est jamais propose a la confirmation.
+- Un NON VERIFIE critique bloque l'archive et l'ecriture : aucune confirmation ne le leve.
+- Les autres elements demandent une confirmation explicite. Elle est liee par un jeton HMAC, propre au processus, a la configuration, aux options reseau et a l'ensemble exact des controles concernes.
+- Avant l'ecriture, le serveur regenere le plan, repete les verifications, recalcule l'inventaire et refuse une confirmation absente, perimee (redemarrage, configuration ou controles changes) ou mal formee.
+- Le journal d'ecriture garde chaque element avec son statut et sa raison inchanges ; `confirmed: true` indique seulement l'acceptation en connaissance de cause.
+
