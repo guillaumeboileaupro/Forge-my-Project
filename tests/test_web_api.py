@@ -219,7 +219,8 @@ class ApiServerTests(unittest.TestCase):
             self.assertEqual(comparison["summary"]["new"], len(files) - 1)
             self.assertEqual(list(dest.iterdir()), [dest / "README.md"])  # comparaison sans ecriture
 
-            apply = dict(request, token=comparison["token"], decisions={"README.md": {"action": "replace"}})
+            apply = dict(request, token=comparison["token"], decisions={"README.md": {"action": "replace"}},
+                         acknowledge=comparison["unverified"]["token"])
             status, _, body = self.post("/api/write/apply", apply)
             self.assertEqual(status, 400)
             self.assertIn("Confirmation", json.loads(body)["error"])
@@ -234,7 +235,8 @@ class ApiServerTests(unittest.TestCase):
             self.assertTrue((dest / "AGENTS.md").read_text().endswith("Relu.\n"))
             self.assertEqual((dest / report["backup"] / "README.md").read_text(), "Mon README\n")
             journal = report["journal"]
-            self.assertEqual(set(journal), {"genere", "ignore", "non_verifie", "echec"})
+            self.assertEqual(set(journal), {"genere", "ignore", "non_verifie", "echec", "confirmations"})
+            self.assertTrue(all(c["confirmed"] for c in journal["confirmations"]))
             self.assertIn("AGENTS.md", journal["genere"])
             self.assertIn("README.md", journal["genere"])
             # Meme jeton une seconde fois : la destination a change, validation perimee.

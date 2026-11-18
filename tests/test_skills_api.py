@@ -193,7 +193,8 @@ class SkillsApiTests(unittest.TestCase):
             status, data = self.post_json("/api/write/compare", dict(request, files=files, destination=dest))
             self.assertEqual(status, 200, data)
             status, data = self.post_json("/api/write/apply", dict(request, files=files, destination=dest,
-                                                                   token=data["token"], decisions={}, confirm=True))
+                                                                   token=data["token"], decisions={}, confirm=True,
+                                                                   acknowledge=data["unverified"]["token"]))
             self.assertEqual(status, 200, data)
             for path in (".claude/skills/webapp-testing/SKILL.md", ".mcp.json", ".codex/config.toml"):
                 with open(os.path.join(dest, path), encoding="utf-8") as handle:

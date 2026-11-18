@@ -6,7 +6,7 @@ const $ = selector => document.querySelector(selector);
 const NAME = /^[a-z][a-z0-9-]{1,48}[a-z0-9]$/;
 const state = {catalog: null, step: 0, lastConfig: null, ready: false, profiles: {}, saveTimer: null,
   approvals: [], candidates: [], decisions: {}, approvalStatus: {}, originalFiles: {}, previewFiles: {},
-  selectedPath: null, filesValidated: false, pendingWarnings: 0, writeRoot: '', comparison: null, resolutions: {}, conflictPath: null};
+  selectedPath: null, filesValidated: false, pendingWarnings: 0, unverified: null, writeRoot: '', comparison: null, resolutions: {}, conflictPath: null};
 const DRAFT_KEY = 'forge-my-project.draft.v1';
 const ANSWERS_FORMAT = 'forge-my-project/answers';
 const MAX_IMPORT_BYTES = 65536;
@@ -270,8 +270,8 @@ function renderReport(payload) {
   const blocking = payload.diagnostics.filter(d => d.severity === 'error').length;
   report.append(element('p', {class: blocking ? 'error' : 'ok'},
     blocking ? `${blocking} erreur(s) bloquante(s) : generation impossible.` : 'Configuration valide. Relire les avertissements avant de telecharger.'));
-  const warnings = payload.diagnostics.filter(d => d.severity === 'warning').length;
-  state.pendingWarnings = blocking ? 0 : warnings;
+  state.unverified = blocking ? null : (payload.unverified || null);
+  state.pendingWarnings = state.unverified ? state.unverified.items.length : 0;
   if (payload.error && !payload.diagnostics.length) report.append(element('p', {class: 'error'}, payload.error));
   const list = element('ul', {class: 'diagnostics'});
   for (const diag of payload.diagnostics) {
@@ -286,18 +286,58 @@ function renderReport(payload) {
     }
     report.append(element('h3', {}, 'Verification en ligne'), table);
   }
-  if (state.pendingWarnings) {
-    // Element optionnel absent ou non verifie : avertissement et confirmation explicite.
+  renderUnverified(report);
+}
+
+// Controles NON VERIFIE et avertissements (E06) : le serveur fournit la liste, la criticite et
+// le jeton ; la confirmation accepte un NON VERIFIE sans jamais en faire un PASS.
+function renderUnverified(container) {
+  const previous = document.querySelector('#unverified');
+  if (previous) previous.remove();
+  const assessment = state.unverified;
+  if (!assessment || !assessment.items.length) return;
+  const section = element('section', {id: 'unverified', 'aria-labelledby': 'unverified-title'});
+  section.append(element('h3', {id: 'unverified-title'},
+    `Controles a confirmer : ${assessment.counts.non_verifie} NON VERIFIE, ${assessment.counts.avertissements} avertissement(s)`));
+  const list = element('ul', {class: 'diagnostics'});
+  for (const item of assessment.items) {
+    const entry = element('li', {class: item.critical ? 'error' : 'warning', 'data-unverified': item.id});
+    entry.append(element('strong', {}, `${item.status}${item.critical ? ' - CRITIQUE' : ''} : ${item.name}`),
+      element('div', {}, `Raison : ${item.reason}`), element('div', {}, `Risque : ${item.risk}`));
+    list.append(entry);
+  }
+  section.append(list);
+  if (assessment.blocking.length) {
+    section.append(element('p', {class: 'error', id: 'unverified-blocking'},
+      `Operation bloquee : ${assessment.blocking.length} controle(s) critique(s) NON VERIFIE. Aucune confirmation ne peut les lever : lancer la verification en ligne ou changer de niveau de securite.`));
+  } else {
     const label = element('label', {class: 'check', id: 'ack-warnings-label'});
     label.append(element('input', {type: 'checkbox', id: 'ack-warnings'}),
-      ` J'ai pris connaissance des ${state.pendingWarnings} avertissement(s) et je poursuis.`);
-    report.append(label);
+      ` Je confirme avoir lu ces ${assessment.items.length} element(s) et je poursuis : ils restent NON VERIFIE ou avertissement, la confirmation ne vaut pas reussite.`);
+    section.append(label);
   }
+  container.append(section);
+}
+
+function unverifiedBlocking() {
+  return Boolean(state.unverified && state.unverified.blocking.length);
 }
 
 function warningsAcknowledged() {
   const box = document.querySelector('#ack-warnings');
-  return !state.pendingWarnings || Boolean(box && box.checked);
+  return !state.pendingWarnings || (!unverifiedBlocking() && Boolean(box && box.checked));
+}
+
+function acknowledgement() {
+  return state.unverified && state.unverified.token && warningsAcknowledged() ? state.unverified.token : undefined;
+}
+
+function refreshUnverified(assessment, message) {
+  // Le serveur a regenere des controles differents : reafficher et exiger une nouvelle confirmation.
+  state.unverified = assessment;
+  state.pendingWarnings = assessment ? assessment.items.length : 0;
+  renderUnverified($('#report'));
+  $('#status').textContent = message;
 }
 
 function isModified(path) {
@@ -389,8 +429,12 @@ async function validateFiles() {
     $('#status').textContent = 'La configuration a change : relancer la verification.';
     return;
   }
+  if (unverifiedBlocking()) {
+    $('#status').textContent = 'Operation bloquee : controle critique NON VERIFIE (voir la liste).';
+    return;
+  }
   if (!warningsAcknowledged()) {
-    $('#status').textContent = 'Confirmer la prise de connaissance des avertissements avant de valider.';
+    $('#status').textContent = 'Confirmer les controles NON VERIFIE et les avertissements avant de valider.';
     return;
   }
   $('#status').textContent = 'Validation des contenus modifies...';
@@ -621,6 +665,11 @@ async function compareDestination() {
       throw new Error(payload.error || 'comparaison refusee');
     }
     state.comparison = payload;
+    if (payload.unverified && (!state.unverified || payload.unverified.token !== state.unverified.token
+        || payload.unverified.items.length !== state.unverified.items.length)) {
+      refreshUnverified(payload.unverified, 'Les controles regeneres ont change : relire la liste et confirmer a nouveau.');
+      return;
+    }
     renderComparison();
     $('#status').textContent = 'Comparaison terminee : aucune ecriture effectuee.';
   } catch (error) {
@@ -644,6 +693,11 @@ function renderWriteReport(report, title) {
     for (const message of report.journal.non_verifie) unverified.append(element('li', {class: 'warning'}, message));
     container.append(element('p', {}, 'Avertissements (a relire, non bloquants) :'), unverified);
   }
+  if (report.journal && report.journal.confirmations && report.journal.confirmations.length) {
+    const confirmed = element('ul', {id: 'write-confirmations'});
+    for (const item of report.journal.confirmations) confirmed.append(element('li', {class: 'warning'}, `${item.status} (confirme) : ${item.name} - ${item.reason}`));
+    container.append(element('p', {}, 'Elements acceptes en connaissance de cause (statut inchange) :'), confirmed);
+  }
   for (const message of report.restore_errors || []) container.append(element('p', {class: 'error'}, `Restauration incomplete : ${message}`));
 }
 
@@ -656,13 +710,19 @@ async function writeFiles() {
   $('#write').disabled = true;
   $('#status').textContent = 'Controles repetes puis ecriture...';
   try {
-    const response = await post('/api/write/apply', writeBody({token: state.comparison.token, decisions: state.resolutions, confirm: true}));
+    const response = await post('/api/write/apply', writeBody({token: state.comparison.token, decisions: state.resolutions,
+      confirm: true, acknowledge: acknowledgement()}));
     const payload = await response.json();
     if (response.ok && payload.ok) {
       renderWriteReport(payload.report, 'Ecriture terminee.');
       state.comparison = null;
       $('#comparison').hidden = true;
       $('#status').textContent = `Fichiers ecrits dans ${destination.path}.`;
+      return;
+    }
+    if (response.status === 409 && payload.confirmation_required) {
+      resetComparison();
+      refreshUnverified(payload.unverified, `${payload.error}`);
       return;
     }
     if (response.status === 409) {
