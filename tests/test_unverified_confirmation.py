@@ -43,7 +43,8 @@ class Harness(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name).resolve()
-        patcher = mock.patch.dict(os.environ, {"FORGE_WRITE_ROOT": str(self.root)})
+        patcher = mock.patch.dict(os.environ, {"FORGE_WRITE_ROOT": str(self.root),
+                                                "FORGE_STATE_DIR": str(self.root / ".forge-state")})
         patcher.start()
         self.addCleanup(patcher.stop)
         self.checks = (PASS,)

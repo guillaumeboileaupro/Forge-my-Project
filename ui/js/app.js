@@ -571,7 +571,7 @@ async function browseDestination(path) {
 }
 
 const STATUS_LABELS = {new: 'nouveau', identical: 'identique', conflict: 'conflit', blocked: 'bloque'};
-const RESOLUTION_LABELS = {keep: 'conserve', replace: 'remplace', merge: 'fusionne'};
+const RESOLUTION_LABELS = {keep: 'conserve', replace: 'remplace', auto: 'fusion automatique', merge: 'fusionne manuellement'};
 const OPERATION_LABELS = {created: 'cree', replaced: 'remplace', merged: 'fusionne', kept: 'conserve', identical: 'identique', 'rolled-back': 'annule'};
 
 function renderComparison() {
@@ -601,9 +601,16 @@ function selectConflict(path) {
   state.conflictPath = path;
   $('#conflict').hidden = false;
   $('#conflict-title').textContent = path;
-  $('#conflict-reason').textContent = entry.reason;
-  $('#diff').textContent = entry.diff || '(diff indisponible : contenu binaire ou trop volumineux)';
+  $('#conflict-reason').textContent = entry.reason || (entry.auto_merge !== null
+    ? 'Une fusion automatique sans conflit est disponible. Relisez le diff avant de la valider.'
+    : entry.base_available ? 'Les changements se chevauchent : une resolution manuelle est requise.'
+      : 'Aucune base commune fiable : conserver, remplacer ou fusionner manuellement.');
+  const conflicts = (entry.merge_conflicts || []).map(c =>
+    `Lignes ${c.base_start}-${Math.max(c.base_start, c.base_end)} de la base :\n  local    : ${c.current.trimEnd() || '(supprime)'}\n  genere   : ${c.generated.trimEnd() || '(supprime)'}`);
+  $('#diff').textContent = (conflicts.length ? `Conflits a resoudre manuellement :\n${conflicts.join('\n')}\n\n` : '')
+    + (entry.diff || '(diff indisponible : contenu binaire ou trop volumineux)');
   document.querySelector('input[name="resolution"][value="merge"]').disabled = !entry.mergeable;
+  document.querySelector('input[name="resolution"][value="auto"]').disabled = entry.auto_merge === null;
   const current = state.resolutions[path];
   document.querySelectorAll('input[name="resolution"]').forEach(radio => { radio.checked = current ? radio.value === current.action : false; });
   $('#merge').hidden = !current || current.action !== 'merge';
@@ -677,6 +684,7 @@ function renderWriteReport(report, title) {
   const container = $('#write-report');
   container.replaceChildren(element('p', {class: report.status === 'ok' ? 'ok' : 'error'}, title));
   if (report.backup) container.append(element('p', {}, `Sauvegarde des fichiers remplaces : ${report.destination}/${report.backup} (voir MANIFEST.json pour restaurer).`));
+  if (report.merge_bases) container.append(element('p', {id: 'merge-bases'}, `Bases de fusion a trois voies : ${report.merge_bases}.`));
   if (report.summary) {
     const s = report.summary;
     container.append(element('p', {}, `${s.created} cree(s), ${s.replaced} remplace(s), ${s.merged} fusionne(s), ${s.kept} conserve(s), ${s.identical} identique(s).`));

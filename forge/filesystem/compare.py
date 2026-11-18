@@ -5,6 +5,7 @@ import os
 import stat
 
 from forge.filesystem.destination import O_CLOEXEC, O_NOFOLLOW, walk
+from forge.filesystem.merge import three_way_merge
 from forge.generator.paths import safe_relative_path
 
 MAX_MERGEABLE = 256 * 1024
@@ -81,14 +82,15 @@ def unified_diff(existing, generated, path):
     return text + ("... diff tronque (%d lignes)\n" % len(lines) if truncated else "")
 
 
-def compare(dest_fd, files):
+def compare(dest_fd, files, bases=None):
     """Entrees triees {path, status, ...} et etats {path: empreinte|absent|blocked}."""
     entries, states = [], {}
     for path in sorted(files):
         content = files[path]
         existing = read_existing(dest_fd, path)
         states[path] = existing.token
-        entry = {"path": path, "status": "new", "diff": "", "existing": None, "mergeable": False, "reason": ""}
+        entry = {"path": path, "status": "new", "diff": "", "existing": None, "mergeable": False,
+                 "auto_merge": None, "merge_conflicts": [], "base_available": False, "reason": ""}
         if existing.kind == "blocked":
             entry.update(status="blocked", reason=existing.reason)
         elif existing.kind == "file":
@@ -101,5 +103,12 @@ def compare(dest_fd, files):
                     entry["reason"] = "contenu existant binaire ou trop volumineux : conserver ou remplacer"
                 else:
                     entry.update(diff=unified_diff(text, content, path), existing=text, mergeable=True)
+                    base = (bases or {}).get(path)
+                    if isinstance(base, str):
+                        result = three_way_merge(base, text, content)
+                        entry["base_available"] = True
+                        entry["merge_conflicts"] = list(result.conflicts)
+                        if result.clean:
+                            entry["auto_merge"] = result.content
         entries.append(entry)
     return entries, states

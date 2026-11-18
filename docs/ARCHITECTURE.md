@@ -77,7 +77,7 @@ Les signatures, formats et responsabilites applicables sont definis dans [CONTRA
 - Operationnel apres T02: ui/, forge/config/legacy.py, forge/generator/legacy.py et templates/legacy/.
 - Reserve aux taches T06-T11 de Claude: forge/rules/, forge/planner/, catalogues, moteur de rendu moderne, skills et verification des dependances. T02 ne cree pas de coquilles vides pour ces composants.
 - Operationnel apres T16: `forge/filesystem/preview.py` valide les chemins, l'ensemble exact et la taille des contenus edites; `content.py` controle leur contenu.
-- Operationnel apres T17: `destination.py` (racine autorisee, parcours par descripteurs O_NOFOLLOW), `compare.py` (etats, diff), `workflow.py` (jeton HMAC, decisions, confirmation), `writer.py` (sauvegarde, ecriture atomique, rollback). Independant du transport HTTP; `forge/web.py` ne fait que relayer.
+- Operationnel apres T17/E07: `destination.py` (racine autorisee, parcours par descripteurs O_NOFOLLOW), `compare.py` (etats, diff), `merge.py` (fusion textuelle a trois voies pure et conservatrice), `bases.py` (bases communes persistantes hors du projet, empreinte SHA-256, 0600), `workflow.py` (base explicite revalidee, jeton HMAC, decisions, confirmation), `writer.py` (sauvegarde, ecriture atomique, rollback, permissions existantes conservees). Independant du transport HTTP; `forge/web.py` ne fait que relayer.
 - La bibliotheque templates/legacy preserve strictement les sorties actuelles. Les futurs templates structures peuvent coexister puis remplacer la facade par migration testee.
 
 ## Frontieres de securite

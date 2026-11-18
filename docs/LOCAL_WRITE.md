@@ -10,11 +10,19 @@ L'archive ZIP reste disponible. L'ecriture locale est une alternative optionnell
    - identique : contenu deja present, laisse tel quel ;
    - conflit : un fichier different existe ; le diff (existant -> prepare) s'affiche en cliquant le fichier ;
    - bloque : lien symbolique, fichier special ou chemin non sur ; l'ecriture est refusee tant que l'entree n'est pas corrigee a la main.
-4. Pour chaque conflit, choisir : « Conserver l'existant », « Remplacer » ou « Fusionner manuellement » (zone d'edition pre-remplie avec le fichier existant ; reprendre les ajouts voulus depuis le diff). Aucun fichier n'est jamais ecrase sans decision explicite.
+4. Pour chaque conflit, choisir : « Conserver l'existant », « Remplacer », appliquer la fusion automatique proposee lorsqu'une base commune fiable permet une fusion sans chevauchement, ou « Fusionner manuellement » (zone d'edition pre-remplie avec le fichier existant ; reprendre les ajouts voulus depuis le diff). Aucun fichier n'est jamais ecrase sans decision explicite.
 5. Cocher la confirmation, puis « Ecrire les fichiers » et confirmer la boite de dialogue. Les controles NON VERIFIE et les avertissements, confirmes lors de la validation, sont reverifies par le serveur : si la configuration ou ces controles ont change, l'ecriture est refusee et la liste s'affiche a nouveau pour une nouvelle confirmation. Un controle critique NON VERIFIE (niveau hardened) bloque l'ecriture.
 6. Le rapport final liste chaque fichier (cree, remplace, fusionne, conserve, identique), l'emplacement de la sauvegarde, les avertissements non bloquants et les elements acceptes, toujours marques NON VERIFIE.
 
 Les fichiers du dossier qui ne font pas partie de la generation ne sont jamais lus en dehors des chemins prepares, ni modifies, ni supprimes.
+
+## Fusion a trois voies (E07)
+- **Base commune** : le contenu que Forge a reellement ecrit, ou trouve identique, lors de la derniere ecriture reussie dans ce dossier. Rien d'autre n'est considere comme une base : ni un fichier fourni par le navigateur, ni une supposition. Les bases sont conservees hors du projet (voir CONTRACTS.md), avec une empreinte par fichier. Une base alteree est ignoree.
+- **Avec une base** : si les modifications locales et generees ne se chevauchent pas, une fusion automatique est proposee. Elle n'est appliquee qu'apres le choix « Appliquer la fusion automatique proposee », et elle passe les memes controles de contenu (secrets, fichiers proteges) qu'une fusion manuelle. Sinon, le detail des conflits s'affiche (lignes de la base, version locale, version generee) et la resolution reste manuelle.
+- **Sans base** (premiere ecriture, fichier jamais ecrit par Forge, base perdue) : conserver, remplacer ou fusionner a la main, comme avant.
+- **Apres l'ecriture** : seules les ecritures reussies mettent a jour les bases. Un fichier conserve garde son ancienne base, et un echec suivi d'un rollback ne change rien.
+- **Permissions** : un fichier remplace ou fusionne garde son mode, y compris apres un rollback. Un script genere (`.githooks/`, `scripts/hooks/`) recoit en plus le bit d'execution la ou il est lisible.
+- **Reinitialisation** : supprimer `merge-bases/` dans le dossier d'etat. La prochaine ecriture repart alors en mode manuel.
 
 ## Racine autorisee
 Seuls les sous-dossiers de la racine autorisee sont acceptes : le dossier personnel par defaut, ou la valeur de `FORGE_WRITE_ROOT` au lancement (`FORGE_WRITE_ROOT=/chemin python3 server.py`). La racine elle-meme, le dossier de Forge-my-Project, les chemins relatifs, `.` et `..`, et tout lien symbolique sur le chemin (destination ou fichier cible) sont refuses.
@@ -39,9 +47,15 @@ Avant toute modification, chaque fichier remplace ou fusionne est copie dans `.f
   ```
   Relire la liste `created` avant de supprimer ces fichiers.
 
+# Fusion a trois voies (E07)
+
+La base commune fiable est le dernier rendu que le moteur a enregistre en memoire apres une ecriture reussie dans la meme destination. Elle ne vient jamais du navigateur. Forge lie son empreinte au jeton de validation. Les modifications de l'utilisateur et celles du nouveau rendu sont fusionnees automatiquement seulement si leurs plages ne se chevauchent pas. Le resultat propose et le diff restent visibles avant la confirmation.
+
+En cas de redemarrage du serveur, de chevauchement, de contenu non textuel, de fichier trop volumineux ou d'absence de base commune, Forge revient au choix manuel existant (`conserver`, `remplacer` ou `fusionner manuellement`). L'action `auto` exige une proposition sans conflit; elle conserve les sauvegardes, l'ecriture atomique, la detection des modifications concurrentes et le rollback.
+
 ## Limites
 - Linux (teste) et macOS (non teste, memes API POSIX dir_fd et `O_NOFOLLOW`) ; ailleurs, dont Windows, l'ecriture est refusee et le ZIP reste disponible.
-- La fusion est manuelle (pas de fusion a trois voies automatique). Un fichier existant binaire ou de plus de 256 Kio ne peut qu'etre conserve ou remplace.
+- Un fichier existant binaire ou de plus de 256 Kio ne peut qu'etre conserve ou remplace.
 - Les configurations MCP et hooks d'agents existantes ne peuvent pas etre fusionnees avec les fichiers generes : conserver l'existant ou remplacer.
 - La detection de secrets repose sur des motifs connus ; elle ne remplace pas Gitleaks, execute par la CI et le hook pre-commit generes.
 - Les droits sont verifies avant l'ecriture ; un changement de droits pendant l'ecriture est traite comme un echec avec restauration.
