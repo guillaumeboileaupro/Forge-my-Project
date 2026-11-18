@@ -243,7 +243,7 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 | E01 | Auditer les refs Git, archiver liste des branches docs/*, supprimer les branches exclusivement integrees, sans toucher aux worktrees sales | Claude | - | 0,5 j | 0 h 04 (Claude) | non renseigne | non calculable | DONE | PR #27 fusionnee; docs/E01_REFS_AUDIT.md |
 | E02 | Installer une protection d'attribution Git pour les depots actuels et futurs, tester commit-msg/pre-push et CI, auditer les refs anciennes | Claude | - | 1 j | 0 h 40 (Claude, attente CI comprise) | non renseigne | non calculable | DONE | PR #26 fusionnee (140bdb2); docs/GIT_ATTRIBUTION.md |
 | E03 | Auditer et nettoyer fichiers temporaires, doublons, anciennes configurations et scripts obsoletes avec preuve de non-regression | Claude | E01 | 1 j | 0 h 12 (Claude) ; Codex non mesure | non renseigne | non calculable | DONE | PR #28 fusionnee (e7ce436); CI 6/6 profils; docs/E03_CLEANUP_AUDIT.md |
-| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 8 h | 0 h 10 minimum (Codex), a actualiser | inconnu | non calculable | IN PROGRESS | PR #25 ouverte; scripts et revue valides; synchronisation E05/PR #30 en cours |
+| E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 8 h | 0 h 19 (Codex, reprises cumulees) | inconnu | non calculable | DONE | PR #25: 289 tests, 12 ignores; CI push/PR 8/8 verte; revue independante APPROVED |
 | E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | Claude | E01 | 1 j | 0 h 32 (Claude, dont anomalie P0 PR #30; hors attente CI finale) | non renseigne | non calculable | DONE | PR #29 (statut effectif a sa fusion); docs/MAINTENANCE.md, docs/RELEASES.md, CHANGELOG.md |
 | E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | Claude | - | 1 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | Codex | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
@@ -306,8 +306,9 @@ Les priorites et les criteres d'acceptation propres a chaque ligne sont maintenu
 - Temps: charge humaine estimee 8 h; temps humain reel inconnu et non invente; temps d'execution IA de la reprise mesure ci-dessous. L'ecart humain reste non calculable.
 - Limites: ShellCheck non execute car absent; Ubuntu valide par CI, autres distributions Linux non executees dans cette mission.
 - Reprise du 17 novembre 2026: conflit avec `main` resolu sans rebase; recherche Python dans `$HOME/.local/bin` restauree apres revue; 15 tests cibles PASS, suite complete 271 PASS et 12 ignores; revue independante du SHA `d30c2f3` APPROVED.
-- Temps d'execution IA mesure pour cette reprise jusqu'au diagnostic CI: 0 h 10 minimum. Temps humain reel toujours inconnu.
-- Blocage CI historique: les runs push `44151087314` et pull request `44151098797` echouaient uniquement sur GHSA-fc5q-39xc-vjpf dans `picomatch`. La PR #30 a depuis ajoute une exception fail-closed limitee a cet avis, ce paquet et au 17 decembre 2026; E04 doit encore etre revalidee sur ce nouvel etat de `main`.
+- Temps d'execution IA mesure cumule pour les reprises: 0 h 19. Temps humain reel toujours inconnu; ecart humain non calculable.
+- Validation finale du 18 novembre 2026 au SHA `3f3be42`: 33 tests cibles et 289 tests complets PASS, 12 E2E Firefox ignores; syntaxe shell, compilation Python et attribution conformes; revue independante APPROVED sans constat P0-P3; CI push et pull request 8/8 verte.
+- Blocage CI historique resolu par la PR #30: l'exception fail-closed reste limitee a GHSA-fc5q-39xc-vjpf, au paquet `picomatch` et au 17 decembre 2026; tout autre avis, paquet, rapport invalide ou exception expiree bloque.
 
 ## Idees hors suivi actif
 
