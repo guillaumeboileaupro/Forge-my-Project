@@ -19,6 +19,16 @@
 ## Vulnerabilites
 Bloquer severites critiques/hautes quand des outils d'audit fiables sont configures. Les outils ne garantissent jamais zero vulnerabilite. Suivre les exceptions motivees et datees; ne pas masquer les alertes.
 
+### Registre des exceptions d'audit des projets generes
+
+Source unique : `catalogs/security/tools.json`, cle `npm_audit_exceptions`. Chaque exception vise un avis GHSA et un paquet exacts, porte une justification et expire au plus 90 jours apres son ajout (valide au chargement du catalogue). Les projets Node generes l'appliquent par `scripts/security/npm_audit_gate.py`, appele seulement si `npm audit` echoue. Tout autre avis, une exception expiree ou un rapport illisible restent bloquants, et l'exception est affichee dans leur SECURITY.md.
+
+| Avis | Paquet | Ajout | Expiration | Justification |
+| --- | --- | --- | --- | --- |
+| GHSA-fc5q-39xc-vjpf (ReDoS, high) | picomatch <= 4.0.7 | 2026-11-17 | 2026-12-17 | aucune version corrigee publiee (4.0.7 est la derniere) ; dependance de developpement transitive (eslint, vite, vitest) des profils TypeScript ; a retirer des qu'une version corrigee existe |
+
+A l'expiration, la CI redevient rouge : verifier l'avis, puis retirer l'exception (version corrigee disponible) ou la renouveler par une PR justifiee.
+
 ## Donnees locales du questionnaire (T05)
 - Brouillon: `localStorage` du navigateur (cle `forge-my-project.draft.v1`), revalide par le serveur avant restauration; un brouillon incompatible est supprime, jamais applique.
 - Profils personnels: `$FORGE_PROFILES_FILE`, sinon `$XDG_CONFIG_HOME/forge-my-project/profiles.json`, sinon `~/.config/forge-my-project/profiles.json`; dossier 0700, fichier 0600, ecriture atomique, liens symboliques et fichiers illisibles refuses sans ecrasement. Aucun nom ni description de projet n'y est stocke.

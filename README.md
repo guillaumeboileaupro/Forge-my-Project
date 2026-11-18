@@ -58,3 +58,4 @@ Genere un AGENTS.md detaille, des skills, la documentation (architecture, plan, 
 - Ne jamais inventer de package ou d'API.
 - Bloquer l'utilisation de secrets en clair.
 - Ne pas fusionner sans tests, verification des dependances et revue de securite.
+- Maintenance et anomalies : docs/MAINTENANCE.md ; releases : docs/RELEASES.md ; historique : CHANGELOG.md.

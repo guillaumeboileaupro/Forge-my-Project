@@ -54,7 +54,7 @@ Tester le formulaire sur http://127.0.0.1:8765 et les archives Python/JS avant d
 3. Aucun package fictif ni API non documentee; tout ajout est verifie a la source officielle.
 4. Pas de secrets, SAST/SCA/secrets et controle de provenance adaptes et operationnels ou limitations signalees.
 5. Documentation et architecture mises a jour, comportement reproductible, retour utilisateur clair.
-6. CI verte, revue de la PR et absence de severite haute/critique non resolue.
+6. CI verte, revue de la PR et absence de severite haute/critique non resolue ni d'anomalie P0/P1 ouverte (docs/MAINTENANCE.md).
 7. Le recapitulatif fournit tests effectifs, limites, fichiers modifies et risques residuels.
 
 ## Regles applicables au nouveau cycle de developpement
@@ -63,5 +63,6 @@ Tester le formulaire sur http://127.0.0.1:8765 et les archives Python/JS avant d
 - L'interface actuelle est consideree inadaptee; reconstruire son design et son ergonomie de zero tout en conservant le moteur et la totalite des fonctionnalites existantes. Validation visuelle, fonctionnelle, accessibilite et performances avant bascule.
 - **Attribution Git reservee au proprietaire**: ne jamais ajouter `Co-Authored-By` pour Claude/Anthropic/Codex ou autres agents, ni utiliser un agent comme auteur ou committer. Verifier l'identite Git et les trailers avant commit et push. Des hooks locaux seuls ne constituent pas une garantie: renforcer via CI et protection de branche lorsque disponible. Outil: `scripts/attribution_guard.py` (commit-msg, pre-push, job CI `attribution`, installation dans les depots existants et futurs), voir docs/GIT_ATTRIBUTION.md.
 - Plusieurs agents/PR en parallele mais taches courtes et fichiers non chevauchants. Pas de push force ni contournement des controles; synchroniser apres fusion et nettoyer de facon sure.
-- Temps de developpement **saisis manuellement** dans TODO (estime, reel, ecart), sans conversion automatique de l'historique Git.
-- Trois releases ciblees v1.0.0, v1.1.0, v2.0.0. La piste extension VS Code dans `long-terme-ideas-project-liste.md` reste une idee, pas une tache active.
+- Suivi **saisi manuellement** dans TODO: charge humaine estimee, execution IA mesuree, temps humain reel s'il est connu, ecart humain si calculable. Ne jamais presenter des minutes d'execution d'agent comme des heures de developpement humain; aucune conversion automatique de l'historique Git.
+- Maintenance, anomalies (P0-P3), regressions et rollback: `docs/MAINTENANCE.md`. Toute PR qui change un comportement visible ajoute sa ligne dans `CHANGELOG.md` (`[Unreleased]`).
+- Trois releases ciblees v1.0.0, v1.1.0, v2.0.0, criteres dans `docs/RELEASES.md`; seul le proprietaire publie une release. La piste extension VS Code dans `long-terme-ideas-project-liste.md` reste une idee, pas une tache active.
