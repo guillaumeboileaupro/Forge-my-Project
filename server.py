@@ -8,6 +8,7 @@ import re
 
 ROOT = Path(__file__).parent
 STATIC = {
+    "/favicon.svg": (ROOT / "assets" / "favicon.svg", "image/svg+xml"),
     "/": (ROOT / "ui" / "index.html", "text/html; charset=utf-8"),
     "/legacy": (ROOT / "ui" / "legacy.html", "text/html; charset=utf-8"),
     "/css/app.css": (ROOT / "ui" / "css" / "app.css", "text/css; charset=utf-8"),
