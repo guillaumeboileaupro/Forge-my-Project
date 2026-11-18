@@ -41,9 +41,9 @@ Avant toute modification, chaque fichier remplace ou fusionne est copie dans `.f
 
 # Fusion a trois voies (E07)
 
-Une base commune explicite peut etre fournie lors de la comparaison. Forge la limite aux chemins prepares, la revalide et lie son empreinte au jeton de validation. Les modifications de l'utilisateur et celles du nouveau rendu sont fusionnees automatiquement seulement si leurs plages ne se chevauchent pas. Le resultat propose et le diff restent visibles avant la confirmation.
+La base commune fiable est le dernier rendu que le moteur a enregistre en memoire apres une ecriture reussie dans la meme destination. Elle ne vient jamais du navigateur. Forge lie son empreinte au jeton de validation. Les modifications de l'utilisateur et celles du nouveau rendu sont fusionnees automatiquement seulement si leurs plages ne se chevauchent pas. Le resultat propose et le diff restent visibles avant la confirmation.
 
-En cas de chevauchement, de contenu non textuel, de fichier trop volumineux ou d'absence de base commune, Forge revient au choix manuel existant (`conserver`, `remplacer` ou `fusionner manuellement`). L'action `auto` exige une proposition sans conflit; elle conserve les sauvegardes, l'ecriture atomique, la detection des modifications concurrentes et le rollback.
+En cas de redemarrage du serveur, de chevauchement, de contenu non textuel, de fichier trop volumineux ou d'absence de base commune, Forge revient au choix manuel existant (`conserver`, `remplacer` ou `fusionner manuellement`). L'action `auto` exige une proposition sans conflit; elle conserve les sauvegardes, l'ecriture atomique, la detection des modifications concurrentes et le rollback.
 
 ## Limites
 - Linux (teste) et macOS (non teste, memes API POSIX dir_fd et `O_NOFOLLOW`) ; ailleurs, dont Windows, l'ecriture est refusee et le ZIP reste disponible.

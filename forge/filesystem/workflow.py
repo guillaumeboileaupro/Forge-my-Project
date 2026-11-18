@@ -9,6 +9,7 @@ import hashlib
 import hmac
 import json
 import secrets
+from collections import OrderedDict
 
 from forge.filesystem.compare import MAX_MERGEABLE, compare, sha256
 from forge.filesystem.content import ContentError, check_modified, check_paths
@@ -17,6 +18,8 @@ from forge.filesystem.writer import apply_changes
 
 ACTIONS = ("keep", "replace", "merge", "auto")
 _KEY = secrets.token_bytes(32)  # propre au processus : un jeton ne survit pas a un redemarrage
+_BASES = OrderedDict()
+MAX_BASE_DESTINATIONS = 32
 
 
 class DecisionError(ValueError):
@@ -34,29 +37,31 @@ def _token(destination, files, states, bases=None):
     return hmac.new(_KEY, material, hashlib.sha256).hexdigest()
 
 
+def _known_bases(destination, files):
+    known = _BASES.get(destination.path, {})
+    return {path: known[path] for path in files if path in known}
+
+
+def _remember_bases(destination, generated, operations):
+    known = dict(_BASES.get(destination.path, {}))
+    for operation in operations:
+        if operation["action"] != "kept" and operation["path"] in generated:
+            known[operation["path"]] = generated[operation["path"]]
+    _BASES[destination.path] = known
+    _BASES.move_to_end(destination.path)
+    while len(_BASES) > MAX_BASE_DESTINATIONS:
+        _BASES.popitem(last=False)
+
+
 def _scan(destination, files, bases=None):
     with destination.open() as fd:
         return compare(fd, files, bases)
 
 
-def validate_bases(files, bases):
-    """Revalide une base explicite; son absence desactive simplement la fusion automatique."""
-    if bases is None:
-        return {}
-    if not isinstance(bases, dict) or set(bases) - set(files):
-        raise DecisionError("bases : objet optionnel limite aux chemins prepares")
-    for path, content in bases.items():
-        if not isinstance(path, str) or not isinstance(content, str) or "\x00" in content:
-            raise DecisionError("Base commune invalide pour %s" % path)
-        if len(content.encode("utf-8")) > MAX_MERGEABLE:
-            raise DecisionError("Base commune trop volumineuse pour %s" % path)
-    return dict(bases)
-
-
-def compare_destination(value, files, bases=None):
+def compare_destination(value, files):
     """Destination decrite, entrees comparees, resume et jeton de validation."""
-    bases = validate_bases(files, bases)
     destination = Destination(value)
+    bases = _known_bases(destination, files)
     info = destination.describe()
     entries, states = _scan(destination, files, bases)
     summary = {status: sum(1 for e in entries if e["status"] == status) for status in ("new", "identical", "conflict", "blocked")}
@@ -99,12 +104,12 @@ def _decisions(entries, decisions, generated):
     return chosen
 
 
-def write_destination(value, files, generated, token, decisions, confirm, bases=None):
+def write_destination(value, files, generated, token, decisions, confirm):
     """Ecrit apres confirmation ; rapport detaille (crees, remplaces, fusionnes, conserves, identiques)."""
     if confirm is not True:
         raise DecisionError("Confirmation explicite requise avant l'ecriture")
-    bases = validate_bases(files, bases)
     destination = Destination(value)
+    bases = _known_bases(destination, files)
     if not destination.describe()["writable"]:
         raise DecisionError("Permissions insuffisantes : ecriture impossible dans %s" % destination.path)
     entries, states = _scan(destination, files, bases)
@@ -138,4 +143,5 @@ def write_destination(value, files, generated, token, decisions, confirm, bases=
     report["operations"] = sorted(report["operations"] + skipped, key=lambda op: op["path"])
     report["summary"] = {action: sum(1 for op in report["operations"] if op["action"] == action)
                          for action in ("created", "replaced", "merged", "kept", "identical")}
+    _remember_bases(destination, generated, report["operations"])
     return report
