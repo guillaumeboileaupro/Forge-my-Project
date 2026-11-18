@@ -47,6 +47,10 @@ Les phases P1-P7 et 30 j ci-dessus constituent **l'historique termine T01-T18**,
 | v1.1.0 | Lever les trois exigences PARTIEL | E07-E09 (5 j estimes) | Fusion, E2E et assistant de protection verifies |
 | v2.0.0 | Refonte UI complete et ameliorations techniques choisies | E06,E10-E18 (27 j estimes) | Tests visuels/fonctionnels, accessibilite, securite, performance |
 
+### Suivi E04 - lancement Linux
+
+E04 reutilise le lanceur Python fusionne par la PR #20. Les scripts POSIX `installer.sh` et `start.sh` ajoutent uniquement la validation locale Linux/Python et le point d'entree shell; ils n'installent aucun paquet, ne contactent aucun service et n'executent aucune commande privilegiee. La recette couvre une copie propre, une seconde execution idempotente, Python absent ou incompatible, un chemin avec espaces, un port occupe, le lancement depuis un autre repertoire et l'arret du serveur. L'implementation est validee techniquement; E04 reste IN PROGRESS jusqu'a la saisie manuelle du temps reel et au calcul de l'ecart dans TODO.md.
+
 Le nettoyage de l'historique Git et la prevention des contributions attribuees aux agents IA sont des prealables de qualite. Ne jamais forcer une reecriture ni effacer un worktree sans inventaire et sauvegarde. L'extension VS Code est une idee de long terme, hors calendrier des releases ci-dessus.
 
 Les criteres de chaque jalon sont detailles dans [RELEASES.md](RELEASES.md), et la maintenance (anomalies, controles reguliers, dependances, regressions, versions, rollback) dans [MAINTENANCE.md](MAINTENANCE.md). L'audit E03 des fichiers, ses preuves de references, les elements conserves et les controles de non-regression sont consignes dans [E03_CLEANUP_AUDIT.md](E03_CLEANUP_AUDIT.md). Aucun fichier suivi ne peut etre supprime sans preuve d'inutilite.
