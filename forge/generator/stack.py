@@ -122,11 +122,54 @@ def _node(plan, verification, threshold):
         manifest["dependencies"] = {name: _npm_range(v) for name, v in sorted(runtime)}
     if dev:
         manifest["devDependencies"] = {name: _npm_range(v) for name, v in sorted(dev)}
+    manifest["scripts"]["test:e2e"] = _node_e2e_script(manifest["scripts"])
     return {
         "version": plan.resolution.versions["node"],
         "typescript": "typescript" in ids,
         "package_json": json.dumps(manifest, indent=2),
         "threshold": threshold,
+    }
+
+
+NODE_E2E = "node --test e2e/*.e2e.mjs"
+PYTHON_E2E = {"pytest": 'python -m pytest e2e -o addopts=""', "unittest": "python -m unittest discover -s e2e -v"}
+E2E_NOT_APPLICABLE = {
+    "web": "Navigateur : NON APPLICABLE tant qu'aucune interface n'existe (squelette sans code metier).",
+    "api": "HTTP : NON APPLICABLE tant qu'aucun serveur ni aucune route n'existe (squelette sans code metier).",
+    "cli": "Ligne de commande : NON APPLICABLE tant qu'aucune commande n'est declaree (squelette sans code metier).",
+    "library": "Parcours utilisateur : sans objet pour une bibliotheque ; le temoin verifie le paquet livre.",
+}
+
+
+def _node_e2e_script(scripts):
+    """Le temoin E2E Node s'execute sur le livrable : apres le build s'il existe."""
+    return ("npm run build && " + NODE_E2E) if "build" in scripts else NODE_E2E
+
+
+def _e2e(plan):
+    """Socle de bout en bout (E08) avec les outils deja retenus : aucune dependance ajoutee,
+    aucun scenario metier. NON APPLICABLE explicite quand aucun lanceur n'est disponible."""
+    ids = plan.resolution.ids()
+    steps, commands, reasons, runner = [], [], [], None
+    if "python" in ids:
+        runner = next((name for name in ("pytest", "unittest") if name in ids), None)
+        if runner:
+            commands.append(PYTHON_E2E[runner])
+            steps += [{"name": "Installation du livrable (non editable)", "lines": ['python -m pip install ".[dev]"']},
+                      {"name": "Bout en bout Python (%s, paquet installe)" % runner, "lines": [PYTHON_E2E[runner]]}]
+        else:
+            reasons.append("Python : NON APPLICABLE, aucun lanceur de tests retenu (pytest ou unittest).")
+    if "node" in ids:
+        commands.append("npm run test:e2e")
+        steps += [{"name": "Installation des dependances (Node.js)", "lines": [NODE_CI_INSTALL]},
+                  {"name": "Bout en bout Node.js (node --test, livrable)", "lines": ["npm run test:e2e"]}]
+    return {
+        "applicable": bool(steps),
+        "python": runner is not None,
+        "node": "node" in ids,
+        "commands": commands,
+        "steps": steps,
+        "not_applicable": reasons + [E2E_NOT_APPLICABLE[plan.spec.project_type]],
     }
 
 
@@ -185,4 +228,5 @@ def stack_context(plan, verification=None, ci_catalog=None):
         },
         "security": security_context(plan),
         "hooks": {stage: _hook_steps(plan, kinds) for stage, kinds in HOOK_KINDS.items()},
+        "e2e": _e2e(plan),
     }

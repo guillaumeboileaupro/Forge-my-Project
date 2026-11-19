@@ -27,6 +27,10 @@
     {
       "path": "scripts/security/npm_audit_gate.py",
       "template": "security/npm_audit_gate.py.tmpl"
+    },
+    {
+      "path": "e2e/entrypoint.e2e.mjs",
+      "template": "stack/node/entrypoint.e2e.mjs.tmpl"
     }
   ]
 }

@@ -31,7 +31,8 @@ HOOKS = {".githooks/pre-commit", ".githooks/commit-msg", ".githooks/pre-push", "
 AGENT_HOOK_FILES = {".claude/settings.json", ".codex/hooks.json", ".github/hooks/forge-guard.json"}
 MCP_FILES = {".mcp.json", ".codex/config.toml"}  # uniquement si des serveurs MCP sont choisis
 SECURITY_SCRIPTS = {"scripts/security/npm_audit_gate.py"}  # stacks Node uniquement
-SCAFFOLD = SCAFFOLD | HOOKS | AGENT_HOOK_FILES | MCP_FILES | SECURITY_SCRIPTS
+E2E_FILES = {"e2e/test_installed_package.py", "e2e/entrypoint.e2e.mjs"}  # temoins E2E (E08)
+SCAFFOLD = SCAFFOLD | HOOKS | AGENT_HOOK_FILES | MCP_FILES | SECURITY_SCRIPTS | E2E_FILES
 BASE_DOCS = {
     "AGENTS.md", "README.md", "SECURITY.md", "CONTRIBUTING.md", "TODO.md", "docs/ARCHITECTURE.md",
     "docs/DEVELOPMENT_PLAN.md", "docs/TESTING.md", "docs/DEPENDENCIES.md", "docs/adr/0001-choix-techniques.md",
@@ -106,7 +107,8 @@ class PythonApiDocumentsTests(unittest.TestCase):
     def test_expected_files(self):
         self.assertEqual(set(self.files), BASE_DOCS | HOOKS | {
             "CLAUDE.md", "docs/DEPLOYMENT.md", ".github/workflows/ci.yml", ".gitignore", "pyproject.toml",
-            "src/stock_api/__init__.py", "tests/test_smoke.py", ".claude/settings.json", ".codex/hooks.json"})
+            "src/stock_api/__init__.py", "tests/test_smoke.py", "e2e/test_installed_package.py",
+            ".claude/settings.json", ".codex/hooks.json"})
 
     def test_agents_md_is_specific(self):
         agents = self.files["AGENTS.md"]
