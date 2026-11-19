@@ -29,6 +29,7 @@ API_POST = {
     "/api/profiles": (web.profile_create_payload, API_LIMIT),
     "/api/skills/search": (web.skills_search_payload, API_LIMIT),
     "/api/skills/verify": (web.skills_verify_payload, API_LIMIT),
+    "/api/github/protection/prepare": (web.branch_protection_payload, API_LIMIT),
     "/api/destination/browse": (web.destination_browse_payload, API_LIMIT),
     "/api/write/compare": (web.write_compare_payload, FILES_API_LIMIT),
     "/api/write/apply": (web.write_apply_payload, WRITE_API_LIMIT),

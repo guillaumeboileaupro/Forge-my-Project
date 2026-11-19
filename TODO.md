@@ -192,9 +192,9 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 | Q06 | A puis B puis C | Maintenir GitHub/Playwright, puis MCP officiels, enfin recherche libre verifiee | Backlog MCP progressif | FUTUR |
 | Q07 | Tout (A+B+C+D) | Maintenir les scans existants, ajouter analyse Docker et Semgrep, bloquer sev. haute/critique | E10 | TODO |
 | Q08 | B | Expliquer et faire confirmer explicitement chaque NON VERIFIE, trace et revalidation | E06 | DONE (E06, PR #31) |
-| Q09 | B | Fusion trois voies seulement avec base fiable; garder diff, fusion manuelle et rollback | E07, v1.1.0 | IN PROGRESS (E07, PR #32) |
+| Q09 | B | Fusion trois voies seulement avec base fiable; garder diff, fusion manuelle et rollback | E07, v1.1.0 | DONE (E07, PR #32 fusionnee) |
 | Q10 | A + B | TESTING.md et infrastructure E2E cible prete a completer sans tests metier inventes | E08, v1.1.0 | TODO |
-| Q11 | B | Assistant qui prepare les commandes de protection GitHub, sans les executer | E09, v1.1.0 | TODO |
+| Q11 | B | Assistant qui prepare les commandes de protection GitHub, sans les executer | E09, v1.1.0 | IN PROGRESS (E09) |
 | Q12 | B avec PR courtes | Agents et PR en parallele; taches petites, CI verte et fusion rapide | E05, AGENTS.md | TODO |
 | Q13 | C (correction de A) | Archiver inventaire noms/SHA des branches docs/* avant suppression sur preuve de fusion | E01 | DONE |
 | Q14 | A | Supprimer codex/file-preview apres verification d'integration et absence de travail local | E01 | PARTIEL (E01: branche distante supprimee; branche locale et worktree Codex conserves) |
@@ -246,9 +246,9 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 | E04 | Verifier les scripts d'installation existants et la PR de lanceur avant de creer installer.sh/start.sh sous Linux | Codex | - | 8 h | 0 h 19 (Codex, reprises cumulees) | inconnu | non calculable | DONE | PR #25: 289 tests, 12 ignores; CI push/PR 8/8 verte; revue independante APPROVED |
 | E05 | Politique de releases, anomalies, changelog, maintenance securite et tests reguliers | Claude | E01 | 1 j | 0 h 32 (Claude, dont anomalie P0 PR #30; hors attente CI finale) | non renseigne | non calculable | DONE | PR #29 (statut effectif a sa fusion); docs/MAINTENANCE.md, docs/RELEASES.md, CHANGELOG.md |
 | E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | Claude | - | 1 j | 0 h 17 (Claude) | non renseigne | non calculable | DONE | PR #31 (statut effectif a sa fusion); CI 8/8, 12/12 recettes Firefox; docs/ENGINE.md section E06 |
-| E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | Codex | - | 2 j (16 h) | Codex non mesure ; Claude 0 h 07 (reprise) | inconnu | non calculable | IN PROGRESS | PR #32 (Codex + reprise Claude); docs/LOCAL_WRITE.md section E07 |
+| E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | Codex | - | 2 j (16 h) | Codex non mesure ; Claude 0 h 07 (reprise) | inconnu | non calculable | DONE | PR #32 fusionnee; docs/LOCAL_WRITE.md section E07 |
 | E08 | Infrastructure E2E des projets generes, adaptee a la stack, sans scenarios metier inventes | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
-| E09 | Assistant de protection de branche GitHub: preparer les commandes, ne pas appliquer automatiquement | Claude | - | 1 j | - | - | - | TODO | Voir ROADMAP_2026.md |
+| E09 | Assistant de protection de branche GitHub: preparer les commandes, ne pas appliquer automatiquement | Codex | - | 1 j | en cours | - | non calculable | IN PROGRESS | Branche feat/e09-branch-protection-assistant; voir ROADMAP_2026.md |
 | E10 | Scanner d'images Docker et SAST complementaire dont Semgrep, sans retrait des controles actuels | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E11 | Verification statique des API Python/JS/TS lorsque possible; PASS/FAIL/NON VERIFIE | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E12 | Recherche des skills: cache expire, parallelisme, classement, reverification avant copie | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |

@@ -23,6 +23,8 @@ Ouvrir l'adresse affichee (par defaut http://127.0.0.1:8765) dans Firefox : form
 
 Les reponses sont sauvegardees automatiquement dans le navigateur et restaurees a la reouverture. Des profils predefinis (Python API/CLI/bibliotheque/Django, TypeScript React/Express) et des profils personnels (stockes dans `~/.config/forge-my-project/profiles.json`) se chargent dans le questionnaire; les reponses s'exportent et s'importent en JSON valide par le serveur.
 
+L'etape de verification contient aussi l'assistant E09 de protection de branche GitHub. Il inspecte explicitement un depot et une branche avec la CLI `gh`, affiche les checks reellement observes, les permissions et un apercu, puis prepare une commande a copier. Il ne l'execute jamais : voir [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md).
+
 ## Tests
 
 ```bash

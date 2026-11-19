@@ -63,7 +63,12 @@ class GhCliClient:
         except (OSError, subprocess.TimeoutExpired) as exc:
             raise FetchError("gh indisponible") from exc
         if result.returncode != 0:
-            raise FetchError("gh api a echoue (code %d)" % result.returncode)
+            # Le corps d'erreur peut contenir des donnees distantes : ne conserver
+            # que le statut HTTP, jamais la sortie complete ni un jeton.
+            stderr = result.stderr if isinstance(result.stderr, bytes) else b""
+            match = re.search(rb"HTTP (\d{3})", stderr)
+            status = " HTTP %s" % match.group(1).decode("ascii") if match else ""
+            raise FetchError("gh api a echoue%s (code %d)" % (status, result.returncode))
         return result.stdout
 
     def get_json(self, api_path):

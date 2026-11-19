@@ -61,6 +61,22 @@ class ApiServerTests(unittest.TestCase):
         self.assertEqual([a["id"] for a in data["agents"]], ["codex", "claude", "copilot"])
         self.assertIn("api", [p["id"] for p in data["project_types"]])
 
+    def test_branch_protection_route_only_returns_manual_preview(self):
+        proposal = {
+            "repository": "owner/project", "branch": "main", "head_sha": "a" * 40,
+            "available_checks": ["python"], "required_checks": ["python"],
+            "permissions": {"admin": True, "maintain": True, "push": True},
+            "required_permission": "Administration: write", "can_apply": True,
+            "protection_active": False, "warnings": [], "command": "gh api --method PUT ...",
+            "manual_only": True,
+        }
+        with mock.patch("forge.web.prepare_branch_protection", return_value=proposal) as prepared:
+            status, _, body = self.post("/api/github/protection/prepare",
+                                        {"repository": "owner/project", "branch": "main"})
+        self.assertEqual(status, 200)
+        self.assertTrue(json.loads(body)["manual_only"])
+        prepared.assert_called_once_with("owner/project", "main")
+
     def test_plan_preview_without_network(self):
         with mock.patch.object(forge_http._OPENER, "open", side_effect=AssertionError("reseau interdit")):
             status, _, body = self.post("/api/plan", {"config": CONFIG})

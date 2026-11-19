@@ -248,7 +248,8 @@ function filesRequestBody() {
 // Requetes sans effet de bord : relancees une fois si le navigateur interrompt la connexion
 // pendant une operation longue (recherche GitHub, verification en ligne). Les ecritures ne le sont jamais.
 const RETRYABLE = new Set(['/api/plan', '/api/skills/search', '/api/skills/verify', '/api/files/validate',
-  '/api/write/compare', '/api/destination/browse', '/api/answers/validate', '/api/archive']);
+  '/api/write/compare', '/api/destination/browse', '/api/answers/validate', '/api/archive',
+  '/api/github/protection/prepare']);
 
 async function post(path, body) {
   const send = () => fetch(path, {method: 'POST', headers: {'Content-Type': 'application/json'}, body});
@@ -338,6 +339,56 @@ function refreshUnverified(assessment, message) {
   state.pendingWarnings = assessment ? assessment.items.length : 0;
   renderUnverified($('#report'));
   $('#status').textContent = message;
+}
+
+// E09 : inspection distante en lecture seule, puis affichage d'une commande jamais executee ici.
+async function prepareBranchProtection() {
+  showAlert('');
+  const preview = $('#protection-preview');
+  const command = $('#protection-command');
+  const copy = $('#copy-protection');
+  preview.hidden = true;
+  command.value = '';
+  copy.disabled = true;
+  try {
+    const body = JSON.stringify({
+      repository: $('#github-repository').value.trim(),
+      branch: $('#github-branch').value.trim(),
+    });
+    const response = await post('/api/github/protection/prepare', body);
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || 'inspection GitHub impossible');
+    const summary = $('#protection-summary');
+    summary.replaceChildren(
+      element('p', {}, `Depot : ${payload.repository} — branche : ${payload.branch} — tete : ${payload.head_sha}`),
+      element('p', {class: payload.can_apply ? 'ok' : 'warning'},
+        `Permission requise : ${payload.required_permission}. ${payload.can_apply ? 'Permission observee.' : 'Permission non observee : execution impossible avec ce compte.'}`),
+      element('p', {}, `Protection actuelle : ${!payload.protection_verified ? 'NON VERIFIEE' : payload.protection_active ? 'observee' : 'non observee'}.`),
+      element('p', {}, `Controles obligatoires proposes (${payload.required_checks.length}) : ${payload.required_checks.join(', ') || 'aucun'}.`),
+      ...payload.warnings.map(text => element('p', {class: 'warning'}, text)),
+      element('p', {class: 'warning'}, 'Aucune modification distante n’a ete appliquee. Relire la commande avant toute execution manuelle.'),
+    );
+    command.value = payload.command || '';
+    command.hidden = !payload.command;
+    copy.disabled = !payload.command;
+    preview.hidden = false;
+    $('#status').textContent = payload.command ? 'Commande preparee, non executee.' : 'Inspection terminee ; commande non generee tant que les controles requis ne sont pas verifies.';
+  } catch (error) {
+    showAlert(`Protection de branche non preparee : ${error.message}`);
+  }
+}
+
+async function copyBranchProtection() {
+  const command = $('#protection-command').value;
+  if (!command) return;
+  try {
+    await navigator.clipboard.writeText(command);
+    $('#status').textContent = 'Commande copiee. Elle reste a valider et a executer manuellement.';
+  } catch (error) {
+    $('#protection-command').focus();
+    $('#protection-command').select();
+    showAlert('Copie automatique indisponible : le texte est selectionne pour une copie manuelle.');
+  }
 }
 
 function isModified(path) {
@@ -1219,6 +1270,8 @@ async function init() {
   $('#download').addEventListener('click', download);
   $('#tech-search').addEventListener('input', filterTechnologies);
   $('#architecture-suggest').addEventListener('click', suggestArchitecture);
+  $('#prepare-protection').addEventListener('click', prepareBranchProtection);
+  $('#copy-protection').addEventListener('click', copyBranchProtection);
   setupLocalWrite();
   $('#export').addEventListener('click', exportAnswers);
   $('#import').addEventListener('change', importAnswers);
