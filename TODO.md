@@ -194,7 +194,7 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 | Q08 | B | Expliquer et faire confirmer explicitement chaque NON VERIFIE, trace et revalidation | E06 | DONE (E06, PR #31) |
 | Q09 | B | Fusion trois voies seulement avec base fiable; garder diff, fusion manuelle et rollback | E07, v1.1.0 | DONE (E07, PR #32 fusionnee) |
 | Q10 | A + B | TESTING.md et infrastructure E2E cible prete a completer sans tests metier inventes | E08, v1.1.0 | DONE (E08, PR #35 fusionnee) |
-| Q11 | B | Assistant qui prepare les commandes de protection GitHub, sans les executer | E09, v1.1.0 | IN PROGRESS (E09) |
+| Q11 | B | Assistant qui prepare les commandes de protection GitHub, sans les executer | E09, v1.1.0 | DONE (E09, PR #36) |
 | Q12 | B avec PR courtes | Agents et PR en parallele; taches petites, CI verte et fusion rapide | E05, AGENTS.md | TODO |
 | Q13 | C (correction de A) | Archiver inventaire noms/SHA des branches docs/* avant suppression sur preuve de fusion | E01 | DONE |
 | Q14 | A | Supprimer codex/file-preview apres verification d'integration et absence de travail local | E01 | PARTIEL (E01: branche distante supprimee; branche locale et worktree Codex conserves) |
@@ -248,7 +248,7 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 | E06 | Confirmation explicite pour controles NON VERIFIE, journalisation et revalidation avant ecriture | Claude | - | 1 j | 0 h 17 (Claude) | non renseigne | non calculable | DONE | PR #31 (statut effectif a sa fusion); CI 8/8, 12/12 recettes Firefox; docs/ENGINE.md section E06 |
 | E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | Codex | - | 2 j (16 h) | Codex non mesure ; Claude 0 h 07 (reprise) | inconnu | non calculable | DONE | PR #32 fusionnee (c8483d4, 18/11); docs/LOCAL_WRITE.md section E07 |
 | E08 | Infrastructure E2E des projets generes, adaptee a la stack, sans scenarios metier inventes | Claude | - | 2 j | 0 h 13 (Claude) | non renseigne | non calculable | DONE | PR #35 fusionnee (f88e5cf, 19/11); docs/TESTING.md genere, docs/ENGINE.md section E08 |
-| E09 | Assistant de protection de branche GitHub: preparer les commandes, ne pas appliquer automatiquement | Codex | - | 1 j | Codex non mesure ; Claude 0 h 05 (reprise) | inconnu | non calculable | IN PROGRESS | PR E09 (DONE a sa fusion); docs/BRANCH_PROTECTION.md |
+| E09 | Assistant de protection de branche GitHub: preparer les commandes, ne pas appliquer automatiquement | Codex | - | 1 j | Codex non mesure ; Claude 0 h 05 (reprise) | inconnu | non calculable | DONE | PR #36 (statut effectif a sa fusion); docs/BRANCH_PROTECTION.md |
 | E10 | Scanner d'images Docker et SAST complementaire dont Semgrep, sans retrait des controles actuels | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E11 | Verification statique des API Python/JS/TS lorsque possible; PASS/FAIL/NON VERIFIE | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E12 | Recherche des skills: cache expire, parallelisme, classement, reverification avant copie | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
