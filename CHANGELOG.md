@@ -11,6 +11,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 - Politique de maintenance, plan des releases et controle CI du changelog et des statuts (E05).
 - Controles NON VERIFIE detailles (raison, risque, criticite) et confirmation explicite verifiee par le serveur, perimee si la configuration ou les controles changent ; blocage des NON VERIFIE critiques en niveau hardened (E06).
 - Fusion automatique a trois voies de l'ecriture locale, proposee seulement avec une base fiable (contenu reellement ecrit par Forge, conserve hors du projet avec empreinte) et appliquee sur decision explicite ; conflits localises, resolution manuelle sinon, sauvegarde et rollback conserves (E07).
+- Socle de bout en bout des projets generes, sans dependance ajoutee ni scenario metier : temoin du paquet Python installe ou du livrable Node, job CI `Bout en bout (livrable)`, section E2E de TESTING.md avec les cas non applicables (E08).
 
 ### Modifie
 - Un fichier existant remplace ou fusionne garde ses permissions, y compris apres un rollback ; un script genere reste executable (E07).

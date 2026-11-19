@@ -22,8 +22,8 @@ Limites a reporter dans le changelog de v1.0.0 : exceptions d'audit actives (reg
 
 | Critere | Taches | Preuve attendue | Etat |
 | --- | --- | --- | --- |
-| Fusion automatique a trois voies avec base fiable, fusion manuelle sinon, sauvegarde et rollback conserves | E07 | tests fusion propre, conflit, sans base, concurrence, echec d'ecriture, restauration | a faire |
-| Infrastructure E2E des projets generes, sans scenario metier invente | E08 | TESTING.md et harnais generes par stack, commande temoin verte | a faire |
+| Fusion automatique a trois voies avec base fiable, fusion manuelle sinon, sauvegarde et rollback conserves | E07 | tests fusion propre, conflit, sans base, concurrence, echec d'ecriture, restauration | fait (PR #32) |
+| Infrastructure E2E des projets generes, sans scenario metier invente | E08 | TESTING.md et harnais generes par stack, commande temoin verte | en cours (PR #35) |
 | Assistant de protection de branche : commandes preparees, jamais appliquees automatiquement | E09 | commandes conformes aux jobs reels, testees | a faire |
 | Conditions communes de release | - | MAINTENANCE.md section 6 | a verifier a la release |
 

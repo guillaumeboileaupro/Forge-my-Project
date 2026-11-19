@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "id": "scaffold-python-tests",
-  "description": "Test de fumee Python, remplace par de vrais tests.",
+  "description": "Test de fumee Python et temoin de bout en bout du paquet installe, remplaces par de vrais tests.",
   "priority": 35,
   "when": {
     "technologies_any": [
@@ -13,6 +13,10 @@
     {
       "path": "tests/test_smoke.py",
       "template": "stack/python/test_smoke.py.tmpl"
+    },
+    {
+      "path": "e2e/test_installed_package.py",
+      "template": "stack/python/e2e_test_installed_package.py.tmpl"
     }
   ]
 }

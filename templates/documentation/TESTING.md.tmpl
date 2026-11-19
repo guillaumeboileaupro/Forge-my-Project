@@ -6,6 +6,30 @@
 
 Une valeur NON DEFINI signifie qu'aucun outil n'a ete retenu : choisir l'outil, l'ajouter au catalogue des dependances et completer ce document.
 
+## Bout en bout (E2E)
+{{#if e2e.applicable}}
+Temoin technique genere par Forge-my-Project : il verifie le livrable de bout en bout, sans scenario metier. Il ne remplace pas les parcours reels, a ajouter quand le code metier existe.
+{{#each e2e.commands}}
+- Commande : `{{ this }}`
+{{/each}}
+{{#if e2e.python}}
+- Python (`e2e/test_installed_package.py`) : le projet est installe comme un utilisateur l'installerait (`python -m pip install ".[dev]"`, sans `-e`), puis le paquet est importe dans un processus isole (`python -I`), hors des sources. Le test verifie l'emplacement (pas `src/`) et la version. En local, utiliser un environnement dedie : `python -m venv .venv-e2e && .venv-e2e/bin/python -m pip install ".[dev]" && .venv-e2e/bin/python -m pytest e2e -o addopts=""` (pour unittest : `.venv-e2e/bin/python -m unittest discover -s e2e -v`). La couverture des tests unitaires ne s'applique pas a l'E2E.
+{{/if}}
+{{#if node}}
+- Node.js (`e2e/*.e2e.mjs`, lanceur integre `node --test`, aucune dependance) : `npm run test:e2e` {{#if node.typescript}}compile (`npm run build`) puis charge `dist/index.js`{{else}}charge `src/index.js`{{/if}}. Le suffixe `.e2e.mjs` tient ces tests hors des tests unitaires.
+{{/if}}
+- CI : job `Bout en bout (livrable)` de `.github/workflows/ci.yml`, distinct des tests unitaires, et bloquant.
+{{else}}
+Aucun socle E2E genere : aucun lanceur de tests n'est retenu pour cette pile.
+{{/if}}
+
+Non applicable a ce stade :
+{{#each e2e.not_applicable}}
+- {{ this }}
+{{/each}}
+
+Pour ajouter des parcours reels : un test par parcours utilisateur verifiable, sur le livrable installe ou construit, sans donnees ni service externes non maitrises. Un nouvel outil (par exemple un navigateur automatise pour une interface web) s'ajoute seulement apres verification du registre officiel (nom exact, version, licence), dans docs/DEPENDENCIES.md, puis dans le job E2E.
+
 ## Regles
 {{#each sections.testing}}
 - {{ this }}
