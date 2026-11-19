@@ -125,6 +125,22 @@
         </fieldset>
         <button type="button" id="check" class="primary">Verifier la configuration</button>
         <div id="report" aria-live="polite"></div>
+        <fieldset id="branch-protection">
+          <legend>Assistant de protection de branche GitHub</legend>
+          <p class="help">Inspection explicite en lecture seule via la CLI <code>gh</code>. Forge prepare une commande, mais ne modifie jamais les protections GitHub. Vous devez relire, copier puis executer vous-meme la commande.</p>
+          <label for="github-repository">Depot GitHub (owner/repository)</label>
+          <input id="github-repository" autocomplete="off" spellcheck="false" placeholder="organisation/projet">
+          <label for="github-branch">Branche</label>
+          <input id="github-branch" autocomplete="off" spellcheck="false" value="main">
+          <button type="button" id="prepare-protection">Verifier et preparer la commande</button>
+          <section id="protection-preview" aria-live="polite" hidden>
+            <h3>Apercu des modifications proposees</h3>
+            <div id="protection-summary"></div>
+            <label for="protection-command">Commande a valider et executer manuellement</label>
+            <textarea id="protection-command" rows="18" readonly spellcheck="false"></textarea>
+            <button type="button" id="copy-protection" disabled>Copier la commande</button>
+          </section>
+        </fieldset>
         <div class="preview" id="preview" hidden>
           <aside class="file-explorer" aria-labelledby="h-files">
             <h3 id="h-files">Fichiers generes</h3>

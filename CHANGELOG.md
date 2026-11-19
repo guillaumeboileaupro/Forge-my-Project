@@ -5,6 +5,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 ## [Unreleased]
 
 ### Ajoute
+- Assistant E09 de protection de branche GitHub : inspection en lecture seule du depot, de la branche, des checks CI et des permissions, apercu et commande manuelle copiable sans mutation distante implicite.
 - Garde d'attribution Git (`scripts/attribution_guard.py`) : hooks commit-msg et pre-push, job CI `attribution`, installation dans les depots existants et futurs, integration aux projets generes (E02, PR #26).
 - Audit des refs Git et archive des branches `docs/*` (E01, PR #27).
 - Audit des fichiers du depot (E03, PR #28).

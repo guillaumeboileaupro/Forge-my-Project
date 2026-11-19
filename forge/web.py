@@ -16,6 +16,7 @@ from forge.config.spec import AGENTS, OPTIONS, PROJECT_TYPES, SECURITY_LEVELS, S
 from forge.diagnostics import ForgeError
 from forge.generator.archive import build_zip
 from forge.generator.context import AGENT_INFO, PROJECT_TYPE_LABELS
+from forge.github.branch_protection import prepare as prepare_branch_protection
 from forge.filesystem import workflow
 from forge.filesystem.destination import browse
 from forge.filesystem.preview import FileSetMismatch, validate_preview
@@ -262,6 +263,17 @@ def skills_verify_payload(raw):
     except ValueError as exc:
         return _failure(exc)
     return _json(200, {"ok": all(c["status"] == "PASS" for c in checks), "checks": checks})
+
+
+# --- Protection de branche GitHub (E09) : preparation uniquement -----------
+def branch_protection_payload(raw):
+    """Inspecte GitHub en lecture puis genere une commande a executer manuellement."""
+    try:
+        body = _body(raw, {"repository", "branch"})
+        proposal = prepare_branch_protection(body["repository"], body["branch"])
+    except ValueError as exc:
+        return _json(400, {"ok": False, "error": str(exc)})
+    return _json(200, dict(proposal, ok=True))
 
 
 # --- Destination locale, comparaison et ecriture confirmee (T17) -------------

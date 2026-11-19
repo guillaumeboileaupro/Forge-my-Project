@@ -87,3 +87,4 @@ body.forge{max-width:none;margin:0;padding:0}
 .forge code{overflow-wrap:anywhere}
 .forge .tech.filtered{display:none}
 .forge #ack-warnings-label{margin-top:10px}
+.forge #protection-command{width:100%;font:13px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre}
