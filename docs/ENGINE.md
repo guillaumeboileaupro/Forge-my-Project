@@ -132,3 +132,11 @@ Uniquement sur demande (`verify`, `skills`, `skills-search`), en HTTPS vers une 
 - Avant l'ecriture, le serveur regenere le plan, repete les verifications, recalcule l'inventaire et refuse une confirmation absente, perimee (redemarrage, configuration ou controles changes) ou mal formee.
 - Le journal d'ecriture garde chaque element avec son statut et sa raison inchanges ; `confirmed: true` indique seulement l'acceptation en connaissance de cause.
 
+## Bout en bout des projets generes (E08)
+
+`forge/generator/stack.py` (`_e2e`) decrit le socle E2E par pile, avec les outils deja retenus et sans dependance ajoutee :
+- Python avec pytest ou unittest : le temoin `e2e/test_installed_package.py` s'execute sur le livrable installe sans `-e`. Il est lance par `python -m pytest e2e -o addopts=""`, la couverture unitaire ne s'appliquant pas.
+- Node : le temoin `e2e/entrypoint.e2e.mjs` est lance par `node --test`, apres le build s'il existe, via `npm run test:e2e`.
+- CI : job `Bout en bout (livrable)`, bloquant, et contexte ajoute a la commande de protection de branche generee.
+- Sans lanceur de tests Python, ni fichier ni job ne sont generes, et TESTING.md indique NON APPLICABLE. Les parcours navigateur, HTTP et CLI restent NON APPLICABLES tant que le squelette n'a pas de code metier ; aucun scenario n'est invente.
+

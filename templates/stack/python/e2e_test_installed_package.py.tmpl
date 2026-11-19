@@ -1,0 +1,45 @@
+"""Test de bout en bout du livrable : le paquet installe s'utilise hors des sources.
+
+Temoin technique genere par Forge-my-Project, sans scenario metier. Il echoue si le
+projet est installe en mode editable (pip install -e) : installer le livrable avec
+`python -m pip install ".[dev]"` dans un environnement dedie (voir docs/TESTING.md).
+Ajouter ici les parcours reels du projet (CLI, HTTP, ...) quand le code metier existe.
+"""
+
+import json
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+PACKAGE = "{{ project.package_name }}"
+DISTRIBUTION = "{{ project.name }}"
+SOURCES = Path(__file__).resolve().parents[1] / "src"
+PROBE = "\n".join(
+    [
+        "import importlib, importlib.metadata, json",
+        "module = importlib.import_module(" + repr(PACKAGE) + ")",
+        "version = importlib.metadata.version(" + repr(DISTRIBUTION) + ")",
+        "print(json.dumps([module.__file__, version]))",
+    ]
+)
+
+
+class InstalledPackageTest(unittest.TestCase):
+    def test_installed_distribution_runs_outside_sources(self) -> None:
+        with tempfile.TemporaryDirectory() as workdir:
+            done = subprocess.run(
+                [sys.executable, "-I", "-c", PROBE],
+                cwd=workdir,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+        self.assertEqual(done.returncode, 0, done.stderr)
+        location, version = json.loads(done.stdout)
+        self.assertEqual(version, "0.1.0")
+        self.assertFalse(
+            Path(location).resolve().is_relative_to(SOURCES),
+            "paquet importe depuis src/ : installer le livrable sans -e (docs/TESTING.md)",
+        )

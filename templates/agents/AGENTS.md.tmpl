@@ -45,6 +45,10 @@ Architecture NON DEFINIE : la preciser avec l'utilisateur avant d'implementer.
   - `{{ this }}`
 {{/each}}
 {{/each}}
+{{#each e2e.commands}}
+- Bout en bout (E2E, voir docs/TESTING.md) :
+  - `{{ this }}`
+{{/each}}
 Une commande absente de cette liste est NON DEFINIE : ne pas l'inventer, la proposer dans une PR et la documenter.
 
 ## Conventions

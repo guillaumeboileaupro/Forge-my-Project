@@ -1,0 +1,14 @@
+// Test de bout en bout du livrable : le point d'entree {{#if node.typescript}}compile {{/if}}se charge et s'execute.
+// Temoin technique genere par Forge-my-Project, sans scenario metier : ajouter ici les parcours
+// reels (HTTP, ligne de commande, navigateur) quand le code metier existe (voir docs/TESTING.md).
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+test("le point d'entree livre se charge", async () => {
+{{#if node.typescript}}
+  const entry = await import("../dist/index.js");
+{{else}}
+  const entry = await import("../src/index.js");
+{{/if}}
+  assert.equal(typeof entry, "object");
+});
