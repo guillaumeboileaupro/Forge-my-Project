@@ -204,7 +204,7 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 | Q18 | C | Skills: cache expire, recherches paralleles, classement et reverification avant copie | E12 | TODO |
 | Q19 | B + C, usage personnel | Stacks Python/JS/Rust/Go/Java et catalogue/regles personnels editables localement | E13 | TODO |
 | Q20 | A | Temps manuels uniquement; conserver estime/reel/ecart sans chronometre ni mesure Git | Toutes E, pas de fonctionnalite nouvelle | REGLE |
-| Q21 | B puis C puis D | Trois releases: v1.0.0 nettoyage; v1.1.0 PARTIEL; v2.0.0 ameliorations+refonte | E05, E07-E09, E18 | TODO (plan pret: docs/RELEASES.md; aucune release publiee) |
+| Q21 | B puis C puis D | Trois releases: v1.0.0 nettoyage; v1.1.0 PARTIEL; v2.0.0 ameliorations+refonte | E05, E07-E09, E18 | PARTIEL (v1.0.0 et v1.1.0 publiees le 19/11 ; v2.0.0 a venir) |
 | Q22 | C | Codex et Claude en parallele, composants et worktrees distincts | E05, E14-E18 | REGLE |
 | Q23 | B + C | Releases, bugs, mises a jour securite, controles reguliers dependances et regression | E05 | DONE (E05, PR #29: docs/MAINTENANCE.md, docs/RELEASES.md, CHANGELOG.md) |
 | Q24 | A+B+C+D | Plan detaille, missions agents, petites PR progressives et execution avec tests/CI | E05 + plan | REGLE |
@@ -324,6 +324,18 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 - Corrections de la reprise: seuls les checks reussis a chaque execution sur le commit de tete sont proposes (un check en echec, annule, ignore ou en cours aurait ete rendu obligatoire); commande generee seulement si le check d'attribution a reussi; test d'echappement du heredoc par un nom de check hostile; analyse des erreurs `gh` tolerante a un stderr absent (test existant en erreur).
 - Validation reelle (lecture seule) sur ce depot: protection de main confirmee absente, droits administrateur observes, 2 checks en cours exclus avec avertissement, commande proposee affichee et non executee.
 - Tests: `tests/test_branch_protection.py` 13; suite locale complete OK.
+
+### Releases v1.0.0 et v1.1.0 - 19 novembre 2026 (Claude Code, a la demande du proprietaire)
+- Decision du proprietaire : v1.0.0 sur `9effa1d` (fusion de la PR #25 : E01 a E05, sans E06), puis v1.1.0 sur le commit de release de main (E06 a E09). Aucun tag ni release n'existait avant.
+- Conditions (docs/MAINTENANCE.md section 6), v1.0.0 :
+  - (1) criteres du jalon faits avec PR ;
+  - (2)(3) CI de 9effa1d relancee le jour de la release (run 44320746923, tentative 2) : 4 jobs verts, dont la CI generee avec `--verify` ;
+  - (4) `attribution_guard.py audit` sans attribution interdite ;
+  - (5) aucune issue ouverte ;
+  - (6) section datee et limites dans CHANGELOG.md ;
+  - (7) `installer.sh` puis `start.sh` executes depuis un clone propre de 9effa1d (page et API en HTTP 200).
+- v1.1.0 : memes conditions, verifiees sur le commit de release apres fusion et avant le tag (preuves dans la release GitHub).
+- Tags annotes `vX.Y.Z`, jamais deplaces ; releases GitHub reprenant les sections du CHANGELOG.
 
 Les priorites et les criteres d'acceptation propres a chaque ligne sont maintenus dans [docs/ROADMAP_2026.md](docs/ROADMAP_2026.md); cette reference fait partie du contrat de la tache, pas d'un critere generique. Charge totale estimee: **36,5 j**. Regle de suivi (E01-E18) : la charge humaine estimee est en jours (1 j = 8 h de travail humain). L'execution IA mesuree est le temps horloge d'une session d'agent, releve manuellement a partir des heures de debut et de fin ; elle n'est jamais convertie en charge humaine. Le temps humain reel n'est renseigne que s'il est connu du proprietaire. L'ecart humain (temps humain reel ou charge reestimee moins charge estimee) n'est calcule que lorsque ces donnees existent ; sinon `non calculable`. Toute PR renseigne preuve CI, revue, tests et limites. Ne pas marquer DONE avant verification.
 
