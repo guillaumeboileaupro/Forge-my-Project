@@ -7,7 +7,9 @@ Actif avec FORGE_E2E=1, geckodriver et firefox. Les mesures sont ecrites sur la 
 """
 import os
 import sys
+import time
 import unittest
+import urllib.error
 
 from tests import test_e2e_firefox as base
 from tests import test_e2e_journey_firefox as journey
@@ -409,7 +411,19 @@ class FirefoxPhoneDarkTests(Common, unittest.TestCase):
         caps = {"capabilities": {"alwaysMatch": {"browserName": "firefox", "moz:firefoxOptions": {
             "args": ["-headless", "-remote-allow-system-access"],
             "prefs": {"ui.systemUsesDarkTheme": 1, "layout.css.prefers-color-scheme.content-override": 0}}}}}
-        cls.session = cls.call("POST", "/session", caps)["sessionId"]
+        for attempt in range(2):  # la session precedente peut encore se fermer
+            try:
+                cls.session = cls.call("POST", "/session", caps)["sessionId"]
+                break
+            except urllib.error.HTTPError as exc:
+                detail = exc.read().decode("utf-8", "replace")[:500]
+                if attempt:
+                    try:  # arrete geckodriver et le serveur ; la session supprimee ne peut plus l'etre
+                        cls.tearDownClass()
+                    except urllib.error.URLError:
+                        pass
+                    raise AssertionError("Session Firefox (zoom, theme sombre) refusee : " + detail) from exc
+                time.sleep(2)
 
     def setUp(self):
         self.load()
