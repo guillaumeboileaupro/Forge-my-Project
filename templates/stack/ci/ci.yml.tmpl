@@ -33,6 +33,26 @@ jobs:
         with:
           node-version: "{{ node.version }}"
 {{/if}}
+{{#if rust}}
+      - name: Rust {{ rust.version }} (rustup, preinstalle sur le runner)
+        run: |
+          rustup toolchain install {{ rust.version }} --profile minimal --component clippy,rustfmt
+          rustup default {{ rust.version }}
+{{/if}}
+{{#if go}}
+      - name: Go {{ go.version }}
+        uses: {{ ci.actions.setup_go.repository }}@{{ ci.actions.setup_go.sha }} # {{ ci.actions.setup_go.tag }}
+        with:
+          go-version: "{{ go.version }}"
+          cache: false
+{{/if}}
+{{#if java}}
+      - name: Java {{ java.version }} (Temurin)
+        uses: {{ ci.actions.setup_java.repository }}@{{ ci.actions.setup_java.sha }} # {{ ci.actions.setup_java.tag }}
+        with:
+          distribution: temurin
+          java-version: "{{ java.version }}"
+{{/if}}
 {{#each ci.steps}}
       - name: {{ this.name }}
         run: |

@@ -22,7 +22,7 @@ docs/FINALIZATION_PLAN.md et la PR #3 mentionnent 40 questions/choix valides par
 | U3 | Architecture manuelle ou suggeree par regles locales, toujours modifiable | plan.architecture ; bouton « Proposer l'architecture » (T04) ; editeur T16 | test_web_api.test_plan_exposes_editable_architecture_suggestion, test_engine_documents.test_unknown_commands_and_architecture_are_explicit, Firefox test_questionnaire_... | PASS |
 | U4 | Contenus prepares hors outil colles dans le formulaire | champs texte, jamais interpretes | test_engine_rules.test_user_values_are_not_reinterpreted | PASS |
 | U5 | Navigation laterale, recherche, progression, indicateurs d'erreur | sidebar, `#tech-search` (T03), `<progress>`, badges | Firefox test_questionnaire_... (recherche), test_full_journey (badges) | PASS |
-| U6 | Profils predefinis et personnels | catalogs/profiles (6), forge/config/profiles.py | test_profiles (17), Firefox test_profiles_lifecycle | PASS |
+| U6 | Profils predefinis et personnels | catalogs/profiles (9), forge/config/profiles.py | test_profiles (17), Firefox test_profiles_lifecycle | PASS |
 | U7 | Sauvegarde automatique locale, import/export JSON valide | localStorage revalide, /api/answers/validate | Firefox test_autosave_..., test_export_then_import, test_incompatible_draft_is_not_restored | PASS |
 | U8 | Apercu arbre + contenu, edition avant ecriture | T16 | test_filesystem_preview, test_web_api.test_edited_preview_*, Firefox test_full_journey | PASS |
 | U9 | Comparaison, fusion assistee, sauvegarde, validation explicite | T17 | test_filesystem_write.test_keep_replace_and_manual_merge, Firefox test_local_write_journey | PARTIEL : fusion manuelle guidee par diff, pas de fusion a trois voies |
@@ -37,7 +37,7 @@ docs/FINALIZATION_PLAN.md et la PR #3 mentionnent 40 questions/choix valides par
 | S3 | ARCHITECTURE, DEVELOPMENT_PLAN, TODO (taches, dependances, estimations, reel, ecarts) | templates/documentation | test_engine_documents.test_todo_has_tracking_columns_and_no_invented_estimate, test_expected_files | PASS |
 | S4 | README, SECURITY, CONTRIBUTING, TESTING, DEPENDENCIES, ADR, DEPLOYMENT si applicable | templates/documentation, rule deployment-docker | test_engine_documents.test_expected_files, test_optional_outputs_require_opt_in | PASS |
 | S5 | Hooks Git + hooks d'agents selon capacites reelles | T14 | test_engine_hooks (15, dont hooks executes dans un vrai depot) | PASS |
-| S6 | GitHub Actions operationnelles, qualite, tests, couverture et seuils | T12, ci.yml.tmpl, seuils pytest-cov / vitest | test_engine_ci, test_engine_documents.test_workflow_is_pinned_and_least_privilege, job CI `generated-projects` (6 profils) | PASS |
+| S6 | GitHub Actions operationnelles, qualite, tests, couverture et seuils | T12, ci.yml.tmpl, seuils pytest-cov / vitest | test_engine_ci, test_engine_documents.test_workflow_is_pinned_and_least_privilege, job CI `generated-projects` (9 profils) | PASS |
 | S7 | Tests integration, E2E/recette, non-regression quand applicables | TESTING.md genere (politique) | test_engine_documents.test_expected_files | PARTIEL : pas de harnais E2E genere, le projet initialise n'a pas encore de parcours utilisateur |
 | S8 | Securite stricte : secrets, SAST, SCA, supply chain, SBOM si applicable, echec bloquant | T13, catalogs/security | test_engine_security (7), smoke_security.py (job CI) | PASS (SBOM au niveau `hardened`) |
 

@@ -9,7 +9,7 @@ import urllib.error
 import urllib.request
 from urllib.parse import urlsplit
 
-ALLOWED_HOSTS = {"pypi.org", "files.pythonhosted.org", "registry.npmjs.org", "api.osv.dev", "endoflife.date", "api.github.com", "raw.githubusercontent.com",
+ALLOWED_HOSTS = {"pypi.org", "files.pythonhosted.org", "registry.npmjs.org", "repo1.maven.org", "api.osv.dev", "endoflife.date", "api.github.com", "raw.githubusercontent.com",
                  "registry.modelcontextprotocol.io"}
 MAX_BYTES = 20 * 1024 * 1024
 USER_AGENT = "Forge-my-Project-verifier"

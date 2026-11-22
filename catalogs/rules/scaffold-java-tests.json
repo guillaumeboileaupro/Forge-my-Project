@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "id": "scaffold-java-tests",
+  "description": "Test de fumee JUnit, remplace par de vrais tests.",
+  "priority": 36,
+  "when": {
+    "technologies_all": [
+      "java",
+      "junit"
+    ]
+  },
+  "files": [
+    {
+      "path": "src/test/java/{package}/VersionTest.java",
+      "template": "stack/java/VersionTest.java.tmpl"
+    }
+  ]
+}

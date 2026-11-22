@@ -167,6 +167,15 @@ def _npm_audit_tool(level, exceptions):
     return "npm audit (>= %s) ; exceptions datees : %s" % (level, listed)
 
 
+# E13 : piles sans outil d'audit ni regles SAST configures (Semgrep : regles locales Python/JS/TS).
+UNCOVERED_STACKS = {"rust": "Rust (Cargo)", "go": "Go (modules)", "java": "Java (Maven)"}
+
+
+def uncovered_stacks(plan):
+    ids = plan.resolution.ids()
+    return [(tech_id, label) for tech_id, label in UNCOVERED_STACKS.items() if tech_id in ids]
+
+
 def _controls(plan, tools, severity, level):
     ids = plan.resolution.ids()
     python, node = "python" in ids, "node" in ids
@@ -193,6 +202,9 @@ def _controls(plan, tools, severity, level):
         rows.append({"control": "Image conteneur", "tool": "Trivy %s (>= %s), des qu'un Dockerfile existe"
                      % (tools["trivy"]["version"], tools["image_severity"][plan.spec.security]),
                      "where": "CI (job security)", "status": "NON VERIFIE tant qu'aucun Dockerfile n'existe"})
+    for _, label in uncovered_stacks(plan):
+        rows.append({"control": "Dependances et SAST %s" % label, "tool": "aucun outil configure", "where": "-",
+                     "status": "NON VERIFIE"})
     rows.append({"control": "Actions GitHub", "tool": "epinglees par SHA, permissions contents: read", "where": "CI", "status": "CONFIGURE"})
     return rows
 
@@ -222,6 +234,10 @@ def security_diagnostics(plan):
     if "node" in ids and "eslint" not in ids:
         found.append(d.warning("security-sast-unverified",
                                "SAST JavaScript/TypeScript NON VERIFIE : selectionner ESLint (eslint-plugin-security)", "eslint"))
+    for tech_id, label in uncovered_stacks(plan):
+        found.append(d.warning("security-stack-unverified",
+                               "Audit des dependances et SAST %s NON VERIFIE : aucun outil configure par Forge "
+                               "(Gitleaks reste actif ; regles Semgrep locales limitees a Python/JS/TS)" % label, tech_id))
     if "docker" in ids:
         found.append(d.warning("security-image-unverified",
                                "Analyse de l'image conteneur NON VERIFIE tant qu'aucun Dockerfile n'existe "

@@ -1,0 +1,10 @@
+package {{ go.package }}
+
+// Test de fumee : a remplacer par de vrais tests.
+import "testing"
+
+func TestVersionIsSet(t *testing.T) {
+	if Version == "" {
+		t.Fatal("version vide")
+	}
+}

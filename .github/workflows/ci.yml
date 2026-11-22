@@ -40,6 +40,16 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
+      - name: Setup Go (profil go-cli)
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.27'
+          cache: false
+      - name: Setup Java (profil java-library)
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78 # v6.2.0
+        with:
+          distribution: temurin
+          java-version: '25'
       - name: Generate and run each generated pipeline (online verification)
         run: python3 tests/smoke_generated.py --verify
       - name: Prove generated security controls detect injected issues

@@ -1,0 +1,13 @@
+package {{ java.package }};
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import org.junit.jupiter.api.Test;
+
+/** Test de fumee : a remplacer par de vrais tests. */
+class VersionTest {
+    @Test
+    void versionIsSet() {
+        assertFalse(Version.value().isEmpty());
+    }
+}

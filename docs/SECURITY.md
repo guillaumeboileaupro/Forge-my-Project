@@ -56,6 +56,8 @@ A l'expiration, la CI redevient rouge : verifier l'avis, puis retirer l'exceptio
 - L'approbation epingle depot, commit et empreinte SHA-256 de l'arborescence du skill ; tout changement depuis l'approbation est une erreur bloquante, et chaque fichier telecharge est compare au SHA de son blob Git.
 - Seuls des fichiers texte (.md, .yaml, .yml, .json, .txt) sont copies ; scripts, binaires, liens et executables sont ignores, jamais telecharges ni executes.
 - Les approbations importees (JSON, profil, brouillon) sont revalidees par le serveur et peuvent etre controlees en ligne avant generation.
+- E13 : piles Rust, Go et Java sans outil d'audit des dependances ni regles SAST : controle NON VERIFIE (`security-stack-unverified`) a confirmer en strict, bloquant en hardened. Gitleaks et Semgrep restent actifs.
+- E13 : le catalogue personnel (technologies, regles, templates) est lu comme une donnee bornee (16 fichiers JSON de 64 Kio par dossier, 32 technologies, 32 regles, 32 templates de 64 Kio), sans lien symbolique ; il ne peut ni remplacer un element de Forge ni utiliser `override`. Ses commandes ne sont jamais executees par Forge ; elles sont ecrites dans la CI et les hooks generes et signalees (`local-technology`, `local-rule`).
 - E12 : le cache de recherche ne contient que des candidats (dossier d'etat 0700, fichiers 0600, entree invalide ignoree) ; il ne peut rien faire copier, car la copie relit toujours GitHub au commit approuve et controle l'empreinte. Avant copie, la branche suivie est relue : un skill modifie ou retire en amont depuis l'approbation est signale, et seule la version approuvee est copiee.
 
 ## Serveurs MCP des projets generes (T15)

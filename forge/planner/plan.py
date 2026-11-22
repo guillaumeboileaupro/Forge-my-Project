@@ -45,6 +45,17 @@ def _architecture(spec, composition, out):
     return {"source": source, "manual": spec.architecture, "suggested": suggested}
 
 
+def _local_diagnostics(resolution, composition, rules):
+    """E13 : elements du catalogue personnel utilises, a relire (Forge ne les execute jamais)."""
+    found = [d.warning("local-technology", "Technologie %s du catalogue personnel : commandes et paquets non relus par "
+                       "Forge, ecrits tels quels dans la CI et les hooks generes ; relire avant de les executer" % t.id, t.id)
+             for t in resolution.technologies if t.source == "local"]
+    local_rules = {r.id for r in rules if r.source == "local"}
+    found += [d.warning("local-rule", "Regle %s du catalogue personnel appliquee : fichiers et consignes a relire" % rule_id,
+                        rule_id) for rule_id in composition.rules if rule_id in local_rules]
+    return found
+
+
 def build_plan(data, catalog=None, rules=None):
     """Construit le plan a partir d'un dict JSON ou d'un ProjectSpec deja valide."""
     spec = data if isinstance(data, ProjectSpec) else parse_spec(data)
@@ -55,6 +66,7 @@ def build_plan(data, catalog=None, rules=None):
     out = list(resolution.diagnostics) + list(composition.diagnostics)
     out.extend(security_diagnostics(plan_probe(spec, resolution)))
     out.extend(mcp_diagnostics(spec, resolution.ids()))
+    out.extend(_local_diagnostics(resolution, composition, rules))
     if not spec.description:
         out.append(d.warning("description-empty", "Description vide : les documents resteront generiques"))
     architecture = _architecture(spec, composition, out)

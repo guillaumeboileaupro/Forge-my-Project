@@ -11,6 +11,7 @@ import json
 from forge import diagnostics as d
 from forge.config.answers import envelope, parse_answers, unwrap
 from forge.config.catalog import load_catalog
+from forge.rules.engine import load_rules
 from forge.config.profiles import PROFILE_FIELDS, ProfileNotFound, ProfileStore, load_predefined
 from forge.config.spec import AGENTS, OPTIONS, PROJECT_TYPES, SECURITY_LEVELS, SpecError, parse_approvals
 from forge.diagnostics import ForgeError
@@ -36,12 +37,17 @@ def _json(status, payload):
 
 
 def catalog_payload():
-    catalog = load_catalog()
+    try:
+        catalog = load_catalog()
+        rules = load_rules(catalog)
+    except ValueError as exc:  # catalogue personnel invalide (E13) : erreur explicite, aucun chargement partiel
+        return _json(422, {"ok": False, "error": str(exc)})
     technologies = [
         {
             "id": t.id, "name": t.name, "category": t.category, "description": t.description, "docs": t.docs,
             "package": t.package, "versions": list(t.supported_versions), "preferred": t.preferred_version,
             "requires": [list(options) for options in t.requires], "conflicts": list(t.conflicts),
+            "source": t.source,
         }
         for t in catalog.technologies.values()
     ]
@@ -54,6 +60,7 @@ def catalog_payload():
         "security_levels": list(SECURITY_LEVELS),
         "options": sorted(OPTIONS),
         "mcp_servers": [_mcp_payload(server) for server in load_mcp_catalog().values()],
+        "local": dict(catalog.local, rules=[r.id for r in rules if r.source == "local"]) if catalog.local else {},
     })
 
 

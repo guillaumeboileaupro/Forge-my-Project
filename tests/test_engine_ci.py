@@ -97,7 +97,7 @@ class RuleExtensionTests(unittest.TestCase):
 class CiCatalogTests(unittest.TestCase):
     def test_repository_catalog_is_pinned(self):
         actions = load_ci_catalog()["actions"]
-        self.assertEqual(set(actions), {"checkout", "setup_python", "setup_node", "upload_artifact"})
+        self.assertEqual(set(actions), {"checkout", "setup_python", "setup_node", "setup_go", "setup_java", "upload_artifact"})
 
     def test_rejects_unpinned_actions(self):
         import tempfile

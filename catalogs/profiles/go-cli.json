@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "go-cli",
+  "label": "Outil en ligne de commande Go",
+  "description": "CLI Go avec go test, go vet et gofmt.",
+  "answers": {
+    "project_type": "cli",
+    "technologies": [
+      "go"
+    ],
+    "versions": {
+      "go": "1.27"
+    },
+    "agents": [
+      "codex",
+      "claude"
+    ],
+    "security": "strict"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "id": "stack-java",
+  "description": "Regles specifiques a Java (Maven).",
+  "priority": 20,
+  "when": {
+    "technologies_any": [
+      "java"
+    ]
+  },
+  "sections": {
+    "conventions": [
+      "Disposition Maven standard : src/main/java et src/test/java.",
+      "Version de Java fixee par maven.compiler.release dans pom.xml."
+    ],
+    "dependencies": [
+      "Dependances et versions declarees dans pom.xml, jamais de jar copie dans le depot."
+    ],
+    "pitfalls": [
+      "Avaler une exception sans la journaliser ni la propager.",
+      "Utiliser des intervalles de versions Maven en production au lieu de versions exactes."
+    ]
+  }
+}

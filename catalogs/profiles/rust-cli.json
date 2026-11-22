@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "rust-cli",
+  "label": "Outil en ligne de commande Rust",
+  "description": "CLI Rust avec Cargo, rustfmt, Clippy et cargo test.",
+  "answers": {
+    "project_type": "cli",
+    "technologies": [
+      "rust"
+    ],
+    "versions": {
+      "rust": "1.100"
+    },
+    "agents": [
+      "codex",
+      "claude"
+    ],
+    "security": "strict"
+  }
+}

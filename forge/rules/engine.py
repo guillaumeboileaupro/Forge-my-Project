@@ -11,6 +11,7 @@ from pathlib import Path
 
 from forge import CATALOGS_DIR, TEMPLATES_DIR
 from forge import diagnostics as d
+from forge.config import local
 from forge.config.spec import AGENTS, PROJECT_TYPES, SECURITY_LEVELS, OPTIONS
 from forge.generator.paths import PathError, resolve_inside, safe_relative_path
 
@@ -49,6 +50,7 @@ class Rule:
     files: tuple
     sections: dict
     skills: tuple
+    source: str = "forge"  # "local" : regle personnelle (E13)
 
 
 @dataclass
@@ -144,7 +146,36 @@ def parse_rule(raw, catalog, templates_dir=TEMPLATES_DIR):
                 _parse_sections(raw.get("sections", {}), where), tuple(skills))
 
 
-def load_rules(catalog, directory=None, templates_dir=TEMPLATES_DIR):
+def parse_local_rule(raw, catalog, root):
+    """Regle personnelle : memes controles, templates du dossier local, jamais d'override."""
+    templates = local.check_templates(root)
+    rule = parse_rule(raw, catalog, templates)
+    _require(not any(f.override for f in rule.files), "regle locale %s : override interdit" % rule.id)
+    files = tuple(FileSpec(f.path, local.LOCAL_TEMPLATE_PREFIX + f.template) for f in rule.files)
+    return Rule(rule.id, rule.description, rule.mandatory, rule.priority, rule.when, files, rule.sections,
+                rule.skills, "local")
+
+
+def _local_rules(catalog, root):
+    try:
+        files = local.json_files("rules", root)
+        found = []
+        for path, text in files:
+            try:
+                raw = json.loads(text)
+            except json.JSONDecodeError as exc:
+                raise RuleError("Regle locale illisible %s : %s" % (path.name, exc)) from exc
+            found.append(parse_local_rule(raw, catalog, root))
+    except local.LocalCatalogError as exc:
+        raise RuleError(str(exc)) from exc
+    _require(len(found) <= local.MAX_RULES, "catalogue local : plus de %d regles" % local.MAX_RULES)
+    return found
+
+
+def load_rules(catalog, directory=None, templates_dir=TEMPLATES_DIR, local_root=None):
+    """Regles de Forge, completees par les regles personnelles (E13) pour le dossier par defaut."""
+    if local_root is None:
+        local_root = local.local_dir() if directory is None else False
     directory = Path(directory or CATALOGS_DIR / "rules")
     rules = []
     for path in sorted(directory.glob("*.json")):
@@ -153,6 +184,11 @@ def load_rules(catalog, directory=None, templates_dir=TEMPLATES_DIR):
         except (OSError, json.JSONDecodeError) as exc:
             raise RuleError("Regle illisible %s : %s" % (path.name, exc)) from exc
         rules.append(parse_rule(raw, catalog, templates_dir))
+    if local_root is not False:
+        builtin = {r.id for r in rules}
+        for rule in _local_rules(catalog, Path(local_root)):
+            _require(rule.id not in builtin, "regle locale %s : une regle de Forge porte deja cet identifiant" % rule.id)
+            rules.append(rule)
     _require(len({r.id for r in rules}) == len(rules), "Identifiant de regle duplique")
     _require(any(r.mandatory for r in rules), "Aucune regle de base obligatoire")
     return sorted(rules, key=lambda r: (r.priority, r.id))

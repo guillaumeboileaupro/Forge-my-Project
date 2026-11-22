@@ -131,6 +131,35 @@ def _node(plan, verification, threshold):
     }
 
 
+# Sans version verifiee, Maven recoit un intervalle borne a la version majeure (equivalent de
+# `latest` pour npm) : la verification en ligne fixe la version exacte confirmee.
+JUNIT_RANGE = "[6,7)"
+
+
+def _rust(plan):
+    if "rust" not in plan.resolution.ids():
+        return None
+    return {"version": plan.resolution.versions["rust"], "crate": plan.spec.name, "lib": plan.spec.package_name,
+            "binary": plan.spec.project_type in ("cli", "api", "web")}
+
+
+def _go(plan):
+    if "go" not in plan.resolution.ids():
+        return None
+    return {"version": plan.resolution.versions["go"], "module": plan.spec.name,
+            "package": plan.spec.package_name.replace("_", ""), "binary": plan.spec.project_type in ("cli", "api", "web")}
+
+
+def _java(plan, verification):
+    ids = plan.resolution.ids()
+    if "java" not in ids:
+        return None
+    junit = next((t for t in plan.resolution.technologies if t.id == "junit"), None)
+    version = _verified_version(verification, "maven", junit.package) if junit else None
+    return {"version": plan.resolution.versions["java"], "group": plan.spec.package_name, "artifact": plan.spec.name,
+            "package": plan.spec.package_name, "junit": junit is not None, "junit_version": version or JUNIT_RANGE}
+
+
 NODE_E2E = "node --test e2e/*.e2e.mjs"
 PYTHON_E2E = {"pytest": 'python -m pytest e2e -o addopts=""', "unittest": "python -m unittest discover -s e2e -v"}
 E2E_NOT_APPLICABLE = {
@@ -221,6 +250,9 @@ def stack_context(plan, verification=None, ci_catalog=None):
     return {
         "python": _python(plan, verification, threshold),
         "node": _node(plan, verification, threshold),
+        "rust": _rust(plan),
+        "go": _go(plan),
+        "java": _java(plan, verification),
         "ci": {
             "actions": ci_catalog["actions"],
             "verified_at": ci_catalog["verified_at"],

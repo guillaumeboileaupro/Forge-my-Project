@@ -60,7 +60,8 @@ function techRow(tech) {
   const row = element('div', {class: 'tech', 'data-tech': tech.id});
   const id = `tech-${tech.id}`;
   const label = element('label', {class: 'check', for: id});
-  label.append(element('input', {type: 'checkbox', name: 'tech', value: tech.id, id}), ` ${tech.name}`);
+  label.append(element('input', {type: 'checkbox', name: 'tech', value: tech.id, id}),
+    ` ${tech.name}${tech.source === 'local' ? ' (catalogue personnel)' : ''}`);
   row.append(label, element('span', {class: 'help'}, tech.description));
   if (tech.versions.length) {
     const versionId = `version-${tech.id}`;
@@ -1248,6 +1249,7 @@ async function init() {
   try {
     const response = await fetch('/api/catalog');
     state.catalog = await response.json();
+    if (!response.ok) throw new Error(state.catalog.error || 'reponse refusee');
   } catch (error) {
     $('#status').textContent = `Catalogue indisponible : ${error.message}`;
     return;

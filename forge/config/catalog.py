@@ -9,15 +9,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from forge import CATALOGS_DIR
-from forge.config import versions
+from forge.config import local, versions
 
 SCHEMA_VERSION = 1
 TECH_ID = re.compile(r"^[a-z][a-z0-9-]{0,39}$")
-ECOSYSTEMS = {"pypi", "npm"}
+ECOSYSTEMS = {"pypi", "npm", "maven"}
 # Noms de packages acceptes par PyPI (PEP 508) et npm (scope optionnel).
 PACKAGE_NAMES = {
     "pypi": re.compile(r"^[A-Za-z0-9]([A-Za-z0-9._-]*[A-Za-z0-9])?$"),
     "npm": re.compile(r"^(@[a-z0-9][a-z0-9._-]*/)?[a-z0-9][a-z0-9._-]*$"),
+    "maven": re.compile(r"^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*:[A-Za-z0-9_.-]+$"),  # groupId:artifactId (E13)
 }
 TECH_FIELDS = {
     "id", "name", "description", "ecosystem", "package", "dev", "versions", "requires",
@@ -49,6 +50,7 @@ class Technology:
     commands: dict = field(default_factory=dict)
     companions: tuple = ()  # (package, alternatives declenchantes) installes avec la technologie
     module: str | None = None  # module Python a importer (E11 : contrat verifie dans la roue publiee)
+    source: str = "forge"  # "local" : catalogue personnel (E13)
 
 
 @dataclass(frozen=True)
@@ -65,6 +67,7 @@ class Catalog:
     technologies: dict
     required_commands: tuple
     command_kinds: tuple
+    local: dict = field(default_factory=dict)  # E13 : dossier et ids ajoutes par le catalogue personnel
 
     def get(self, tech_id):
         return self.technologies.get(tech_id)
@@ -186,7 +189,46 @@ def _check_references(technologies):
             _require(technologies[target].supported_versions, "technologie %s : %s n'a pas de versions" % (tech.id, target))
 
 
-def load_catalog(directory=None):
+def _technology_files(directory, categories, command_kinds, technologies, source):
+    for path, text in directory:
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise CatalogError("Catalogue illisible %s : %s" % (path.name, exc)) from exc
+        _require(isinstance(data, dict) and data.get("schema_version") == SCHEMA_VERSION,
+                 path.name + " : schema_version non supporte")
+        category = data.get("category")
+        _require(category in categories, path.name + " : categorie inconnue")
+        _require(isinstance(data.get("technologies", []), list), path.name + " : technologies doit etre une liste")
+        for raw in data.get("technologies", []):
+            tech = _parse_technology(raw, category, command_kinds)
+            if source == "local":
+                _require(tech.id not in technologies, "catalogue local %s : %s existe deja et ne peut pas etre remplacee"
+                         % (path.name, tech.id))
+                tech = Technology(**dict(tech.__dict__, source="local"))
+            _require(tech.id not in technologies, "technologie dupliquee : " + tech.id)
+            technologies[tech.id] = tech
+
+
+def _local_technologies(root, categories, command_kinds, technologies):
+    try:
+        files = local.json_files("technologies", root)
+    except local.LocalCatalogError as exc:
+        raise CatalogError(str(exc)) from exc
+    before = set(technologies)
+    _technology_files(files, categories, command_kinds, technologies, "local")
+    added = sorted(set(technologies) - before)
+    _require(len(added) <= local.MAX_TECHNOLOGIES, "catalogue local : plus de %d technologies" % local.MAX_TECHNOLOGIES)
+    return added
+
+
+def load_catalog(directory=None, local_root=None):
+    """Catalogue de Forge, complete par le catalogue personnel (E13) pour le catalogue par defaut.
+
+    `local_root` : dossier personnel explicite ; False le desactive. Un `directory` explicite
+    (tests, outils) n'ajoute jamais de catalogue personnel implicite."""
+    if local_root is None:
+        local_root = local.local_dir() if directory is None else False
     directory = Path(directory or CATALOGS_DIR / "technologies")
     meta = _read_json(directory / "categories.json")
     _require(meta.get("schema_version") == SCHEMA_VERSION, "categories.json : schema_version non supporte")
@@ -199,16 +241,12 @@ def load_catalog(directory=None):
         _require(0 <= raw["min"] <= raw["max"], "bornes invalides pour " + cat_id)
         categories[cat_id] = Category(cat_id, str(raw.get("label", cat_id)), raw["min"], raw["max"])
     technologies = {}
-    for path in sorted(directory.glob("*.json")):
-        if path.name == "categories.json":
-            continue
-        data = _read_json(path)
-        _require(data.get("schema_version") == SCHEMA_VERSION, path.name + " : schema_version non supporte")
-        category = data.get("category")
-        _require(category in categories, path.name + " : categorie inconnue")
-        for raw in data.get("technologies", []):
-            tech = _parse_technology(raw, category, command_kinds)
-            _require(tech.id not in technologies, "technologie dupliquee : " + tech.id)
-            technologies[tech.id] = tech
+    builtin = [(path, path.read_text(encoding="utf-8")) for path in sorted(directory.glob("*.json"))
+               if path.name != "categories.json"]
+    _technology_files(builtin, categories, command_kinds, technologies, "forge")
+    summary = {}
+    if local_root is not False:
+        added = _local_technologies(Path(local_root), categories, command_kinds, technologies)
+        summary = {"directory": str(local_root), "technologies": added}
     _check_references(technologies)
-    return Catalog(categories, technologies, required, command_kinds)
+    return Catalog(categories, technologies, required, command_kinds, summary)

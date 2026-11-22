@@ -14,7 +14,7 @@ from forge.verification import checks, npm_peers
 from forge.generator.stack import load_ci_catalog
 from forge.security.controls import load_security_tools
 from forge.verification import api
-from forge.verification.http import FetchError, fetch_bytes as http_fetch_bytes, fetch_json
+from forge.verification.http import FetchError, fetch_bytes as http_fetch_bytes, fetch_json, fetch_text as http_fetch_text
 
 
 @dataclass(frozen=True)
@@ -56,8 +56,8 @@ def _diagnostic(check):
     return None
 
 
-def _verify_package(ecosystem, package, wanted, fetch):
-    result = [checks.check_package(ecosystem, package, wanted, fetch)]
+def _verify_package(ecosystem, package, wanted, fetch, text_fetch=None):
+    result = [checks.check_package(ecosystem, package, wanted, fetch, text_fetch)]
     version = result[0].details.get("version")
     if result[0].status is Status.PASS and version:
         result.append(checks.check_vulnerabilities(ecosystem, package, version, fetch))
@@ -138,13 +138,15 @@ def _api_checks(plan, fetch, fetch_bytes, npm_versions):
     return api.verify_contracts(plan, files, fetch, fetch_bytes, npm_versions, pypi_versions)
 
 
-def verify_plan(plan, fetch=fetch_json, today=None, fetch_bytes=None):
+def verify_plan(plan, fetch=fetch_json, today=None, fetch_bytes=None, text_fetch=None):
     """Verifie chaque technologie du plan. `today` (AAAA-MM-JJ) est injectable pour les tests.
 
     `fetch_bytes` lit les archives (npm, PyPI) ; avec un `fetch` injecte et sans lecteur
     d'archive, les API restent NON VERIFIE (jamais de reseau implicite dans les tests)."""
     if fetch_bytes is None:
         fetch_bytes = http_fetch_bytes if fetch is fetch_json else _no_archive
+    if text_fetch is None and fetch is fetch_json:
+        text_fetch = http_fetch_text  # Maven Central (E13) ; un fetch injecte sans lecteur texte = NON VERIFIE
     today = today or datetime.date.today().isoformat()
     fetch = _cached(fetch)
     results = []
@@ -152,7 +154,7 @@ def verify_plan(plan, fetch=fetch_json, today=None, fetch_bytes=None):
     for tech in plan.resolution.technologies:
         if tech.package:
             wanted = npm_versions.get(tech.package, plan.spec.versions.get(tech.id))
-            results.extend(_verify_package(tech.ecosystem, tech.package, wanted, fetch))
+            results.extend(_verify_package(tech.ecosystem, tech.package, wanted, fetch, text_fetch))
             for package in active_companions(plan, tech):
                 results.extend(_verify_package(tech.ecosystem, package, npm_versions.get(package), fetch))
         if tech.eol_product and tech.id in plan.resolution.versions:

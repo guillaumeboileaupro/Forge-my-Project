@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "scaffold-java",
+  "description": "Projet Maven minimal (sans code metier).",
+  "priority": 35,
+  "when": {
+    "technologies_any": [
+      "java"
+    ]
+  },
+  "files": [
+    {
+      "path": "pom.xml",
+      "template": "stack/java/pom.xml.tmpl"
+    },
+    {
+      "path": "src/main/java/{package}/Version.java",
+      "template": "stack/java/Version.java.tmpl"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "scaffold-go-binary",
+  "description": "Commande Go des applications (sans code metier).",
+  "priority": 36,
+  "when": {
+    "technologies_any": [
+      "go"
+    ],
+    "project_types": [
+      "cli",
+      "api",
+      "web"
+    ]
+  },
+  "files": [
+    {
+      "path": "cmd/{package}/main.go",
+      "template": "stack/go/main.go.tmpl"
+    }
+  ]
+}

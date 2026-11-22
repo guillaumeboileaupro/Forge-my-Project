@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "verified_at": "2026-11-14",
+  "verified_at": "2026-11-22",
   "note": "Actions officielles epinglees par SHA de commit complet ; tag et SHA verifies via l'API GitHub (refs/tags). Reverifiables par la verification en ligne.",
   "actions": {
     "checkout": {
@@ -17,6 +17,16 @@
       "repository": "actions/setup-node",
       "tag": "v7.1.0",
       "sha": "949feb2413d6458794dcd2491c4babbbce0c15c1"
+    },
+    "setup_go": {
+      "repository": "actions/setup-go",
+      "tag": "v7.0.0",
+      "sha": "b7ad1dad31e06c5925ef5d2fc7ad053ef454303e"
+    },
+    "setup_java": {
+      "repository": "actions/setup-java",
+      "tag": "v6.2.0",
+      "sha": "77dd5b2ce225ea11469928ac317850245a74ae78"
     },
     "upload_artifact": {
       "repository": "actions/upload-artifact",
