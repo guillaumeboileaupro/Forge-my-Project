@@ -69,6 +69,9 @@ class DesignSystemTests(unittest.TestCase):
         self.assertEqual(self.markup.screens, [
             "welcome", "questionnaire", "technologies", "explorer", "editor", "diagnostics"
         ])
+        html = self.html_path.read_text(encoding="utf-8")
+        self.assertNotIn('role="tab"', html)
+        self.assertNotIn('role="tablist"', html)
 
     def test_hidden_screens_stay_hidden_at_every_breakpoint(self):
         components = (DESIGN / "components.css").read_text(encoding="utf-8")
