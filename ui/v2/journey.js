@@ -384,6 +384,7 @@ function applyPlan(payload) {
     `Aperçu à jour : ${payload.graph.files.length} fichier(s), ${payload.graph.rules.length} règle(s)`
     + (errors ? `, ${errors} erreur(s) bloquante(s).` : '.'));
   workflow.planChanged(payload);
+  performance.mark('forge-plan'); // E18a : apercu applique
 }
 
 // --- Fichiers edites ---------------------------------------------------------------
@@ -635,6 +636,7 @@ async function init() {
   $('#next').addEventListener('click', () => move(1));
   renderStep();
   renderSteps();
+  performance.mark('forge-ready'); // E18a : premier rendu utile mesure (budget < 1 s)
 }
 
 window.forgeJourney = {state, select, config, prune, files: currentFiles, diagnosticTarget, navigate}; // pilotage des tests E2E

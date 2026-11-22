@@ -6,6 +6,7 @@
 (function () {
   const MAX_HIGHLIGHT = 200000; // caracteres ; au-dela, texte brut (budget de rendu)
   const MAX_MATCHES = 5000;
+  const OVERSCAN = 30; // lignes peintes au-dela de la zone visible (budget E18a : < 100 ms par interaction)
 
   const STRING = String.raw`"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'`;
   const NUMBER = String.raw`\b\d+(?:\.\d+)*\b`;
@@ -97,7 +98,18 @@
   }
 
   // Segments colores : coupure a chaque bord de jeton ou d'occurrence.
-  function paint(target, text, tokens, matches, current) {
+  // Ne garde que les plages qui touchent [from, to[, ramenees a l'origine de la tranche.
+  function clip(ranges, from, to) {
+    const result = [];
+    for (const range of ranges) {
+      if (range.end <= from) continue;
+      if (range.start >= to) break;
+      result.push({start: Math.max(range.start, from) - from, end: Math.min(range.end, to) - from, cls: range.cls, at: range.start});
+    }
+    return result;
+  }
+
+  function paint(target, text, tokens, matches, currentStart) {
     const cuts = new Set([0, text.length]);
     for (const range of tokens.concat(matches)) { cuts.add(range.start); cuts.add(range.end); }
     const points = [...cuts].sort((a, b) => a - b);
@@ -111,12 +123,11 @@
       while (m < matches.length && matches[m].end <= start) m += 1;
       const classes = [];
       if (t < tokens.length && tokens[t].start <= start) classes.push(`tok-${tokens[t].cls}`);
-      if (m < matches.length && matches[m].start <= start) classes.push(m === current ? 'match current' : 'match');
+      if (m < matches.length && matches[m].start <= start) classes.push(matches[m].at === currentStart ? 'match current' : 'match');
       const piece = text.slice(start, end);
       fragment.append(classes.length ? el('span', {class: classes.join(' '), text: piece}) : document.createTextNode(piece));
     }
-    fragment.append(document.createTextNode('\n')); // hauteur identique au textarea si le texte finit par \n
-    target.replaceChildren(fragment);
+    target.append(fragment);
   }
 
   let instances = 0;
@@ -125,7 +136,8 @@
     instances += 1;
     const id = `editor-${instances}`;
     const label = options.label || 'Contenu du fichier';
-    const state = {path: null, original: '', matches: [], current: -1, frame: 0, lang: 'plain'};
+    const state = {path: null, original: '', matches: [], current: -1, frame: 0, lang: 'plain',
+                   text: null, tokens: [], starts: [0], window: [0, 0]};
 
     const title = el('span', {class: 'editor-path mono', id: `${id}-path`, text: options.empty || 'Aucun fichier sélectionné'});
     const badge = el('span', {class: 'tag editor-modified', hidden: true, text: 'modifié'});
@@ -157,12 +169,45 @@
     const status = el('p', {class: 'editor-status muted', id: `${id}-status`});
     root.replaceChildren(el('div', {class: 'editor'}, toolbar, search, body, status));
 
+    // Espace vertical dimensionne par CSSOM (la CSP interdit les attributs style).
+    function spacer(pixels) {
+      const node = el('span', {class: 'editor-gap', 'aria-hidden': 'true'});
+      node.style.height = `${pixels}px`;
+      return node;
+    }
+
+    function lineHeight() {
+      return parseFloat(getComputedStyle(area).lineHeight) || 21;
+    }
+
+    // Jetons et debuts de ligne recalcules seulement quand le texte change.
+    function analyse(text) {
+      if (text === state.text) return;
+      state.text = text;
+      state.tokens = tokenize(text, state.lang);
+      state.starts = [0];
+      for (let i = text.indexOf('\n'); i !== -1; i = text.indexOf('\n', i + 1)) state.starts.push(i + 1);
+      gutter.textContent = state.starts.map((_, index) => String(index + 1)).join('\n') + '\n';
+    }
+
+    // Seules les lignes visibles (plus une marge) sont peintes ; deux espaces gardent la hauteur totale,
+    // donc le defilement natif du textarea et de la couche reste identique ligne a ligne.
     function render() {
       state.frame = 0;
       const text = area.value;
-      paint(layer, text, tokenize(text, state.lang), state.matches, state.current);
-      const lines = text.split('\n').length;
-      gutter.textContent = Array.from({length: lines}, (_, index) => String(index + 1)).join('\n') + '\n';
+      analyse(text);
+      const height = lineHeight();
+      const total = state.starts.length;
+      const first = Math.max(0, Math.floor(area.scrollTop / height) - OVERSCAN);
+      const last = Math.min(total, Math.ceil((area.scrollTop + (area.clientHeight || 600)) / height) + OVERSCAN);
+      const from = state.starts[first];
+      const to = last < total ? state.starts[last] : text.length;
+      state.window = [first, last];
+      const current = state.matches[state.current];
+      layer.replaceChildren(spacer(first * height));
+      paint(layer, text.slice(from, to), clip(state.tokens, from, to), clip(state.matches, from, to), current ? current.start : -1);
+      layer.append(document.createTextNode('\n'), // hauteur identique au textarea si le texte finit par \n
+        spacer((total - last) * height));
       sync();
     }
 
@@ -176,12 +221,28 @@
       gutter.scrollTop = area.scrollTop;
     }
 
+    function scrolled() {
+      sync();
+      const height = lineHeight();
+      const [first, last] = state.window;
+      const top = Math.floor(area.scrollTop / height);
+      const bottom = Math.ceil((area.scrollTop + area.clientHeight) / height);
+      if ((first > 0 && top < first) || (last < state.starts.length && bottom > last)) schedule();
+    }
+
     function caret() {
       if (state.path === null) { status.textContent = ''; return; }
-      const before = area.value.slice(0, area.selectionStart);
-      const line = before.split('\n').length;
-      const column = before.length - before.lastIndexOf('\n');
-      const total = area.value.split('\n').length;
+      analyse(area.value); // debuts de ligne deja connus : pas de decoupage du texte entier a chaque touche
+      const position = area.selectionStart;
+      let low = 0;
+      let high = state.starts.length - 1;
+      while (low < high) {
+        const middle = (low + high + 1) >> 1;
+        if (state.starts[middle] <= position) low = middle; else high = middle - 1;
+      }
+      const line = low + 1;
+      const column = position - state.starts[low] + 1;
+      const total = state.starts.length;
       const plain = area.value.length > MAX_HIGHLIGHT ? ' · coloration désactivée (fichier volumineux)' : '';
       status.textContent = `Ligne ${line}, colonne ${column} · ${total} ligne(s) · ${LABELS[state.lang]}${plain}`;
     }
@@ -253,11 +314,11 @@
     function replaceEvery() {
       const matches = findAll(area.value, query.value, caseBox.checked);
       if (!matches.length) return;
-      let text = area.value;
-      for (let i = matches.length - 1; i >= 0; i -= 1) {
-        text = text.slice(0, matches[i].start) + replacement.value + text.slice(matches[i].end);
-      }
-      area.value = text;
+      const parts = [];
+      let previous = 0;
+      for (const match of matches) { parts.push(area.value.slice(previous, match.start)); previous = match.end; }
+      parts.push(area.value.slice(previous));
+      area.value = parts.join(replacement.value); // une seule copie, quel que soit le nombre d'occurrences
       refreshMatches(0);
       count.textContent = `${matches.length} remplacement(s)` + (state.matches.length ? ` · ${state.matches.length} restante(s)` : '');
       emit();
@@ -281,7 +342,7 @@
     }
 
     area.addEventListener('input', () => { refreshMatches(currentStart()); emit(); });
-    area.addEventListener('scroll', sync);
+    area.addEventListener('scroll', scrolled);
     ['keyup', 'click', 'select'].forEach(type => area.addEventListener(type, caret));
     area.addEventListener('keydown', event => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') { event.preventDefault(); openSearch(); }
@@ -314,6 +375,7 @@
         state.path = path;
         state.original = original === undefined ? content : original;
         state.lang = language(path);
+        state.text = null; // jetons a recalculer pour ce fichier
         area.disabled = path === null;
         area.value = path === null ? '' : content;
         title.textContent = path === null ? (options.empty || 'Aucun fichier sélectionné') : path;
