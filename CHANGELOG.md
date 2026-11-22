@@ -4,6 +4,9 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 
 ## [Unreleased]
 
+### Ajoute
+- Design system de l'interface v2 : identité issue du logo officiel, tokens clair/sombre, composants accessibles, six maquettes statiques consultables et contrats UI/moteur pour E15 et E16 (E14, PR #39).
+
 ## [1.1.0] - 2026-11-19
 
 Tag `v1.1.0` sur le commit de release de main. Jalon v1.1.0 de docs/RELEASES.md (E07, E08, E09), avec E06 en plus.

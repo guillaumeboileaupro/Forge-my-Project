@@ -253,11 +253,17 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 | E11 | Verification statique des API Python/JS/TS lorsque possible; PASS/FAIL/NON VERIFIE | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E12 | Recherche des skills: cache expire, parallelisme, classement, reverification avant copie | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E13 | Enrichir les stacks Python/JS/Rust/Go/Java et permettre les catalogues/regles personnalises localement | Claude | - | 4 j | - | - | - | TODO | Voir ROADMAP_2026.md |
-| E14 | Definir le design system et les contrats de la nouvelle UI avant de coder | Codex + Claude | - | 2 j | en cours | non renseigne | non calculable | IN PROGRESS | Voir ROADMAP_2026.md |
+| E14 | Definir le design system et les contrats de la nouvelle UI avant de coder | Codex + Claude | - | 2 j (16 h) | 0 h 10 (Codex, hors attente CI) | non renseigne | non calculable | DONE | PR #39; docs/design-system/README.md; docs/UI_V2_CONTRACTS.md |
 | E15 | Nouvelle coque UI: look professionnel minimal, themes clair/sombre, densite, panneaux deplacables et redimensionnables, onglets, navigation, palette | Codex | E14 | 4 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E16 | Parcours questionnaire progressif et conditionnel avec apercu dynamique, arbre et diagramme synchronises | Claude | E14 | 4 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E17 | Editeur leger coloration/lignes/recherche/remplacement, panneau diagnostics et integration des flux securises existants | Codex + Claude (fichiers separes) | E15,E16 | 3 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E18 | Validation visuelle et fonctionnelle progressive, accessibilite, performances, resolutions, recette globale; migration finale apres validation | Codex + Claude | E15,E16,E17 | 3 j | - | - | - | TODO | Voir ROADMAP_2026.md |
+
+### E14 - 22 novembre 2026 (Codex, PR #39)
+- Charge humaine estimee : 2 j (16 h). Execution IA mesuree manuellement : 10 h 45 -> 10 h 55 (0 h 10), hors attente CI et revue. Temps humain reel : non renseigne. Ecart humain : non calculable.
+- Identite : `assets/logo.svg` confirme comme master et `assets/favicon.svg` comme variante compacte; couleurs exactes `#F5F0E8`, `#292726`, `#D97757`, sans redessiner les assets.
+- Livre : tokens CSS clair/sombre, composants de reference, six maquettes statiques consultables, règles responsive/accessibilite, et contrats d'etat/frontiere pour E15 et E16. L'interface de production, le moteur et les endpoints ne sont pas modifies; E15 n'est pas commence.
+- Verifications locales : 6 tests E14 (couleurs SVG, six écrans, references accessibles, contrastes essentiels clair/sombre, absence de ressource distante), syntaxe JavaScript, rendu Firefox headless 1440x900 clair/sombre et 360x800 avec correction du reflow mobile. Suite complete locale NON VERIFIEE : seul Python 3.10 est disponible (le projet exige 3.11+, `tomllib` absent) et le bac a sable refuse les sockets; CI et revue independante : voir PR #39.
 
 ### E02 - 15 novembre 2026 (Claude Code, branche feat/e02-git-attribution-guard)
 - Execution IA mesuree (horloge, pas du temps humain): 22 h 09 -> 22 h 49 (0 h 40, attente CI comprise), worktree dedie `Forge-my-Project-e02` depuis origin/main 1d7116e (PR #22 fusionnee).

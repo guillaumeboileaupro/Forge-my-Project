@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maquettes UI v2 — Forge-my-Project</title>
+  <link rel="stylesheet" href="../tokens.css">
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="mockups.css">
+  <script src="mockups.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Aller à la maquette</a>
+  <header class="specimen-bar">
+    <a class="brand" href="#welcome" aria-label="Forge-my-Project, accueil des maquettes">
+      <img src="../../../assets/favicon.svg" alt="" width="32" height="32">
+      <span>Forge-my-Project <small>UI v2 / E14</small></span>
+    </a>
+    <label class="screen-label" for="screen">Écran</label>
+    <select id="screen">
+      <option value="welcome">1. Accueil</option>
+      <option value="questionnaire">2. Questionnaire</option>
+      <option value="technologies">3. Technologies et agents</option>
+      <option value="explorer">4. Exploration du projet</option>
+      <option value="editor">5. Édition et validation</option>
+      <option value="diagnostics">6. Diagnostics et sécurité</option>
+    </select>
+    <button type="button" id="theme" aria-pressed="false">Thème sombre</button>
+  </header>
+
+  <main id="workspace" class="workspace" tabindex="-1">
+    <aside class="activity" aria-label="Navigation principale">
+      <button class="activity-item selected" type="button" aria-label="Configurer" title="Configurer">⌘</button>
+      <button class="activity-item" type="button" aria-label="Explorer" title="Explorer">&lt;/&gt;</button>
+      <button class="activity-item" type="button" aria-label="Diagnostics" title="Diagnostics">!</button>
+      <span class="activity-spacer"></span>
+      <button class="activity-item" type="button" aria-label="Réglages" title="Réglages">···</button>
+    </aside>
+
+    <aside class="navigation panel" aria-label="Étapes du projet">
+      <div class="panel-header"><h2 class="panel-title">PROJET / DEMO-API</h2></div>
+      <nav>
+        <ol class="steps">
+          <li class="done"><button type="button"><span>01</span> Projet <b>✓</b></button></li>
+          <li class="current"><button type="button" aria-current="step"><span>02</span> Technologies <b>3</b></button></li>
+          <li><button type="button"><span>03</span> Agents <b>2</b></button></li>
+          <li><button type="button"><span>04</span> Sécurité <b>—</b></button></li>
+          <li><button type="button"><span>05</span> Skills et MCP <b>—</b></button></li>
+          <li><button type="button"><span>06</span> Validation <b>—</b></button></li>
+        </ol>
+      </nav>
+      <div class="nav-foot"><span>Progression</span><strong>38 %</strong><progress value="38" max="100">38 %</progress></div>
+    </aside>
+
+    <section class="stage" aria-live="polite">
+      <article class="screen" data-screen="welcome" id="welcome">
+        <div class="welcome-grid">
+          <section class="welcome-copy">
+            <img src="../../../assets/logo.svg" alt="Forge-my-Project" class="full-logo">
+            <p class="eyebrow">GÉNÉRATEUR LOCAL · LINUX</p>
+            <h1>Préparer un projet solide,<br>avant la première ligne.</h1>
+            <p>Configurez architecture, règles agents, sécurité, tests et CI. Forge construit un aperçu local; rien n'est écrit sans votre validation.</p>
+            <div class="actions"><button class="button-primary" type="button">Nouveau projet</button><button type="button">Importer des réponses</button></div>
+          </section>
+          <aside class="recent panel" aria-labelledby="recent-title">
+            <div class="panel-header"><h2 class="panel-title" id="recent-title">PROFILS RÉCENTS</h2><button class="icon-button" type="button" aria-label="Afficher tous les profils">→</button></div>
+            <button class="recent-item" type="button"><strong>API Python stricte</strong><span>FastAPI · pytest · sécurité renforcée</span></button>
+            <button class="recent-item" type="button"><strong>Web TypeScript</strong><span>React · Vitest · CI GitHub</span></button>
+            <p class="local-note"><span aria-hidden="true">●</span> Données locales · aucun service IA</p>
+          </aside>
+        </div>
+      </article>
+
+      <article class="screen" data-screen="questionnaire" hidden>
+        <header class="screen-heading"><div><p class="eyebrow">01 / PROJET</p><h1>Définir le projet</h1><p>Les champs structurent les documents générés. Votre description reste une donnée.</p></div><span class="badge">Brouillon enregistré</span></header>
+        <form class="form-grid">
+          <div class="field span-2"><label for="project-name">Nom du projet</label><input id="project-name" value="demo-api" aria-describedby="project-name-help"><p id="project-name-help" class="field-help">Minuscules, chiffres et tirets · 3 à 50 caractères</p></div>
+          <div class="field"><label for="project-type">Type</label><select id="project-type"><option>API</option></select></div>
+          <div class="field"><label for="profile">Profil</label><select id="profile"><option>API Python stricte</option></select></div>
+          <div class="field span-2"><label for="description">Description et objectifs</label><textarea id="description" rows="5">Service local de démonstration, sans code métier généré.</textarea><p class="field-help">1 944 caractères disponibles</p></div>
+          <fieldset class="architecture span-2"><legend>Architecture</legend><label><input type="radio" name="arch" checked> Suggestion des règles locales</label><label><input type="radio" name="arch"> Définition manuelle</label><pre>src/ → domaine / application / adaptateurs
+tests/ → unitaires / intégration / e2e</pre></fieldset>
+        </form>
+      </article>
+
+      <article class="screen" data-screen="technologies" hidden>
+        <header class="screen-heading"><div><p class="eyebrow">02–03 / TECHNOLOGIES ET AGENTS</p><h1>Composer l'environnement</h1><p>Les incompatibilités sont explicites; les choix masqués ne sont pas envoyés.</p></div><label class="search"><span class="sr-only">Rechercher</span><input type="search" placeholder="Rechercher une technologie…"></label></header>
+        <div class="selection-layout">
+          <section><h2 class="group-title">LANGAGE · 1 SUR 1</h2><div class="choice-grid"><label class="choice selected-choice"><input type="radio" name="lang" checked><strong>Python</strong><span>3.12 · préféré</span></label><label class="choice"><input type="radio" name="lang"><strong>TypeScript</strong><span>6.0</span></label></div><h2 class="group-title">FRAMEWORK · 1 SUR 2</h2><div class="choice-grid"><label class="choice selected-choice"><input type="checkbox" checked><strong>FastAPI</strong><span>API typée</span></label><label class="choice"><input type="checkbox"><strong>Django</strong><span>Application complète</span></label></div></section>
+          <aside class="selection-summary panel"><div class="panel-header"><h2 class="panel-title">SÉLECTION</h2><span class="badge">3 éléments</span></div><ul><li><span>Python</span><button aria-label="Retirer Python">×</button></li><li><span>FastAPI</span><button aria-label="Retirer FastAPI">×</button></li><li><span>pytest</span><button aria-label="Retirer pytest">×</button></li></ul><h3>Agents</h3><label class="agent"><input type="checkbox" checked> Codex <small>AGENTS.md</small></label><label class="agent"><input type="checkbox" checked> Claude Code <small>CLAUDE.md</small></label><p class="compat status-pass">✓ Configuration compatible</p></aside>
+        </div>
+      </article>
+
+      <article class="screen editor-screen" data-screen="explorer" hidden>
+        <div class="tabs" role="tablist" aria-label="Vues du projet"><button class="tab" role="tab" aria-selected="true">Explorateur</button><button class="tab" role="tab" aria-selected="false">Architecture</button><button class="tab" role="tab" aria-selected="false">Aperçu</button></div>
+        <div class="work-grid"><section class="tree panel" aria-labelledby="tree-title"><div class="panel-header"><h2 class="panel-title" id="tree-title">FICHIERS · 24</h2><button class="icon-button" aria-label="Réduire tous les dossiers">−</button></div><ul><li>▾ .github<ul><li>⌗ workflows/ci.yml</li></ul></li><li>▾ docs<ul><li>◇ ARCHITECTURE.md</li><li>◇ SECURITY.md</li></ul></li><li>▾ src<ul><li class="selected-file">◇ demo_api/__init__.py</li></ul></li><li>◇ AGENTS.md</li><li>◇ pyproject.toml</li></ul></section><section class="diagram panel"><div class="panel-header"><h2 class="panel-title">ARCHITECTURE</h2><span class="badge">Synchronisée</span></div><div class="diagram-canvas"><div class="node domain"><span>DOMAINE</span><strong>demo_api</strong><small>pur · sans dépendance</small></div><div class="arrow">↓</div><div class="node app"><span>APPLICATION</span><strong>services</strong><small>cas d'usage</small></div><div class="arrow split">↙ &nbsp; ↘</div><div class="node-row"><div class="node"><span>ENTRÉE</span><strong>FastAPI</strong></div><div class="node"><span>SORTIE</span><strong>adaptateurs</strong></div></div></div></section></div>
+      </article>
+
+      <article class="screen editor-screen" data-screen="editor" hidden>
+        <div class="tabs" role="tablist" aria-label="Fichiers ouverts"><button class="tab" role="tab" aria-selected="true">AGENTS.md <span aria-hidden="true">●</span></button><button class="tab" role="tab" aria-selected="false">pyproject.toml</button></div>
+        <div class="code-layout"><section class="code panel" aria-label="Éditeur AGENTS.md"><div class="code-lines" aria-hidden="true">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8</div><pre><span class="syntax-h"># demo-api — instructions agents</span>
+
+<span class="syntax-h">## Mission</span>
+Construire une API locale maintenable.
+
+<span class="syntax-h">## Commandes</span>
+<span class="syntax-code">pytest -q</span>
+<span class="syntax-code">ruff check .</span></pre></section><aside class="validation panel"><div class="panel-header"><h2 class="panel-title">VALIDATION</h2><span class="status status-warn">1 MODIFIÉ</span></div><div class="check-row"><span class="status-pass">✓</span><div><strong>Chemins</strong><small>Ensemble exact conservé</small></div></div><div class="check-row"><span class="status-pass">✓</span><div><strong>Contenu</strong><small>Aucun secret détecté</small></div></div><div class="check-row"><span class="status-warn">●</span><div><strong>Serveur</strong><small>Revalidation requise</small></div></div><button class="button-primary" type="button">Valider les modifications</button><button type="button">Rétablir le fichier</button></aside></div>
+      </article>
+
+      <article class="screen" data-screen="diagnostics" hidden>
+        <header class="screen-heading"><div><p class="eyebrow">06 / VALIDATION</p><h1>Diagnostics et sécurité</h1><p>Les contrôles non vérifiés restent visibles et ne deviennent jamais PASS.</p></div><button class="button-primary" type="button">Relancer les contrôles</button></header>
+        <div class="diagnostic-summary"><div><strong>18</strong><span class="status-pass">✓ PASS</span></div><div><strong>2</strong><span class="status-warn">? NON VÉRIFIÉ</span></div><div><strong>1</strong><span class="status-fail">× BLOQUANT</span></div></div>
+        <section class="panel diagnostics-list" aria-label="Liste des diagnostics"><div class="filters"><button class="active-filter" type="button">Tous 21</button><button type="button">Bloquants 1</button><button type="button">Non vérifiés 2</button><label><span class="sr-only">Filtrer les diagnostics</span><input type="search" placeholder="Filtrer…"></label></div><div class="diagnostic"><span class="status status-fail">× FAIL</span><div><strong>Version Python incompatible</strong><p>Python 3.10 ne satisfait pas la version minimale 3.11.</p><code>configuration.technologies.python</code></div><button type="button">Corriger</button></div><div class="diagnostic"><span class="status status-warn">? NON VÉRIFIÉ</span><div><strong>Vulnérabilités du registre</strong><p>Le contrôle réseau n'a pas été demandé. Une confirmation sera requise avant écriture.</p><code>verification.osv</code></div><button type="button">Examiner</button></div><div class="diagnostic"><span class="status status-pass">✓ PASS</span><div><strong>Secrets et chemins</strong><p>Aucun secret connu; tous les chemins restent relatifs.</p><code>filesystem.preview</code></div><button type="button">Détails</button></div></section>
+      </article>
+    </section>
+
+    <aside class="preview panel" aria-label="Aperçu contextuel">
+      <div class="panel-header"><h2 class="panel-title">APERÇU</h2><button class="icon-button" type="button" aria-label="Masquer l'aperçu">×</button></div>
+      <div class="preview-body"><p class="eyebrow">CONFIGURATION</p><dl><div><dt>Projet</dt><dd>demo-api</dd></div><div><dt>Type</dt><dd>API</dd></div><div><dt>Sécurité</dt><dd>Stricte</dd></div><div><dt>Fichiers</dt><dd>24</dd></div></dl><p class="eyebrow">ÉTAT</p><p class="state-line"><span class="status-warn">●</span> Revalidation nécessaire</p><p class="field-help">Aucune écriture locale effectuée.</p></div>
+    </aside>
+  </main>
+
+  <footer class="statusbar"><span>local · 127.0.0.1</span><span>UTF-8</span><span>0 erreur JS</span><span>Maquette statique E14</span></footer>
+</body>
+</html>

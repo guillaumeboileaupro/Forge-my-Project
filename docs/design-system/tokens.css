@@ -1,0 +1,80 @@
+:root {
+  color-scheme: light;
+  --brand-paper: #f5f0e8;
+  --brand-ink: #292726;
+  --brand-copper: #d97757;
+  --surface-canvas: #fbf8f3;
+  --surface-panel: #fffdf9;
+  --surface-raised: #ffffff;
+  --surface-subtle: #eee8df;
+  --text-primary: #292726;
+  --text-secondary: #615b56;
+  --text-inverse: #fffaf4;
+  --border-default: #c9c0b6;
+  --border-strong: #766d66;
+  --accent-default: #b9502f;
+  --accent-hover: #963b20;
+  --accent-soft: #f8dfd5;
+  --focus-ring: #8a341d;
+  --status-pass: #2f6f4e;
+  --status-pass-bg: #e1f0e7;
+  --status-warn: #7a5700;
+  --status-warn-bg: #fff0bf;
+  --status-fail: #a12e37;
+  --status-fail-bg: #f9dfe1;
+  --status-info: #315f85;
+  --status-info-bg: #deebf5;
+  --font-ui: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --border-width: 1px;
+  --control-height: 2.75rem;
+  --rail-width: 3.5rem;
+  --nav-width: 17rem;
+  --preview-width: 23rem;
+  --duration-fast: 120ms;
+  --duration-default: 180ms;
+  --shadow-overlay: 0 12px 32px rgb(41 39 38 / 18%);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-canvas: #211f1e;
+  --surface-panel: #292726;
+  --surface-raised: #322f2d;
+  --surface-subtle: #3b3734;
+  --text-primary: #f5f0e8;
+  --text-secondary: #c9c0b6;
+  --text-inverse: #292726;
+  --border-default: #5c5550;
+  --border-strong: #aaa098;
+  --accent-default: #e18b6f;
+  --accent-hover: #f0a78e;
+  --accent-soft: #53382f;
+  --focus-ring: #f4b19a;
+  --status-pass: #8fd0aa;
+  --status-pass-bg: #253f32;
+  --status-warn: #f0cc70;
+  --status-warn-bg: #473b20;
+  --status-fail: #f0a0a7;
+  --status-fail-bg: #4c2b2e;
+  --status-info: #9bc5e5;
+  --status-info-bg: #293d4c;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --duration-fast: 0ms; --duration-default: 0ms; }
+}
