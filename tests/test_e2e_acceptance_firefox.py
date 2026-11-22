@@ -402,14 +402,16 @@ class FirefoxPhoneDarkTests(Common, unittest.TestCase):
     """360 px en theme sombre systeme : zoom de 139 % d'une fenetre de 500 px (largeur minimale de Firefox)."""
     call = classmethod(base.FirefoxFormTests.call.__func__)
     tearDownClass = classmethod(base.FirefoxFormTests.tearDownClass.__func__)
+    # Acces au chrome (zoom) accorde a geckodriver lui-meme : refuse via les capacites depuis geckodriver 0.37.
+    GECKODRIVER_ARGS = ("--allow-system-access",)
 
     @classmethod
     def setUpClass(cls):
         base.FirefoxFormTests.setUpClass.__func__(cls)
         cls.call("DELETE", "/session/" + cls.session)
-        # Acces au chrome reserve a cette session de test (zoom du navigateur) ; theme sombre du systeme simule.
+        # Theme sombre du systeme simule (preferences de cette session uniquement).
         caps = {"capabilities": {"alwaysMatch": {"browserName": "firefox", "moz:firefoxOptions": {
-            "args": ["-headless", "-remote-allow-system-access"],
+            "args": ["-headless"],
             "prefs": {"ui.systemUsesDarkTheme": 1, "layout.css.prefers-color-scheme.content-override": 0}}}}}
         for attempt in range(2):  # la session precedente peut encore se fermer
             try:
