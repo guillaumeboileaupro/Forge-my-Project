@@ -32,6 +32,8 @@
   ],
   "search": {
     "github_code_search": true,
-    "max_candidates": 20
+    "max_candidates": 20,
+    "max_workers": 4,
+    "cache_ttl_seconds": 3600
   }
 }

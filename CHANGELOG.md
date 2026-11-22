@@ -6,6 +6,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 
 ### Ajoute
 - Verification statique des API utilisees par les projets generes : imports Python et JavaScript/TypeScript, sous-chemins, exports nommes et par defaut, modules des bibliotheques Python ; PASS prouve, FAIL demontre (bloquant) ou NON VERIFIE, hors ligne et en ligne a partir des archives officielles verifiees par empreinte (E11).
+- Recherche de skills : cache a expiration des candidats (1 h par defaut, option « Relancer sans le cache »), recherches paralleles a ordre deterministe, classement total (nom prioritaire sur la description) et reverification de la branche amont avant copie, signalee par avertissement (E12).
 
 ### Ajoute
 - Design system de l'interface v2 : identité issue du logo officiel, tokens clair/sombre, composants accessibles, six maquettes statiques consultables et contrats UI/moteur pour E15 et E16 (E14, PR #39).

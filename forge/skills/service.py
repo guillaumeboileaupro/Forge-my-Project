@@ -2,6 +2,7 @@
 from forge.diagnostics import ForgeError
 from forge.skills import bundle as b
 from forge.skills import external
+from forge.skills.cache import SearchCache, ttl_from_config
 from forge.skills.github import default_client
 from forge.skills.my_skills import collect_skills
 
@@ -22,12 +23,16 @@ def skills_for_plan(plan, client=None, config=None):
     return result
 
 
-def search_for_plan(plan, client=None, config=None):
-    """Candidats externes pour l'interface ; l'utilisateur approuve ensuite explicitement."""
+def search_for_plan(plan, client=None, config=None, refresh=False):
+    """Candidats externes pour l'interface ; l'utilisateur approuve ensuite explicitement.
+
+    Les candidats sont mis en cache (`search.cache_ttl_seconds`) ; `refresh` force une recherche reelle.
+    """
     config = config or b.load_copy_policy()
-    return external.search(external.keywords_for_plan(plan), client or default_client(), config)
+    cache = SearchCache(ttl_from_config(config))
+    return external.search(external.keywords_for_plan(plan), client or default_client(), config, cache, refresh)
 
 
-def verify_approvals(approvals, client=None):
-    """Controle en ligne des approbations (empreinte inchangee), sans copie."""
-    return external.verify_approvals(approvals, client or default_client())
+def verify_approvals(approvals, client=None, config=None):
+    """Controle en ligne des approbations (empreinte inchangee, etat amont), sans copie."""
+    return external.verify_approvals(approvals, client or default_client(), config or b.load_copy_policy())

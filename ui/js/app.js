@@ -1017,7 +1017,7 @@ function refuseCandidate(item) {
   approvalsChanged();
 }
 
-async function searchSkills() {
+async function searchSkills(refresh = false) {
   const errors = updateBadges();
   const first = errors.findIndex(list => list.length);
   if (first >= 0 && first < 4) {
@@ -1026,20 +1026,25 @@ async function searchSkills() {
   }
   $('#status').textContent = 'Recherche de skills en cours (GitHub)...';
   $('#skills-search').disabled = true;
+  $('#skills-refresh').disabled = true;
   try {
     const config = Object.assign(buildConfig(), {external_skills: []});
-    const response = await post('/api/skills/search', JSON.stringify({config}));
+    const response = await post('/api/skills/search', JSON.stringify({config, refresh}));
     const payload = await response.json();
     if (!response.ok || !payload.ok) throw new Error(payload.error || 'recherche refusee');
     state.candidates = payload.candidates;
     const notes = $('#skills-notes');
-    notes.replaceChildren(...payload.notes.map(note => element('li', {}, note)));
+    const cache = payload.cache || {};
+    const cacheNote = cache.hit ? [`Resultats du cache (recherche faite il y a ${Math.round(cache.age_seconds / 60)} min) : `
+      + '« Relancer sans le cache » pour interroger GitHub. La copie relit toujours GitHub au commit approuve.'] : [];
+    notes.replaceChildren(...cacheNote.concat(payload.notes).map(note => element('li', {}, note)));
     renderCandidates();
     $('#status').textContent = `${payload.candidates.length} skill(s) candidat(s) : examiner puis approuver ou refuser.`;
   } catch (error) {
     $('#status').textContent = `Recherche impossible : ${error.message}`;
   } finally {
     $('#skills-search').disabled = false;
+    $('#skills-refresh').disabled = false;
   }
 }
 
@@ -1049,7 +1054,8 @@ async function verifySkills() {
     const response = await post('/api/skills/verify', JSON.stringify({approvals: state.approvals}));
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || 'verification refusee');
-    for (const check of payload.checks) state.approvalStatus[skillKey(check)] = {status: check.status, message: check.message};
+    for (const check of payload.checks) state.approvalStatus[skillKey(check)] = {status: check.status,
+      message: check.upstream_message ? `${check.message}. ${check.upstream_message}` : check.message};
     renderApprovals();
     $('#status').textContent = payload.ok ? 'Approbations verifiees : contenus inchanges.'
       : 'Au moins une approbation n\'est pas verifiee ou le skill a change : retirer ou examiner a nouveau.';
@@ -1291,7 +1297,8 @@ async function init() {
   $('#profile-create').addEventListener('click', () => saveProfile('POST'));
   $('#profile-update').addEventListener('click', () => saveProfile('PUT'));
   $('#profile-delete').addEventListener('click', deleteProfile);
-  $('#skills-search').addEventListener('click', searchSkills);
+  $('#skills-search').addEventListener('click', () => searchSkills(false));
+  $('#skills-refresh').addEventListener('click', () => searchSkills(true));
   $('#skills-verify').addEventListener('click', verifySkills);
   renderApprovals();
   updateConditional();

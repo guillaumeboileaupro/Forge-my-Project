@@ -34,13 +34,15 @@ def _parser():
         command.add_argument("--skills", action="store_true", help="recuperer les skills de my-skills (reseau)")
     search = sub.add_parser("skills-search", help="rechercher des skills externes (candidats a approuver)")
     search.add_argument("spec")
+    search.add_argument("--refresh", action="store_true", help="ignorer le cache de recherche")
     return parser
 
 
-def _search(path):
+def _search(path, refresh=False):
     plan = build_plan(_load(path))
-    found = search_for_plan(plan)
-    print(json.dumps({"candidates": [c.as_dict() for c in found.candidates], "notes": found.notes},
+    found = search_for_plan(plan, refresh=refresh)
+    print(json.dumps({"candidates": [c.as_dict() for c in found.candidates], "notes": found.notes,
+                      "cache_age_seconds": found.cache_age},
                      ensure_ascii=False, indent=2))
     return 0
 
@@ -49,7 +51,7 @@ def main(argv=None):
     args = _parser().parse_args(argv)
     if args.command == "skills-search":
         try:
-            return _search(args.spec)
+            return _search(args.spec, args.refresh)
         except (OSError, ValueError) as exc:
             print("Erreur : %s" % exc, file=sys.stderr)
             return 2

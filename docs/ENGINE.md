@@ -169,3 +169,9 @@ Rien n'est execute ni installe.
 - Un FAIL bloque la generation, comme les autres controles.
 - Les six profils predefinis : tous les contrats sont PASS en ligne (verification du 22 novembre 2026).
 
+## Recherche des skills : cache, parallelisme, classement (E12)
+
+- Cache : `forge/skills/cache.py` garde les candidats d'une recherche complete pendant `search.cache_ttl_seconds` (3600 dans `catalogs/skills/sources.json`, 86 400 au plus, 0 ou absent : pas de cache), sous `<dossier d'etat>/skills-search/`. La cle couvre mots-cles, catalogues, politique de copie, options de recherche et transport (gh ou anonyme). Une entree expiree, alteree, mal formee ou datee dans le futur est ignoree ; un resultat partiel (source indisponible) n'est pas mis en cache. `refresh` (API, bouton « Relancer sans le cache », `skills-search --refresh`) force une recherche reelle.
+- Parallelisme : trois phases (arborescences des catalogues et recherches de code, arborescences des depots trouves, en-tetes SKILL.md) executees par `search.max_workers` fils (4, borne 1-8). L'ordre des resultats suit celui des taches, jamais celui des reponses ; une source en echec n'interrompt pas les autres et devient une note NON VERIFIE.
+- Classement : score = 2 par mot-cle dans le nom + 1 par mot-cle dans la description ; ordre total : source reconnue, score decroissant, nom, depot, chemin. Les doublons (meme depot, chemin et nom) sont retires.
+- Revérification avant copie : apres le controle du commit et de l'empreinte approuves, la branche suivie (celle du catalogue reconnu, sinon la branche par defaut) est relue. Modifie ou retire en amont : avertissement `skill-upstream-changed` ; illisible : `skill-upstream-unverified`. La version approuvee reste la seule copiee ; la note figure dans `docs/SKILLS.md`.

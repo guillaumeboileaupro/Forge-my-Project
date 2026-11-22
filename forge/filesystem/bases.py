@@ -29,12 +29,17 @@ def _digest(text):
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def store_dir():
+def state_root():
+    """Dossier d'etat de Forge, hors de tout projet genere (bases, cache des skills)."""
     explicit = os.environ.get("FORGE_STATE_DIR")
     if explicit:
-        return Path(explicit) / "merge-bases"
+        return Path(explicit)
     state = os.environ.get("XDG_STATE_HOME") or str(Path.home() / ".local" / "state")
-    return Path(state) / "forge-my-project" / "merge-bases"
+    return Path(state) / "forge-my-project"
+
+
+def store_dir():
+    return state_root() / "merge-bases"
 
 
 def _store_file(destination):
