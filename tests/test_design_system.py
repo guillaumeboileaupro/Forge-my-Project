@@ -70,6 +70,12 @@ class DesignSystemTests(unittest.TestCase):
             "welcome", "questionnaire", "technologies", "explorer", "editor", "diagnostics"
         ])
 
+    def test_hidden_screens_stay_hidden_at_every_breakpoint(self):
+        components = (DESIGN / "components.css").read_text(encoding="utf-8")
+        responsive = (DESIGN / "mockups" / "mockups.css").read_text(encoding="utf-8")
+        self.assertIn("[hidden] { display: none !important; }", components)
+        self.assertNotRegex(responsive, r"\.screen\s*\{[^}]*display\s*:")
+
     def test_accessibility_references_resolve(self):
         self.assertEqual(sorted(set(self.markup.references) - self.markup.ids), [])
         for image in self.markup.images:
