@@ -7,6 +7,9 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/v2/tokens.css">
   <link rel="stylesheet" href="/v2/journey.css">
+  <script src="/v2/editor.js" defer></script>
+  <script src="/v2/diagnostics.js" defer></script>
+  <script src="/v2/workflow.js" defer></script>
   <script src="/v2/journey.js" defer></script>
 </head>
 <body>
@@ -16,7 +19,7 @@
     <h1>Forge-my-Project <span class="muted">· parcours v2 (préversion)</span></h1>
     <a class="topbar-link" href="/">Interface actuelle</a>
   </header>
-  <p id="banner" class="banner">Préversion E16 : l'interface actuelle reste la référence pour l'archive et l'écriture. Ce parcours ne télécharge ni n'écrit rien.</p>
+  <p id="banner" class="banner">Préversion : l'interface actuelle reste la référence (archive, profils, skills, vérification en ligne). Ici, l'écriture locale passe par les mêmes contrôles serveur, répétés à chaque étape.</p>
 
   <main class="layout">
     <nav class="steps" aria-labelledby="steps-title">
@@ -41,10 +44,6 @@
       <h2 id="preview-title" class="section-title">Aperçu du plan</h2>
       <p id="validation" class="validation" role="status" aria-live="polite" data-state="idle">Renseigner le nom du projet pour calculer l'aperçu.</p>
       <div id="alerts" role="alert"></div>
-      <details id="diagnostics-box" class="box">
-        <summary>Diagnostics <span id="diagnostics-count" class="count"></span></summary>
-        <ul id="diagnostics" class="diagnostics"></ul>
-      </details>
       <div class="box">
         <h3 class="box-title">Arborescence</h3>
         <div id="tree" class="tree" aria-label="Fichiers du plan"></div>
@@ -53,11 +52,25 @@
         <h3 class="box-title">Diagramme technologies → règles → fichiers</h3>
         <div id="diagram" class="diagram"></div>
       </div>
-      <div class="box">
-        <h3 class="box-title">Contenu <span id="selected-path" class="mono muted"></span></h3>
-        <pre id="content" class="content" tabindex="0" aria-label="Contenu du fichier sélectionné">Sélectionner un fichier dans l'arborescence ou le diagramme.</pre>
-      </div>
     </section>
+
+    <div class="workbench">
+      <section class="panel editor-panel" aria-labelledby="editor-title">
+        <h2 id="editor-title" class="section-title">Éditeur <span id="selected-path" class="mono muted"></span></h2>
+        <div id="editor"></div>
+      </section>
+      <div class="side">
+        <section class="panel" aria-labelledby="diagnostics-title">
+          <h2 id="diagnostics-title" class="section-title">Diagnostics</h2>
+          <div id="diagnostics-panel"></div>
+        </section>
+        <section class="panel" aria-labelledby="workflow-title">
+          <h2 id="workflow-title" class="section-title">Validation et écriture</h2>
+          <p class="muted hint">Valider, comparer puis écrire : le serveur régénère et revalide tout à chaque étape ; aucune écriture sans comparaison ni confirmation.</p>
+          <div id="workflow"></div>
+        </section>
+      </div>
+    </div>
   </main>
 </body>
 </html>

@@ -31,7 +31,7 @@ Limites a reporter dans le changelog de v1.0.0 : exceptions d'audit actives (reg
 
 | Critere | Taches | Preuve attendue | Etat |
 | --- | --- | --- | --- |
-| Reconstruction complete de l'interface (pas un relooking), ancienne UI conservee jusqu'a validation | E14, E15, E16, E17 | design system revu, coque, parcours, editeur et diagnostics testes | a faire |
+| Reconstruction complete de l'interface (pas un relooking), ancienne UI conservee jusqu'a validation | E14, E15, E16, E17 (sous-lot E17a) | design system revu, coque, parcours, editeur et diagnostics testes | a faire |
 | Ameliorations de securite | E06, E10, E11 | NON VERIFIE confirme et journalise ; Docker et Semgrep bloquants ; verification statique des API | E06 fait (PR #31) ; E10 et E11 a faire |
 | Enrichissement des catalogues et des stacks | E12, E13 | skills et stacks testes, catalogue local borne | a faire |
 | Validation fonctionnelle et visuelle complete | E18 | captures approuvees, Firefox, clavier, accessibilite, performances, resolutions | a faire |

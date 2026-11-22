@@ -18,6 +18,10 @@ STATIC = {
     "/v2/parcours": (ROOT / "ui" / "v2" / "journey.html", "text/html; charset=utf-8"),
     "/v2/journey.css": (ROOT / "ui" / "v2" / "journey.css", "text/css; charset=utf-8"),
     "/v2/journey.js": (ROOT / "ui" / "v2" / "journey.js", "text/javascript; charset=utf-8"),
+    # E17a : editeur, panneau diagnostics et flux securises (composants separes, integres en E17 a la coque E15).
+    "/v2/editor.js": (ROOT / "ui" / "v2" / "editor.js", "text/javascript; charset=utf-8"),
+    "/v2/diagnostics.js": (ROOT / "ui" / "v2" / "diagnostics.js", "text/javascript; charset=utf-8"),
+    "/v2/workflow.js": (ROOT / "ui" / "v2" / "workflow.js", "text/javascript; charset=utf-8"),
     "/v2/tokens.css": (ROOT / "docs" / "design-system" / "tokens.css", "text/css; charset=utf-8"),
 }
 LOCAL_HOST = re.compile(r"^(?:127\.0\.0\.1|localhost)(?::[0-9]{1,5})?$")

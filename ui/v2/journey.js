@@ -1,12 +1,12 @@
 // Parcours v2 (E16) : questionnaire progressif et conditionnel, apercu du plan reel,
 // arbre et diagramme synchronises par un meme `selectedPath`.
+// E17a : editeur (editor.js), panneau diagnostics (diagnostics.js) et flux securises (workflow.js).
 // Le serveur reste l'autorite (prerequis, conflits, versions, diagnostics) : ce script
 // n'affiche que des choix et des relations fournis par /api/catalog et /api/plan.
 'use strict';
 
 const NAME = /^[a-z][a-z0-9-]{1,48}[a-z0-9]$/;
 const DEBOUNCE_MS = 350;
-const SEVERITY_ORDER = {error: 0, warning: 1, info: 2};
 
 const state = {
   catalog: null,
@@ -18,7 +18,13 @@ const state = {
   plan: null, // dernier /api/plan applique
   selectedPath: null,
   timer: null,
+  edits: {}, // chemin -> texte edite (seulement s'il differe du rendu genere)
+  editBase: {}, // chemin -> rendu genere au moment de l'edition
 };
+
+let editor = null;
+let diagnostics = null;
+let workflow = null;
 
 const $ = selector => document.querySelector(selector);
 
@@ -196,6 +202,7 @@ function focusKey(node) {
 }
 
 function changed(rerender = true) {
+  if (workflow) workflow.invalidate('Configuration modifiée : valider à nouveau les contenus.');
   const removed = prune();
   $('#step-notice').textContent = removed.length
     ? `Retiré car la condition n'est plus remplie : ${removed.join(', ')}.` : '';
@@ -255,7 +262,8 @@ function renderCategories(categories) {
     const category = state.catalog.categories.find(item => item.id === id);
     const items = state.catalog.technologies.filter(item => item.category === id && available(item));
     if (!category || !items.length) continue; // question sans objet pour la selection courante
-    const set = el('fieldset', {class: 'choices'}, el('legend', {text: `${category.label} (${category.min} à ${category.max})`}));
+    const set = el('fieldset', {class: 'choices', 'data-category': id},
+      el('legend', {text: `${category.label} (${category.min} à ${category.max})`}));
     items.forEach(item => set.append(techChoice(item)));
     box.append(set);
   }
@@ -346,7 +354,7 @@ async function requestPlan() {
   }
   if (seq !== state.requestSeq) return; // une saisie plus recente a deja relance le calcul
   if (!response.ok || !payload.graph) {
-    showDiagnostics(payload.diagnostics || []);
+    diagnostics.update(payload.diagnostics || [], 'aperçu');
     $('#alerts').textContent = payload.error || 'Configuration refusée par le serveur.';
     setValidation('invalid', 'Configuration incomplète ou invalide : voir le message.');
     return;
@@ -357,28 +365,105 @@ async function requestPlan() {
 
 function applyPlan(payload) {
   state.plan = payload;
-  showDiagnostics(payload.diagnostics);
+  // Une edition ne survit que si le rendu genere de ce fichier n'a pas change : jamais de fusion silencieuse.
+  const dropped = Object.keys(state.edits).filter(path => payload.contents[path] !== state.editBase[path]);
+  dropped.forEach(path => { delete state.edits[path]; delete state.editBase[path]; });
+  diagnostics.update(payload.diagnostics, 'aperçu');
   renderTree();
   renderDiagram();
+  const notices = [];
+  if (dropped.length) notices.push(`Modification retirée, le fichier généré a changé : ${dropped.join(', ')}.`);
   if (state.selectedPath && !payload.graph.files.some(file => file.path === state.selectedPath)) {
     state.selectedPath = null;
-    $('#step-notice').textContent = "Le fichier sélectionné n'existe plus dans ce plan.";
+    notices.push("Le fichier sélectionné n'existe plus dans ce plan.");
   }
+  if (notices.length) $('#step-notice').textContent = notices.join(' ');
   select(state.selectedPath, false);
   const errors = payload.diagnostics.filter(item => item.severity === 'error').length;
   setValidation(errors ? 'invalid' : 'valid',
     `Aperçu à jour : ${payload.graph.files.length} fichier(s), ${payload.graph.rules.length} règle(s)`
     + (errors ? `, ${errors} erreur(s) bloquante(s).` : '.'));
+  workflow.planChanged(payload);
 }
 
-function showDiagnostics(items) {
-  const ordered = items.map((item, index) => ({item, index}))
-    .sort((a, b) => (SEVERITY_ORDER[a.item.severity] ?? 3) - (SEVERITY_ORDER[b.item.severity] ?? 3) || a.index - b.index)
-    .map(entry => entry.item);
-  $('#diagnostics').replaceChildren(...ordered.map(item => el('li', {class: `diag diag-${item.severity}`},
-    el('span', {class: 'diag-level', text: item.severity}), ` ${item.message}`)));
-  const errors = ordered.filter(item => item.severity === 'error').length;
-  $('#diagnostics-count').textContent = `${ordered.length} (dont ${errors} bloquant(s))`;
+// --- Fichiers edites ---------------------------------------------------------------
+function currentFiles() {
+  return state.plan ? Object.assign({}, state.plan.contents, state.edits) : {};
+}
+
+// Etat utilisable par les flux securises : apercu a jour et sans erreur bloquante.
+function snapshot() {
+  if (!state.plan || state.validation !== 'valid') return null;
+  return {config: config(), files: currentFiles()};
+}
+
+function edited(path, value) {
+  const generated = state.plan.contents[path];
+  if (value === generated) { delete state.edits[path]; delete state.editBase[path]; } else {
+    state.edits[path] = value;
+    state.editBase[path] = generated;
+  }
+  markModified();
+  workflow.invalidate('Fichier modifié : valider à nouveau les contenus.');
+}
+
+function markModified() {
+  document.querySelectorAll('#tree [data-path]').forEach(button => {
+    const changed = button.dataset.path in state.edits;
+    button.classList.toggle('modified', changed);
+    button.setAttribute('aria-label', changed ? `${button.dataset.path} (modifié)` : button.dataset.path);
+  });
+}
+
+// --- Diagnostics : cible de navigation deduite du code et du sujet fournis par le serveur ----
+function stepOf(category) {
+  return Object.keys(CATEGORY_STEPS).find(step => CATEGORY_STEPS[step].includes(category));
+}
+
+function diagnosticTarget(item) {
+  const subject = item.subject || '';
+  const code = item.code || '';
+  if (subject && state.plan && Object.prototype.hasOwnProperty.call(state.plan.contents, subject)) {
+    return {path: subject, label: subject};
+  }
+  const technology = subject && state.catalog ? tech(subject) : null;
+  if (technology && code.startsWith('version-')) {
+    return {step: 'versions', selector: `#${CSS.escape(`q-version-${subject}`)}`, label: `version de ${technology.name}`};
+  }
+  if (technology && stepOf(technology.category)) {
+    return {step: stepOf(technology.category), selector: `input[name="q-tech"][value="${CSS.escape(subject)}"]`, label: technology.name};
+  }
+  if (code.startsWith('mcp-') && subject) {
+    return {step: 'mcp', selector: `input[name="q-mcp"][value="${CSS.escape(subject)}"]`, label: `serveur MCP ${subject}`};
+  }
+  const category = subject && state.catalog ? state.catalog.categories.find(entry => entry.id === subject) : null;
+  if (category && stepOf(category.id)) {
+    return {step: stepOf(category.id), selector: `fieldset[data-category="${CSS.escape(category.id)}"]`, label: category.label};
+  }
+  if (code === 'description-empty') return {step: 'projet', selector: '#q-description', label: 'description'};
+  return null; // aucun champ associe : pas de lien invente
+}
+
+function navigate(target) {
+  if (target.path) {
+    if (select(target.path, true)) editor.focus();
+    return;
+  }
+  const index = STEPS.findIndex(step => step.id === target.step);
+  if (index < 0 || !STEPS[index].applicable()) {
+    $('#step-notice').textContent = `Étape sans objet pour la sélection courante : ${target.label}.`;
+    return;
+  }
+  goTo(index, false);
+  const node = $('#step-body').querySelector(target.selector);
+  if (!node) {
+    $('#step-notice').textContent = `Champ indisponible pour la sélection courante : ${target.label}.`;
+    $('#step-title').focus();
+    return;
+  }
+  const control = node.matches('input, select, textarea') ? node : node.querySelector('input, select, textarea');
+  (control || node).focus();
+  node.scrollIntoView({block: 'center'});
 }
 
 // --- Arbre (liste imbriquee native) -----------------------------------------------
@@ -406,6 +491,7 @@ function renderTree() {
     return list;
   };
   $('#tree').replaceChildren(build(root));
+  markModified();
 }
 
 // --- Diagramme (elements du plan reel uniquement) ------------------------------
@@ -510,8 +596,9 @@ function select(path, explicit) {
   document.querySelectorAll('#diagram .edges path').forEach(edge => {
     edge.classList.toggle('lit', lit.has(edge.dataset.from) && lit.has(edge.dataset.to));
   });
-  $('#selected-path').textContent = path ? `· ${path}${file && file.rule ? ` (règle ${file.rule})` : ''}` : '';
-  $('#content').textContent = path ? state.plan.contents[path] : "Sélectionner un fichier dans l'arborescence ou le diagramme.";
+  $('#selected-path').textContent = path ? `${file && file.rule ? `règle ${file.rule}` : 'skill externe'}` : '';
+  if (path) editor.setFile(path, currentFiles()[path], state.plan.contents[path]);
+  else editor.setFile(null, '', '');
   if (explicit && path) {
     const twin = document.querySelector(`#tree [data-path="${CSS.escape(path)}"]`);
     if (twin) twin.scrollIntoView({block: 'nearest'});
@@ -536,11 +623,19 @@ async function init() {
     return;
   }
   state.answers.security = state.catalog.security_levels[0];
+  editor = window.ForgeEditor.create($('#editor'), {id: 'content', label: 'Contenu du fichier sélectionné', onChange: edited,
+    empty: "Sélectionner un fichier dans l'arborescence ou le diagramme."});
+  diagnostics = window.ForgeDiagnostics.create($('#diagnostics-panel'), {resolve: diagnosticTarget, navigate});
+  workflow = window.ForgeWorkflow.create($('#workflow'), {snapshot,
+    onDiagnostics: (items, source) => diagnostics.update(items, source)});
+  window.forgeJourney.editor = editor;
+  window.forgeJourney.diagnostics = diagnostics;
+  window.forgeJourney.workflow = workflow;
   $('#prev').addEventListener('click', () => move(-1));
   $('#next').addEventListener('click', () => move(1));
   renderStep();
   renderSteps();
 }
 
-window.forgeJourney = {state, select, config, prune}; // pilotage des tests E2E
+window.forgeJourney = {state, select, config, prune, files: currentFiles, diagnosticTarget, navigate}; // pilotage des tests E2E
 document.addEventListener('DOMContentLoaded', init);

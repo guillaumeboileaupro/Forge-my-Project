@@ -9,6 +9,7 @@ from pathlib import Path
 from forge import web
 from forge.pipeline import run
 from forge.planner.graph import plan_graph
+import server
 from server import Handler, ThreadingHTTPServer
 from tests.test_engine_external_skills import CONFIG as SKILL_CONFIG, FakeClient, approval_for
 from forge.skills.service import skills_for_plan
@@ -52,16 +53,40 @@ class RouteTests(unittest.TestCase):
 
 class ScriptContractTests(unittest.TestCase):
     """Contrats E14 : aucun HTML injecte, aucune ressource distante, aucun stockage de donnees projet."""
+    SCRIPTS = ("journey.js", "editor.js", "diagnostics.js", "workflow.js")
+    # Chaque composant n'appelle que ses endpoints ; l'editeur et le panneau n'appellent rien.
+    FETCHES = {"journey.js": {"/api/catalog", "/api/plan"}, "editor.js": set(), "diagnostics.js": set(),
+               "workflow.js": {"/api/files/validate", "/api/destination/browse", "/api/write/compare", "/api/write/apply"}}
 
     def test_no_html_injection_remote_resource_or_storage(self):
-        for name in ("journey.js", "journey.html", "journey.css"):
+        for name in self.SCRIPTS + ("journey.html", "journey.css"):
             text = (ROOT / "ui" / "v2" / name).read_text(encoding="utf-8")
             with self.subTest(name):
                 self.assertNotRegex(text, r"innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(|new Function")
                 self.assertNotRegex(text, r"https?://(?!www\.w3\.org/2000/svg)")
                 self.assertNotRegex(text, r"localStorage|sessionStorage|indexedDB")
-        script = (ROOT / "ui" / "v2" / "journey.js").read_text(encoding="utf-8")
-        self.assertEqual(set(re.findall(r"fetch\('([^']+)'", script)), {"/api/catalog", "/api/plan"})
+
+    def test_each_component_only_calls_its_endpoints(self):
+        for name, expected in self.FETCHES.items():
+            script = (ROOT / "ui" / "v2" / name).read_text(encoding="utf-8")
+            with self.subTest(name):
+                calls = set(re.findall(r"fetch\('([^']+)'", script)) | set(re.findall(r"post\('([^']+)'", script))
+                self.assertEqual(calls, expected)
+                for path in calls:
+                    self.assertTrue(path in server.API_POST or path == "/api/catalog", path)  # route reelle du serveur
+
+    def test_workflow_sends_the_existing_contract_fields(self):
+        """Memes champs que l'interface actuelle : jeton, decisions, confirm, acknowledge (T17, E06, E07)."""
+        script = (ROOT / "ui" / "v2" / "workflow.js").read_text(encoding="utf-8")
+        self.assertIn("token: state.comparison.token", script)
+        self.assertIn("decisions: state.resolutions, confirm: true, acknowledge: acknowledgement()", script)
+        for action in ("keep", "replace", "auto", "merge"):
+            self.assertIn("['%s'," % action, script)
+
+    def test_scripts_load_in_dependency_order(self):
+        html = (ROOT / "ui" / "v2" / "journey.html").read_text(encoding="utf-8")
+        order = re.findall(r'<script src="/v2/([a-z]+\.js)" defer>', html)
+        self.assertEqual(order, ["editor.js", "diagnostics.js", "workflow.js", "journey.js"])
 
 
 class GraphTests(unittest.TestCase):
