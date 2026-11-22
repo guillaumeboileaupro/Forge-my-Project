@@ -245,14 +245,22 @@ def profile_delete_payload(profile_id):
 def skills_search_payload(raw):
     """Candidats pour la configuration courante ; rien n'est copie ni execute."""
     try:
-        plan = build_plan(_body(raw, {"config"})["config"])
+        try:
+            body = _body(raw, {"config", "refresh"})
+        except ValueError:
+            body = dict(_body(raw, {"config"}), refresh=False)
+        if not isinstance(body["refresh"], bool):
+            raise ValueError("Requete invalide : refresh doit etre un booleen")
+        plan = build_plan(body["config"])
         if not plan.ok:
             raise ForgeError("Configuration incomplete : recherche impossible",
                              [x for x in plan.diagnostics if x.severity is d.Severity.ERROR])
-        found = skill_service.search_for_plan(plan)
+        found = skill_service.search_for_plan(plan, refresh=body["refresh"])
     except (ForgeError, ValueError) as exc:
         return _failure(exc)
-    return _json(200, {"ok": True, "candidates": [c.as_dict() for c in found.candidates], "notes": found.notes})
+    return _json(200, {"ok": True, "candidates": [c.as_dict() for c in found.candidates], "notes": found.notes,
+                       "cache": {"hit": found.cache_age is not None, "age_seconds": found.cache_age,
+                                 "partial": found.degraded}})
 
 
 def skills_verify_payload(raw):

@@ -56,6 +56,7 @@ A l'expiration, la CI redevient rouge : verifier l'avis, puis retirer l'exceptio
 - L'approbation epingle depot, commit et empreinte SHA-256 de l'arborescence du skill ; tout changement depuis l'approbation est une erreur bloquante, et chaque fichier telecharge est compare au SHA de son blob Git.
 - Seuls des fichiers texte (.md, .yaml, .yml, .json, .txt) sont copies ; scripts, binaires, liens et executables sont ignores, jamais telecharges ni executes.
 - Les approbations importees (JSON, profil, brouillon) sont revalidees par le serveur et peuvent etre controlees en ligne avant generation.
+- E12 : le cache de recherche ne contient que des candidats (dossier d'etat 0700, fichiers 0600, entree invalide ignoree) ; il ne peut rien faire copier, car la copie relit toujours GitHub au commit approuve et controle l'empreinte. Avant copie, la branche suivie est relue : un skill modifie ou retire en amont depuis l'approbation est signale, et seule la version approuvee est copiee.
 
 ## Serveurs MCP des projets generes (T15)
 - Aucun serveur sans selection explicite ; uniquement des serveurs du catalogue verifie et pertinents pour la configuration.

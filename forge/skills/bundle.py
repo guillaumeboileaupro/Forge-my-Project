@@ -58,6 +58,7 @@ class SkillRecord:
     status: str  # copie | absent | rejete | modifie | NON VERIFIE
     files: dict = field(default_factory=dict)  # chemin relatif dans le skill -> contenu
     notes: list = field(default_factory=list)
+    upstream: str = ""  # skills externes : inchange | modifie | absent | NON VERIFIE (E12)
 
 
 @dataclass
@@ -141,5 +142,10 @@ def record_diagnostics(record):
         return [d.warning("skill-rejected", "Skill %s rejete : %s" % (record.name, "; ".join(record.notes)), record.name)]
     if record.status == "NON VERIFIE":
         return [d.warning("skill-unverified", "Skill %s non recupere : %s" % (record.name, "; ".join(record.notes)), record.name)]
-    return [d.warning("skill-review", "Skill %s : %s" % (record.name, n), record.name) for n in record.notes
-            if "dangereuse" in n]
+    found = [d.warning("skill-review", "Skill %s : %s" % (record.name, n), record.name) for n in record.notes
+             if "dangereuse" in n]
+    if record.upstream in ("modifie", "absent", "NON VERIFIE"):
+        note = next(n for n in record.notes if n.startswith(("Modifie en amont", "Retire en amont", "Etat amont")))
+        found.append(d.warning("skill-upstream-" + ("unverified" if record.upstream == "NON VERIFIE" else "changed"),
+                               "Skill %s : %s" % (record.name, note), record.name))
+    return found
