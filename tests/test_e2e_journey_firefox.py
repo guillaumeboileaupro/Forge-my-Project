@@ -79,7 +79,7 @@ class FirefoxJourneyTests(unittest.TestCase):
         lit = self.js("return [...document.querySelectorAll('#diagram .node.lit')].map(n => n.dataset.key)")
         self.assertIn("r:scaffold-python", lit)
         self.assertIn("t:python", lit)
-        self.assertIn("[project]", self.js("return document.querySelector('#content').textContent"))
+        self.assertIn("[project]", self.js("return document.querySelector('#content').value"))
         self.js("document.querySelector('#diagram [data-path=\"README.md\"]')"
                 ".dispatchEvent(new MouseEvent('click', {bubbles: true}))")
         self.assertEqual(self.js("return document.querySelector('#tree .selected').dataset.path"), "README.md")

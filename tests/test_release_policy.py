@@ -12,6 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 STATUSES = {"TODO", "IN PROGRESS", "BLOCKED", "DONE"}
 TASKS = ["E%02d" % n for n in range(1, 19)]
+SUBLOT = re.compile(r"^(E\d\d)([a-z])$")  # sous-lot d'une tache, ex. E17a : memes controles que la tache
 SECTIONS = {"Ajoute", "Modifie", "Deprecie", "Supprime", "Corrige", "Securite"}
 VERSION = re.compile(r"^## \[(\d+)\.(\d+)\.(\d+)\] - (\d{4}-\d{2}-\d{2})$")
 
@@ -21,10 +22,10 @@ def read(path):
 
 
 def task_rows(text, columns):
-    """{ID: cellules} pour les lignes E01-E18 d'un tableau Markdown a `columns` colonnes."""
+    """{ID: cellules} pour les lignes E01-E18 (et leurs sous-lots E17a...) d'un tableau a `columns` colonnes."""
     rows = {}
     for line in text.splitlines():
-        if re.match(r"^\| E\d\d \|", line):
+        if re.match(r"^\| E\d\d[a-z]? \|", line):
             cells = [c.strip() for c in line.strip().strip("|").split("|")]
             if len(cells) != columns:
                 raise AssertionError("%s : %d colonnes au lieu de %d" % (cells[0], len(cells), columns))
@@ -74,31 +75,46 @@ class TaskTrackingTests(unittest.TestCase):
         self.todo = task_rows(read("TODO.md"), 10)
         self.roadmap = task_rows(read("docs/ROADMAP_2026.md"), 10)
 
+    def ids(self):
+        return TASKS + sorted(set(self.todo) - set(TASKS))
+
     def test_every_task_is_tracked_in_both_documents(self):
-        self.assertEqual(sorted(self.todo), TASKS)
-        self.assertEqual(sorted(self.roadmap), TASKS)
+        self.assertEqual(sorted(self.todo), sorted(self.roadmap))
+        self.assertEqual(sorted(t for t in self.todo if t in TASKS), TASKS)
+        for task in set(self.todo) - set(TASKS):
+            match = SUBLOT.match(task)
+            self.assertIsNotNone(match, "identifiant de tache invalide : " + task)
+            self.assertIn(match.group(1), TASKS, task + " : tache parente inconnue")
+
+    def test_sublots_never_outrun_their_parent(self):
+        for task in set(self.todo) - set(TASKS):
+            parent = SUBLOT.match(task).group(1)
+            raw = self.todo[task][3]
+            self.assertNotIn(parent, [d.strip() for d in raw.split(",")], task + " ne peut dependre de sa parente")
+            if self.todo[parent][8] == "DONE":
+                self.assertEqual(self.todo[task][8], "DONE", "%s DONE avant son sous-lot %s" % (parent, task))
 
     def test_statuses_are_valid_and_identical(self):
-        for task in TASKS:
+        for task in self.ids():
             todo, roadmap = self.todo[task][8], self.roadmap[task][8]
             self.assertIn(todo, STATUSES, task)
             self.assertEqual(todo, roadmap, "%s : TODO.md=%s, ROADMAP=%s" % (task, todo, roadmap))
 
     def test_dependencies_exist_and_done_tasks_have_done_dependencies(self):
-        for task in TASKS:
+        for task in self.ids():
             raw = self.todo[task][3]
             deps = [] if raw == "-" else [d.strip() for d in raw.split(",")]
             self.assertEqual(deps, [] if self.roadmap[task][4] == "-" else
                              [d.strip() for d in self.roadmap[task][4].split(",")], task)
             for dep in deps:
-                self.assertIn(dep, TASKS, "%s depend d'une tache inconnue %s" % (task, dep))
+                self.assertIn(dep, self.ids(), "%s depend d'une tache inconnue %s" % (task, dep))
                 if self.todo[task][8] in ("IN PROGRESS", "DONE"):
                     self.assertNotEqual(self.todo[dep][8], "TODO", "%s demarre avant %s" % (task, dep))
                 if self.todo[task][8] == "DONE":
                     self.assertEqual(self.todo[dep][8], "DONE", "%s termine avant %s" % (task, dep))
 
     def test_agent_time_is_never_recorded_as_human_time(self):
-        for task in TASKS:
+        for task in self.ids():
             human = self.todo[task][6]
             self.assertNotRegex(human, r"(?i)claude|codex|agent|IA", task)
             if self.todo[task][7] not in ("-", "non calculable"):
@@ -110,7 +126,7 @@ class ReleasePlanTests(unittest.TestCase):
         plan = read("docs/RELEASES.md")
         for version in ("## v1.0.0", "## v1.1.0", "## v2.0.0"):
             self.assertIn(version, plan)
-        for task in TASKS:
+        for task in sorted(task_rows(read("TODO.md"), 10)):  # taches et sous-lots
             self.assertRegex(plan, r"\b%s\b" % task, task + " absente du plan des releases")
 
     def test_release_checklist_names_the_real_ci_jobs(self):
