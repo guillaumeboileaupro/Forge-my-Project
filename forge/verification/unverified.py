@@ -11,7 +11,7 @@ l'accepte en connaissance de cause sans jamais le transformer en PASS.
 
 Regles de criticite :
 - niveau `hardened` : les controles de securite (vulnerabilites, outils de securite,
-  actions epinglees, serveurs MCP) doivent reussir ; NON VERIFIE = blocage ;
+  actions epinglees, serveurs MCP, audit des piles Rust/Go/Java) doivent reussir ; NON VERIFIE = blocage ;
 - niveau `hardened` sans verification en ligne : blocage (ces controles n'ont pas eu lieu).
 """
 import hashlib
@@ -28,7 +28,9 @@ UNVERIFIED = Status.NON_VERIFIE.value
 WARNING = "AVERTISSEMENT"
 SECURITY_KINDS = ("vulnerabilities", "tool", "action", "mcp")
 UNVERIFIED_CODES = {"mcp-unverified", "skill-unverified", "skills-not-fetched",
-                    "security-sast-unverified", "security-image-unverified"}
+                    "security-sast-unverified", "security-image-unverified", "security-stack-unverified"}
+# Niveau hardened : ces controles de securite NON VERIFIE ne peuvent pas etre confirmes.
+CRITICAL_HARDENED_CODES = {"mcp-unverified", "security-stack-unverified"}
 RISKS = {
     "package": "Existence, version ou licence du package non confirmees : installation en echec ou package usurpe possibles.",
     "vulnerabilities": "Vulnerabilites connues non recherchees : une dependance vulnerable peut etre installee.",
@@ -43,6 +45,8 @@ RISKS = {
     "skills-not-fetched": "Skills externes approuves absents du projet genere.",
     "security-sast-unverified": "Aucune analyse statique de securite pour JavaScript/TypeScript.",
     "security-image-unverified": "Image conteneur non analysee : vulnerabilites de l'image non detectees.",
+    "security-stack-unverified": "Dependances et code non audites pour cette pile : une dependance vulnerable "
+                                 "ou une faille du code peut passer la CI.",
     "verification-not-run": "Aucun controle en ligne : packages, vulnerabilites, outils et actions non verifies.",
 }
 DEFAULT_RISK = "Element optionnel absent ou incomplet : relire le projet genere avant usage."
@@ -79,7 +83,7 @@ def _from_check(check, hardened):
 
 def _from_diagnostic(diag, hardened):
     unverified = diag.code in UNVERIFIED_CODES
-    critical = hardened and diag.code == "mcp-unverified"
+    critical = hardened and diag.code in CRITICAL_HARDENED_CODES
     name = diag.subject or diag.code
     return Item("%s:%s" % (diag.code, diag.subject), "%s (%s)" % (name, diag.code),
                  UNVERIFIED if unverified else WARNING, diag.message,

@@ -66,6 +66,17 @@
       "requires": ["vitest"],
       "commands": {"coverage": "npx vitest run --coverage"},
       "docs": "https://vitest.dev/guide/coverage"
+    },
+    {
+      "id": "junit",
+      "name": "JUnit Jupiter",
+      "description": "Framework de tests Java (JUnit 6), execute par Maven Surefire.",
+      "ecosystem": "maven",
+      "package": "org.junit.jupiter:junit-jupiter",
+      "dev": true,
+      "requires": ["java"],
+      "commands": {"test": "mvn -B verify"},
+      "docs": "https://docs.junit.org/current/user-guide/"
     }
   ]
 }

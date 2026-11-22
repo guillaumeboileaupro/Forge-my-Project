@@ -35,7 +35,24 @@ def _parser():
     search = sub.add_parser("skills-search", help="rechercher des skills externes (candidats a approuver)")
     search.add_argument("spec")
     search.add_argument("--refresh", action="store_true", help="ignorer le cache de recherche")
+    sub.add_parser("local-catalog", help="valider le catalogue personnel (technologies, regles, templates)")
     return parser
+
+
+def _local_catalog():
+    """Valide le catalogue personnel sans rien generer ni executer (E13)."""
+    from forge.config.catalog import load_catalog
+    from forge.config.local import local_dir
+    from forge.rules.engine import load_rules
+    try:
+        catalog = load_catalog()
+        rules = [r.id for r in load_rules(catalog) if r.source == "local"]
+    except ValueError as exc:
+        print(json.dumps({"ok": False, "directory": str(local_dir()), "error": str(exc)}, ensure_ascii=False, indent=2))
+        return 2
+    print(json.dumps({"ok": True, "directory": catalog.local["directory"], "technologies": catalog.local["technologies"],
+                      "rules": rules}, ensure_ascii=False, indent=2))
+    return 0
 
 
 def _search(path, refresh=False):
@@ -49,6 +66,8 @@ def _search(path, refresh=False):
 
 def main(argv=None):
     args = _parser().parse_args(argv)
+    if args.command == "local-catalog":
+        return _local_catalog()
     if args.command == "skills-search":
         try:
             return _search(args.spec, args.refresh)

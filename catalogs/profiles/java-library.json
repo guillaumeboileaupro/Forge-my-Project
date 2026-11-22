@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "java-library",
+  "label": "Bibliotheque Java (Maven)",
+  "description": "Bibliotheque Java Maven avec JUnit Jupiter.",
+  "answers": {
+    "project_type": "library",
+    "technologies": [
+      "java",
+      "junit"
+    ],
+    "versions": {
+      "java": "25"
+    },
+    "agents": [
+      "codex",
+      "claude"
+    ],
+    "security": "strict"
+  }
+}

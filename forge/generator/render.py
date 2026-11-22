@@ -1,5 +1,6 @@
 """Rendu deterministe d'un plan en fichiers texte (sans ecriture disque)."""
 from forge import TEMPLATES_DIR
+from forge.config import local
 from forge.diagnostics import ForgeError
 from forge.generator.context import build_context
 from forge.generator.paths import resolve_inside, safe_relative_path
@@ -21,7 +22,11 @@ def render_plan(plan, templates_dir=TEMPLATES_DIR, verification=None):
     context = build_context(plan, verification)
     files = {}
     for path, (template, rule_id) in plan.files.items():
-        source = resolve_inside(templates_dir, template).read_text(encoding="utf-8")
+        if template.startswith(local.LOCAL_TEMPLATE_PREFIX):  # regle personnelle (E13), relue bornee
+            target = resolve_inside(local.check_templates(), template[len(local.LOCAL_TEMPLATE_PREFIX):])
+            source = local.read_bounded(target, local.MAX_TEMPLATE_BYTES)
+        else:
+            source = resolve_inside(templates_dir, template).read_text(encoding="utf-8")
         path = safe_relative_path(path.replace(PACKAGE_PLACEHOLDER, plan.spec.package_name))
         try:
             files[path] = render(source, context)

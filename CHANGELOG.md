@@ -6,6 +6,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 
 ### Ajoute
 - Verification statique des API utilisees par les projets generes : imports Python et JavaScript/TypeScript, sous-chemins, exports nommes et par defaut, modules des bibliotheques Python ; PASS prouve, FAIL demontre (bloquant) ou NON VERIFIE, hors ligne et en ligne a partir des archives officielles verifiees par empreinte (E11).
+- Piles Rust (Cargo, rustfmt, Clippy), Go (go test, go vet, gofmt) et Java (Maven, JUnit Jupiter, ecosysteme Maven verifie sur Maven Central), avec actions setup-go et setup-java epinglees et trois profils predefinis executes par la CI ; catalogue et regles personnels locaux, valides, bornes et jamais executes (E13).
 - Recherche de skills : cache a expiration des candidats (1 h par defaut, option « Relancer sans le cache »), recherches paralleles a ordre deterministe, classement total (nom prioritaire sur la description) et reverification de la branche amont avant copie, signalee par avertissement (E12).
 
 ### Ajoute

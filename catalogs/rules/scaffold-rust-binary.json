@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "scaffold-rust-binary",
+  "description": "Point d'entree Rust des applications (sans code metier).",
+  "priority": 36,
+  "when": {
+    "technologies_any": [
+      "rust"
+    ],
+    "project_types": [
+      "cli",
+      "api",
+      "web"
+    ]
+  },
+  "files": [
+    {
+      "path": "src/main.rs",
+      "template": "stack/rust/main.rs.tmpl"
+    }
+  ]
+}

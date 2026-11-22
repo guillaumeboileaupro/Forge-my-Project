@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "scaffold-rust",
+  "description": "Manifeste Cargo et crate minimale (sans code metier).",
+  "priority": 35,
+  "when": {
+    "technologies_any": [
+      "rust"
+    ]
+  },
+  "files": [
+    {
+      "path": "Cargo.toml",
+      "template": "stack/rust/Cargo.toml.tmpl"
+    },
+    {
+      "path": "src/lib.rs",
+      "template": "stack/rust/lib.rs.tmpl"
+    }
+  ]
+}

@@ -47,6 +47,67 @@
         "build": "npx tsc"
       },
       "docs": "https://www.typescriptlang.org/docs/"
+    },
+    {
+      "id": "rust",
+      "name": "Rust",
+      "description": "Langage Rust (toolchain rustup, Cargo).",
+      "ecosystem": null,
+      "versions": {
+        "preferred": "1.100",
+        "supported": [
+          "1.100"
+        ],
+        "eol_product": "rust"
+      },
+      "commands": {
+        "install": "cargo fetch",
+        "test": "cargo test",
+        "lint": "cargo clippy --all-targets -- -D warnings",
+        "format": "cargo fmt --check",
+        "build": "cargo build --release"
+      },
+      "docs": "https://doc.rust-lang.org/cargo/"
+    },
+    {
+      "id": "go",
+      "name": "Go",
+      "description": "Langage Go (modules, outils standard go test, go vet, gofmt).",
+      "ecosystem": null,
+      "versions": {
+        "preferred": "1.27",
+        "supported": [
+          "1.26",
+          "1.27"
+        ],
+        "eol_product": "go"
+      },
+      "commands": {
+        "install": "go mod download",
+        "test": "go test ./...",
+        "lint": "go vet ./...",
+        "format": "test -z \"$(gofmt -l .)\"",
+        "build": "go build ./..."
+      },
+      "docs": "https://go.dev/doc/"
+    },
+    {
+      "id": "java",
+      "name": "Java (Maven)",
+      "description": "Langage Java, JDK Temurin LTS, construction Maven.",
+      "ecosystem": null,
+      "versions": {
+        "preferred": "25",
+        "supported": [
+          "21",
+          "25"
+        ],
+        "eol_product": "eclipse-temurin"
+      },
+      "commands": {
+        "build": "mvn -B -q -DskipTests package"
+      },
+      "docs": "https://maven.apache.org/guides/"
     }
   ]
 }

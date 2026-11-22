@@ -11,7 +11,7 @@ from forge.config import versions
 from forge.diagnostics import Status
 from forge.verification.http import FetchError, fetch_json
 
-OSV_ECOSYSTEMS = {"pypi": "PyPI", "npm": "npm"}
+OSV_ECOSYSTEMS = {"pypi": "PyPI", "npm": "npm", "maven": "Maven"}
 BLOCKING_SEVERITIES = {"HIGH", "CRITICAL"}
 KNOWN_SEVERITIES = BLOCKING_SEVERITIES | {"LOW", "MODERATE", "MEDIUM"}
 
@@ -37,6 +37,48 @@ def pypi_url(name):
 
 def npm_url(name):
     return "https://registry.npmjs.org/" + quote(name, safe="@")
+
+
+def maven_url(name):
+    """Metadonnees du depot officiel Maven Central (source de verite, contrairement a l'index de recherche)."""
+    group, _, artifact = name.partition(":")
+    return "https://repo1.maven.org/maven2/%s/%s/maven-metadata.xml" % (quote(group.replace(".", "/")), quote(artifact))
+
+
+MAVEN_VERSION = re.compile(r"<version>\s*([A-Za-z0-9_.+-]{1,64})\s*</version>")
+MAVEN_STABLE = re.compile(r"^\d+(\.\d+)*$")
+
+
+def _maven(text, wanted):
+    """Versions lues par motif (aucun analyseur XML sur une donnee distante) ; derniere version stable."""
+    known = MAVEN_VERSION.findall(text)
+    stable = [v for v in known if MAVEN_STABLE.fullmatch(v)]
+    latest = max(stable, key=lambda v: tuple(int(p) for p in v.split(".")), default="")
+    version = wanted or latest
+    if not version or version not in known:
+        return None, latest, ""
+    return version, latest, ""  # licence absente des metadonnees : NON VERIFIE
+
+
+def _no_text(url):
+    raise FetchError("lecture texte non fournie")
+
+
+def _check_maven(name, wanted, text_fetch):
+    url, subject = maven_url(name), "maven:" + name
+    try:
+        response = (text_fetch or _no_text)(url)
+    except FetchError as exc:
+        return Check("package", subject, Status.NON_VERIFIE, "Registre indisponible : %s" % exc, url)
+    if response.status == 404:
+        return Check("package", subject, Status.FAIL, "Package inexistant sur Maven Central", url)
+    if response.status != 200 or not isinstance(response.data, str):
+        return Check("package", subject, Status.NON_VERIFIE, "Reponse du registre inexploitable", url)
+    version, latest, _ = _maven(response.data, wanted)
+    if version is None:
+        return Check("package", subject, Status.FAIL, "Version %s introuvable" % (wanted or "stable"), url, {"latest": latest})
+    details = {"version": version, "latest": latest, "license": "NON VERIFIE"}
+    return Check("package", subject, Status.PASS, "Package et version presents sur Maven Central", url, details)
 
 
 def _first_line(value):
@@ -70,7 +112,9 @@ def _npm(data, wanted):
     return version, latest, license_ if isinstance(license_, str) else ""
 
 
-def check_package(ecosystem, name, wanted=None, fetch=fetch_json):
+def check_package(ecosystem, name, wanted=None, fetch=fetch_json, text_fetch=None):
+    if ecosystem == "maven":
+        return _check_maven(name, wanted, text_fetch)
     url = pypi_url(name) if ecosystem == "pypi" else npm_url(name)
     subject = "%s:%s" % (ecosystem, name)
     try:

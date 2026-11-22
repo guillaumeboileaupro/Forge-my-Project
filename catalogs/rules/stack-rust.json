@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "id": "stack-rust",
+  "description": "Regles specifiques a Rust.",
+  "priority": 20,
+  "when": {
+    "technologies_any": [
+      "rust"
+    ]
+  },
+  "sections": {
+    "conventions": [
+      "Code formate par rustfmt et sans avertissement Clippy (-D warnings).",
+      "Bibliotheque dans src/lib.rs, binaire mince dans src/main.rs ; tests unitaires dans le module, tests d'integration dans tests/."
+    ],
+    "dependencies": [
+      "Dependances declarees dans Cargo.toml ; Cargo.lock versionne pour un binaire."
+    ],
+    "pitfalls": [
+      "Utiliser unwrap() ou expect() hors des tests pour des erreurs recuperables.",
+      "Ajouter du code unsafe sans justification documentee."
+    ]
+  }
+}

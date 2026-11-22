@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "id": "scaffold-go",
+  "description": "Module Go minimal et test de fumee (sans code metier).",
+  "priority": 35,
+  "when": {
+    "technologies_any": [
+      "go"
+    ]
+  },
+  "files": [
+    {
+      "path": "go.mod",
+      "template": "stack/go/go.mod.tmpl"
+    },
+    {
+      "path": "version.go",
+      "template": "stack/go/version.go.tmpl"
+    },
+    {
+      "path": "version_test.go",
+      "template": "stack/go/version_test.go.tmpl"
+    }
+  ]
+}

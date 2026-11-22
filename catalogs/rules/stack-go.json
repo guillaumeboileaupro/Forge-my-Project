@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "id": "stack-go",
+  "description": "Regles specifiques a Go.",
+  "priority": 20,
+  "when": {
+    "technologies_any": [
+      "go"
+    ]
+  },
+  "sections": {
+    "conventions": [
+      "Code formate par gofmt et verifie par go vet.",
+      "Un paquet par dossier ; commandes dans cmd/<nom>/, tests *_test.go a cote du code."
+    ],
+    "dependencies": [
+      "Dependances declarees dans go.mod ; go.sum versionne."
+    ],
+    "pitfalls": [
+      "Ignorer une valeur d'erreur retournee.",
+      "Lancer une goroutine sans moyen de l'arreter."
+    ]
+  }
+}
