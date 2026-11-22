@@ -30,7 +30,9 @@ HOOKS = {".githooks/pre-commit", ".githooks/commit-msg", ".githooks/pre-push", "
          "scripts/hooks/attribution_guard.py"}
 AGENT_HOOK_FILES = {".claude/settings.json", ".codex/hooks.json", ".github/hooks/forge-guard.json"}
 MCP_FILES = {".mcp.json", ".codex/config.toml"}  # uniquement si des serveurs MCP sont choisis
-SECURITY_SCRIPTS = {"scripts/security/npm_audit_gate.py"}  # stacks Node uniquement
+SECURITY_SCRIPTS = {"scripts/security/npm_audit_gate.py",  # stacks Node uniquement
+                    "scripts/security/semgrep_gate.py", ".semgrep/forge.yml",  # tous les projets (E10)
+                    "scripts/security/image_scan_gate.py"}  # projets Docker (E10)
 E2E_FILES = {"e2e/test_installed_package.py", "e2e/entrypoint.e2e.mjs"}  # temoins E2E (E08)
 SCAFFOLD = SCAFFOLD | HOOKS | AGENT_HOOK_FILES | MCP_FILES | SECURITY_SCRIPTS | E2E_FILES
 BASE_DOCS = {
@@ -76,7 +78,10 @@ class ScaffoldTests(unittest.TestCase):
         quality, security = workflow.split("\n  security:\n")
         self.assertNotIn("pip-audit", quality)  # audit execute une seule fois, dans le job security
         self.assertIn("pip-audit --strict --no-deps --disable-pip", security)
-        self.assertNotIn("docker build", workflow)
+        # Aucun deploiement en CI : l'image n'est construite que pour etre analysee (E10), jamais poussee.
+        self.assertNotIn("docker push", workflow)
+        image_step = workflow.split("Analyse de l'image conteneur")[1].split("\n      - name:")[0]
+        self.assertEqual(workflow.count("docker build"), image_step.count("docker build"))
 
     def test_manifests_follow_selection_and_verification(self):
         _, files = generate(PYTHON_API)
@@ -108,6 +113,7 @@ class PythonApiDocumentsTests(unittest.TestCase):
         self.assertEqual(set(self.files), BASE_DOCS | HOOKS | {
             "CLAUDE.md", "docs/DEPLOYMENT.md", ".github/workflows/ci.yml", ".gitignore", "pyproject.toml",
             "src/stock_api/__init__.py", "tests/test_smoke.py", "e2e/test_installed_package.py",
+            ".semgrep/forge.yml", "scripts/security/semgrep_gate.py", "scripts/security/image_scan_gate.py",
             ".claude/settings.json", ".codex/hooks.json"})
 
     def test_agents_md_is_specific(self):

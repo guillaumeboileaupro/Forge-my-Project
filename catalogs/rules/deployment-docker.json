@@ -3,8 +3,21 @@
   "id": "deployment-docker",
   "description": "Regles de deploiement par conteneur Docker.",
   "priority": 30,
-  "when": {"technologies_any": ["docker"]},
-  "files": [{"path": "docs/DEPLOYMENT.md", "template": "documentation/DEPLOYMENT.md.tmpl"}],
+  "when": {
+    "technologies_any": [
+      "docker"
+    ]
+  },
+  "files": [
+    {
+      "path": "docs/DEPLOYMENT.md",
+      "template": "documentation/DEPLOYMENT.md.tmpl"
+    },
+    {
+      "path": "scripts/security/image_scan_gate.py",
+      "template": "security/image_scan_gate.py.tmpl"
+    }
+  ],
   "sections": {
     "deployment": [
       "Image de base officielle epinglee par digest et mise a jour reguliere.",
@@ -12,5 +25,7 @@
       "Le deploiement n'est ni configure ni execute automatiquement."
     ]
   },
-  "skills": ["docker-compose-operations"]
+  "skills": [
+    "docker-compose-operations"
+  ]
 }

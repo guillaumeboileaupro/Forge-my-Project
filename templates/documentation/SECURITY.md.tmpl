@@ -19,9 +19,9 @@ Executes par le job `security` de `.github/workflows/ci.yml` (et le lint du job 
 | {{ this.control }} | {{ this.tool }} | {{ this.where }} | {{ this.status }} |
 {{/each}}
 
-- CONFIGURE signifie que le controle est defini et execute par la CI ; son resultat reel est celui du dernier run. NON VERIFIE signifie qu'aucun outil n'est configure pour ce controle : le traiter manuellement ou ajouter un outil.
+- CONFIGURE signifie que le controle est defini et execute par la CI ; son resultat reel est celui du dernier run. NON VERIFIE signifie que le controle n'est pas execute : aucun outil configure, ou aucune cible a analyser (par exemple une image sans Dockerfile). Le traiter manuellement ou completer le projet ; ce n'est jamais un succes.
 - Les SBOM CycloneDX sont publiees comme artefact `sbom` de chaque run.
 - Les outils de securite sont epingles (versions, empreinte SHA-256 de Gitleaks) ; leur mise a jour passe par une PR dediee.
 
 ## Exceptions
-Une exception n'est jamais silencieuse : elle est ajoutee explicitement a la commande concernee (`--ignore-vuln <ID>` pour pip-audit, `# nosec <test>` pour Bandit, entree `.gitleaksignore` pour Gitleaks), avec dans la PR l'identifiant, la justification, la date et l'echeance de reexamen.
+Une exception n'est jamais silencieuse : elle est ajoutee explicitement a la commande concernee (`--ignore-vuln <ID>` pour pip-audit, `# nosec <test>` pour Bandit, `# nosemgrep: <id>` pour Semgrep, entree `.gitleaksignore` pour Gitleaks ; aucune exception pour l'analyse d'image, ou une vulnerabilite non corrigee reste bloquante), avec dans la PR l'identifiant, la justification, la date et l'echeance de reexamen.

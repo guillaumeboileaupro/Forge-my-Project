@@ -45,7 +45,23 @@ def load_security_tools(path=None):
         raise SecurityCatalogError("Outils Python attendus : bandit, pip-audit, cyclonedx-bom")
     for item in data.get("npm_audit_exceptions", []):
         _check_npm_exception(item)
+    _check_e10_tools(data)
     return data
+
+
+def _check_e10_tools(data):
+    """Semgrep (PyPI) et Trivy (release officielle + empreinte) epingles ; seuils connus (E10)."""
+    semgrep, trivy = data.get("semgrep", {}), data.get("trivy", {})
+    if semgrep.get("package") != "semgrep" or not VERSION.fullmatch(semgrep.get("version", "")):
+        raise SecurityCatalogError("Semgrep : paquet ou version non epingles")
+    if trivy.get("repository") != "aquasecurity/trivy" or not VERSION.fullmatch(trivy.get("version", "")) \
+            or not SHA256.fullmatch(trivy.get("sha256", "")):
+        raise SecurityCatalogError("Trivy : depot, version ou empreinte SHA-256 invalide")
+    if trivy.get("asset") != "trivy_%s_Linux-64bit.tar.gz" % trivy["version"]:
+        raise SecurityCatalogError("Trivy : nom d'archive incoherent avec la version")
+    if data.get("semgrep_severity") != {"strict": "ERROR", "hardened": "WARNING"} \
+            or data.get("image_severity") != {"strict": "high", "hardened": "medium"}:
+        raise SecurityCatalogError("Seuils Semgrep ou image : valeurs attendues (aucun assouplissement)")
 
 
 def _check_npm_exception(item):
@@ -99,6 +115,38 @@ def _python_steps(tools, severity):
     ]
 
 
+SEMGREP_ENV = '"$RUNNER_TEMP/forge-semgrep"'
+
+
+def _semgrep_step(tool, severity):
+    """SAST multi-langage : regles locales .semgrep/forge.yml, sans telemetrie ni regle telechargee."""
+    return {"name": "SAST multi-langage (Semgrep %s, regles locales, severite >= %s)" % (tool["version"], severity),
+            "lines": [
+                "python3 -m venv %s" % SEMGREP_ENV,
+                '%s/bin/python -m pip install --disable-pip-version-check -q "semgrep==%s"' % (SEMGREP_ENV, tool["version"]),
+                '%s/bin/semgrep scan --config .semgrep/forge.yml --metrics=off --disable-version-check '
+                '--json --output "$RUNNER_TEMP/semgrep.json" .' % SEMGREP_ENV,
+                'python3 scripts/security/semgrep_gate.py "$RUNNER_TEMP/semgrep.json" %s' % severity,
+            ]}
+
+
+def _image_step(tool, level):
+    """Image conteneur : construite et analysee seulement si un Dockerfile existe ; sinon NON VERIFIE visible."""
+    url = "https://github.com/%s/releases/download/v%s/%s" % (tool["repository"], tool["version"], tool["asset"])
+    return {"name": "Analyse de l'image conteneur (Trivy %s, severite >= %s)" % (tool["version"], level), "lines": [
+        "if [ -f Dockerfile ]; then",
+        '  curl -sSfL -o "$RUNNER_TEMP/trivy.tar.gz" ' + url,
+        '  echo "%s  $RUNNER_TEMP/trivy.tar.gz" | sha256sum --check --strict' % tool["sha256"],
+        '  tar -xzf "$RUNNER_TEMP/trivy.tar.gz" -C "$RUNNER_TEMP" trivy',
+        "  docker build -t forge-image-scan:ci .",
+        '  "$RUNNER_TEMP/trivy" image --scanners vuln --format json --output "$RUNNER_TEMP/trivy.json" forge-image-scan:ci',
+        '  python3 scripts/security/image_scan_gate.py "$RUNNER_TEMP/trivy.json" %s' % level,
+        "else",
+        '  echo "::warning::Analyse d\'image NON VERIFIE : aucun Dockerfile, aucune image a analyser"',
+        "fi",
+    ]}
+
+
 def _node_steps(level):
     return [
         {"name": "Installation des dependances npm", "lines": [
@@ -138,8 +186,13 @@ def _controls(plan, tools, severity, level):
              "where": "CI (job security)", "status": "CONFIGURE"},
             {"control": "SBOM npm", "tool": "npm sbom (CycloneDX)", "where": "CI (artefact sbom)", "status": "CONFIGURE"},
         ]
+    semgrep = tools["semgrep_severity"][plan.spec.security]
+    rows.append({"control": "SAST multi-langage", "tool": "Semgrep %s, regles locales .semgrep/forge.yml (>= %s)"
+                 % (tools["semgrep"]["version"], semgrep), "where": "CI (job security)", "status": "CONFIGURE"})
     if "docker" in ids:
-        rows.append({"control": "Image conteneur", "tool": "aucun", "where": "-", "status": "NON VERIFIE"})
+        rows.append({"control": "Image conteneur", "tool": "Trivy %s (>= %s), des qu'un Dockerfile existe"
+                     % (tools["trivy"]["version"], tools["image_severity"][plan.spec.security]),
+                     "where": "CI (job security)", "status": "NON VERIFIE tant qu'aucun Dockerfile n'existe"})
     rows.append({"control": "Actions GitHub", "tool": "epinglees par SHA, permissions contents: read", "where": "CI", "status": "CONFIGURE"})
     return rows
 
@@ -154,6 +207,9 @@ def security_context(plan, tools=None):
         steps += _python_steps(tools, severity)
     if "node" in ids:
         steps += _node_steps(level)
+    steps.append(_semgrep_step(tools["semgrep"], tools["semgrep_severity"][plan.spec.security]))
+    if "docker" in ids:
+        steps.append(_image_step(tools["trivy"], tools["image_severity"][plan.spec.security]))
     sboms = [name for name, present in (("sbom-python.cdx.json", "python" in ids), ("sbom-npm.cdx.json", "node" in ids)) if present]
     return {"steps": steps, "sboms": sboms, "controls": _controls(plan, tools, severity, level),
             "npm_exceptions": tools.get("npm_audit_exceptions", [])}
@@ -168,5 +224,6 @@ def security_diagnostics(plan):
                                "SAST JavaScript/TypeScript NON VERIFIE : selectionner ESLint (eslint-plugin-security)", "eslint"))
     if "docker" in ids:
         found.append(d.warning("security-image-unverified",
-                               "Analyse de l'image conteneur NON VERIFIE : aucun scanner d'image configure", "docker"))
+                               "Analyse de l'image conteneur NON VERIFIE tant qu'aucun Dockerfile n'existe "
+                               "(Trivy configure dans le job security)", "docker"))
     return found

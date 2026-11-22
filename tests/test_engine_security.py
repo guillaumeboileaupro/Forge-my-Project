@@ -60,7 +60,9 @@ class SecurityJobTests(unittest.TestCase):
         self.assertTrue({"security-sast-unverified", "security-image-unverified"} <= codes)
         security_md = result.files["SECURITY.md"]
         self.assertIn("| SAST JavaScript/TypeScript | aucun | - | NON VERIFIE |", security_md)
-        self.assertIn("| Image conteneur | aucun | - | NON VERIFIE |", security_md)
+        # E10 : scanner configure, mais NON VERIFIE tant qu'aucun Dockerfile n'existe (jamais PASS).
+        self.assertIn("| Image conteneur | Trivy ", security_md)
+        self.assertIn("| NON VERIFIE tant qu'aucun Dockerfile n'existe |", security_md)
         self.assertNotIn("PASS", security_md)
 
     def test_security_md_lists_configured_controls(self):

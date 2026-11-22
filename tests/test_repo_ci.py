@@ -14,6 +14,9 @@ class RepositoryCiTests(unittest.TestCase):
         self.assertIn(tools["gitleaks"]["sha256"], WORKFLOW)
         self.assertIn("download/v%s/%s" % (tools["gitleaks"]["version"], tools["gitleaks"]["asset"]), WORKFLOW)
         self.assertIn('"bandit==%s"' % tools["pypi"]["bandit"], WORKFLOW)
+        self.assertIn('"semgrep==%s"' % tools["semgrep"]["version"], WORKFLOW)  # E10 : meme version que les projets generes
+        self.assertIn("--config .semgrep/forge.yml --metrics=off --disable-version-check", WORKFLOW)
+        self.assertIn("python -m unittest tests.test_semgrep_rules", WORKFLOW)
 
     def test_new_jobs_use_catalog_action_pins(self):
         for action in load_ci_catalog()["actions"].values():

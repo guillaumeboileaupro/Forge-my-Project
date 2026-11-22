@@ -1,0 +1,1 @@
+../templates/security/image_scan_gate.py.tmpl

@@ -60,6 +60,20 @@ A l'expiration, la CI redevient rouge : verifier l'avis, puis retirer l'exceptio
 ## Controles de ce depot (T13)
 - Job CI `security`: Gitleaks sur tout l'historique et Bandit (severite >= medium) sur forge/, server.py et generator.py, avec les memes versions epinglees que les projets generes (alignement verifie par tests/test_repo_ci.py).
 - Job CI `generated-projects`: CI generee des profils predefinis executee, puis preuve de detection des controles de securite (tests/smoke_security.py).
+- E10 : Semgrep 1.184.0 (PyPI officiel, publie le 2026-11-05, sans vulnerabilite OSV le 2026-11-22) analyse le depot avec les regles locales `.semgrep/forge.yml`, sans regle telechargee ni telemetrie. La passerelle `scripts/semgrep_gate.py` bloque les resultats ERROR et refuse un rapport illisible, une analyse incomplete ou sans fichier analyse. `tests/test_semgrep_rules.py` prouve dans le job `security`, avec le vrai Semgrep, que chaque regle detecte du code reellement vulnerable. Forge n'a pas d'image conteneur : aucune analyse d'image n'est faite pour ce depot.
+
+## Semgrep et images des projets generes (E10)
+- **Semgrep** dans tous les projets generes, apres Bandit, Gitleaks, pip-audit et npm audit, qui sont conserves.
+  - Regles locales `.semgrep/forge.yml`, revues et versionnees : `eval`/`exec`, shell, deserialisation non sure, `yaml.load`, TLS desactive, `mktemp`, `child_process`, `dangerouslySetInnerHTML`, `innerHTML`.
+  - Seuils : ERROR bloque en `strict` ; ERROR et WARNING bloquent en `hardened`.
+  - Exception seulement par `# nosemgrep: <id>`, justifiee dans la PR.
+- **Image conteneur**, uniquement pour un projet qui a choisi Docker. Forge ne genere pas de Dockerfile.
+  - Des qu'un `Dockerfile` existe, le job `security` construit l'image et l'analyse avec Trivy 0.76.2 : release officielle `aquasecurity/trivy`, empreinte SHA-256 verifiee avec `sha256sum --check --strict`, base de vulnerabilites telechargee par Trivy depuis ses sources officielles.
+  - La passerelle `scripts/security/image_scan_gate.py` bloque toute vulnerabilite `high` ou `critical` en `strict`, et des `medium` en `hardened`, corrigee ou non (pas d'`--ignore-unfixed`).
+  - Un rapport illisible, vide ou d'un autre format est refuse ; un scanner indisponible (telechargement ou empreinte en echec) fait echouer l'etape.
+  - Sans Dockerfile : avertissement CI et ligne SECURITY.md `NON VERIFIE`, jamais PASS ; le diagnostic `security-image-unverified` reste a confirmer (E06).
+- Seuils existants inchanges : npm audit `high` ou `moderate`, Bandit `medium` ou `low`. L'exception picomatch (GHSA-fc5q-39xc-vjpf, 2026-12-17) n'est pas elargie. Le catalogue refuse tout assouplissement des seuils Semgrep et image.
+- La verification en ligne controle Semgrep (PyPI et OSV) et, pour les projets Docker, l'archive Trivy (release et empreinte).
 
 
 ## Ecriture locale (T17)
