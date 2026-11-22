@@ -8,6 +8,8 @@ Statut: contrats de transition etablis par T02. Ils preservent le prototype T01 
 - Les chemins de templates et de sortie sont relatifs, sans composant `..` ni chemin absolu.
 - Un changement incompatible exige un ADR, des tests de migration et une mise a jour de ce document.
 
+Le contrat de présentation et d'état de la future interface v2 est défini par [UI_V2_CONTRACTS.md](UI_V2_CONTRACTS.md). Il complète ces frontières sans remplacer les API existantes; E15 et E16 doivent le respecter jusqu'à la validation finale E18.
+
 ## Interface utilisateur -> serveur
 - `GET /` retourne le formulaire hybride `ui/index.html` (moteur `forge/`); `GET /legacy` retourne le formulaire historique `ui/legacy.html`. Seuls les assets connus sont servis: `/css/app.css`, `/js/app.js`, `/js/legacy.js`.
 - `GET /api/catalog` retourne categories, technologies, agents, types de projet, niveaux de securite, options et serveurs MCP proposes (`mcp_servers` : besoin, pertinence, provenance, licence, execution, variable du jeton, permissions) (lecture seule).

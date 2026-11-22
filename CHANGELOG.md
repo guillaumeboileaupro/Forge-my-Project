@@ -4,6 +4,10 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 
 ## [Unreleased]
 
+### Ajoute
+- Design system de l'interface v2 : identité issue du logo officiel, tokens clair/sombre, composants accessibles, six maquettes statiques consultables et contrats UI/moteur pour E15 et E16 (E14, PR #39).
+- Reprise E14 : cuivre exact du logo en remplissage (texte encre 4.76:1) et cuivres derives de meme teinte pour le texte et les indicateurs, page de composants de reference (rail, navigation, onglets ARIA, poignee, palette de commandes, tiroir, etats) et palette de commandes interactive dans les maquettes.
+
 ### Securite
 - Semgrep 1.184.0 avec regles locales versionnees pour Forge et les projets generes (aucune regle telechargee, aucune telemetrie), et passerelle qui refuse un resultat bloquant, un rapport invalide ou une analyse incomplete ou vide (E10).
 - Analyse de l'image conteneur avec Trivy 0.76.2 (empreinte verifiee) des projets Docker des qu'un Dockerfile existe, bloquante en `high`/`critical` (`medium` en hardened), sans ignorer les vulnerabilites non corrigees ; NON VERIFIE sans Dockerfile (E10).

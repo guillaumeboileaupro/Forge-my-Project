@@ -54,3 +54,7 @@ E04 reutilise le lanceur Python fusionne par la PR #20. Les scripts POSIX `insta
 Le nettoyage de l'historique Git et la prevention des contributions attribuees aux agents IA sont des prealables de qualite. Ne jamais forcer une reecriture ni effacer un worktree sans inventaire et sauvegarde. L'extension VS Code est une idee de long terme, hors calendrier des releases ci-dessus.
 
 Les criteres de chaque jalon sont detailles dans [RELEASES.md](RELEASES.md), et la maintenance (anomalies, controles reguliers, dependances, regressions, versions, rollback) dans [MAINTENANCE.md](MAINTENANCE.md). L'audit E03 des fichiers, ses preuves de references, les elements conserves et les controles de non-regression sont consignes dans [E03_CLEANUP_AUDIT.md](E03_CLEANUP_AUDIT.md). Aucun fichier suivi ne peut etre supprime sans preuve d'inutilite.
+
+### E14 - design system de la v2
+
+E14 fixe l'identité, les tokens, composants, états, thèmes, adaptations responsive et contrats d'état avant tout code fonctionnel E15/E16. La référence consultable est [design-system/README.md](design-system/README.md), les maquettes restent statiques et l'interface actuelle demeure inchangée jusqu'à E18. E15 construit la coque sans logique métier; E16 rend le parcours depuis les catalogues et API existants. Les deux lots conservent le serveur Python comme frontière de confiance.
