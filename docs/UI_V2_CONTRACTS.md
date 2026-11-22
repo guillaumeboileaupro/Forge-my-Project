@@ -66,3 +66,11 @@ Tout texte non fiable est inséré via `textContent`/attributs validés. Pas de 
 ## Gates avant bascule
 
 E15 et E16 restent derrière une route ou un point d'entrée distinct jusqu'à E18. L'ancienne interface demeure la référence fonctionnelle. La bascule exige : parité de parcours, tests serveur/JS, Firefox, clavier, deux thèmes, cinq résolutions, contrastes, budgets mesurés, captures approuvées, CI verte et absence de P0/P1.
+
+## Implémentation E16 (préversion)
+
+- Route `/v2/parcours`, fichiers `ui/v2/journey.{html,js,css}`, tokens servis depuis `docs/design-system/tokens.css`. Aucun appel réseau autre que `/api/catalog` (au chargement) et `/api/plan` (après saisie, différé de 350 ms) ; aucun stockage local.
+- État : `answers` (réponses du parcours), `catalog`, `plan` (dernière réponse appliquée), `validation` (`idle | running | valid | invalid | stale`), `selectedPath`, `requestSeq`. Une réponse dont l'identifiant n'est pas le dernier est ignorée.
+- Conditions d'affichage dérivées du catalogue : une technologie n'est proposée que si chaque groupe de prérequis est sélectionné ; versions seulement pour les technologies versionnées choisies ; serveurs MCP seulement pour le type de projet. Une réponse devenue invalide est retirée avant envoi et signalée.
+- Le diagramme se construit uniquement depuis `graph` (`docs/CONTRACTS.md`). Arbre, diagramme et contenu partagent `selectedPath` ; un chemin absent du plan est refusé.
+- E15 pourra intégrer ces vues dans ses panneaux (`configuration`, `preview`, `diagnostics`) sans changer ce contrat.

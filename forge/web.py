@@ -12,6 +12,7 @@ from forge import diagnostics as d
 from forge.config.answers import envelope, parse_answers, unwrap
 from forge.config.catalog import load_catalog
 from forge.rules.engine import load_rules
+from forge.planner.graph import plan_graph
 from forge.config.profiles import PROFILE_FIELDS, ProfileNotFound, ProfileStore, load_predefined
 from forge.config.spec import AGENTS, OPTIONS, PROJECT_TYPES, SECURITY_LEVELS, SpecError, parse_approvals
 from forge.diagnostics import ForgeError
@@ -145,6 +146,7 @@ def plan_payload(raw):
         return _failure(exc)
     payload = result.as_dict()
     payload["contents"] = result.files
+    payload["graph"] = plan_graph(result)  # E16 : arbre et diagramme du plan reel
     payload["unverified"] = _assessment(result, _parse_request(raw))
     if result.plan is not None:
         # Suggestion des regles locales, reprise et modifiable dans le formulaire.

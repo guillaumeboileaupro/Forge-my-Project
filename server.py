@@ -14,6 +14,11 @@ STATIC = {
     "/css/app.css": (ROOT / "ui" / "css" / "app.css", "text/css; charset=utf-8"),
     "/js/app.js": (ROOT / "ui" / "js" / "app.js", "text/javascript; charset=utf-8"),
     "/js/legacy.js": (ROOT / "ui" / "js" / "legacy.js", "text/javascript; charset=utf-8"),
+    # E16 : parcours v2 sur une route distincte jusqu'a la bascule E18 ; tokens du design system E14.
+    "/v2/parcours": (ROOT / "ui" / "v2" / "journey.html", "text/html; charset=utf-8"),
+    "/v2/journey.css": (ROOT / "ui" / "v2" / "journey.css", "text/css; charset=utf-8"),
+    "/v2/journey.js": (ROOT / "ui" / "v2" / "journey.js", "text/javascript; charset=utf-8"),
+    "/v2/tokens.css": (ROOT / "docs" / "design-system" / "tokens.css", "text/css; charset=utf-8"),
 }
 LOCAL_HOST = re.compile(r"^(?:127\.0\.0\.1|localhost)(?::[0-9]{1,5})?$")
 LOCAL_ORIGIN = re.compile(r"^http://(?:127\.0\.0\.1|localhost)(?::[0-9]{1,5})?$")
