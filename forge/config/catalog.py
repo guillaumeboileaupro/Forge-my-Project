@@ -21,8 +21,9 @@ PACKAGE_NAMES = {
 }
 TECH_FIELDS = {
     "id", "name", "description", "ecosystem", "package", "dev", "versions", "requires",
-    "conflicts", "constraints", "commands", "docs", "companions",
+    "conflicts", "constraints", "commands", "docs", "companions", "module",
 }
+PY_MODULE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$")
 
 
 class CatalogError(ValueError):
@@ -47,6 +48,7 @@ class Technology:
     constraints: dict = field(default_factory=dict)
     commands: dict = field(default_factory=dict)
     companions: tuple = ()  # (package, alternatives declenchantes) installes avec la technologie
+    module: str | None = None  # module Python a importer (E11 : contrat verifie dans la roue publiee)
 
 
 @dataclass(frozen=True)
@@ -146,6 +148,9 @@ def _parse_technology(raw, category, command_kinds):
     preferred, supported, eol = _parse_versions(raw.get("versions"), where)
     dev = raw.get("dev", False)
     _require(isinstance(dev, bool), where + " : dev doit etre booleen")
+    module = raw.get("module")
+    _require(module is None or (ecosystem == "pypi" and isinstance(module, str) and PY_MODULE.fullmatch(module)),
+             where + " : module reserve aux paquets PyPI (nom de module Python valide)")
     return Technology(
         id=tech_id, name=raw["name"], category=category, description=raw["description"], docs=raw["docs"],
         ecosystem=ecosystem, package=package, dev=dev, preferred_version=preferred,
@@ -154,6 +159,7 @@ def _parse_technology(raw, category, command_kinds):
         conflicts=_string_list(raw.get("conflicts", []), where + ".conflicts"),
         constraints=dict(constraints), commands=dict(commands),
         companions=_parse_companions(raw.get("companions", []), where, ecosystem),
+        module=module,
     )
 
 

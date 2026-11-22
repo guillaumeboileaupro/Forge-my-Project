@@ -13,6 +13,7 @@
     },
     {
       "id": "pytest",
+      "module": "pytest",
       "name": "pytest",
       "description": "Framework de tests Python.",
       "ecosystem": "pypi",

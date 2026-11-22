@@ -116,7 +116,10 @@ class ReportTests(unittest.TestCase):
         self.assertIn("| pytest | pypi | developpement | 9.0.0 | MIT | PASS |", deps)
         report = verify_plan(plan, registry, TODAY)
         self.assertTrue(report.ok)
-        self.assertEqual({c.status for c in report.checks if c.kind == "api"}, {Status.NON_VERIFIE})
+        # E11 : sans archive fournie, aucune API tierce n'est PASS ; stdlib et projet sont etablis hors ligne.
+        third_party = {c.subject: c.status for c in report.checks if c.kind == "api" and c.subject in ("python:fastapi", "python:pytest")}
+        self.assertEqual(set(third_party.values()), {Status.NON_VERIFIE})
+        self.assertTrue(all(c.status is Status.PASS for c in report.checks if c.kind == "api" and c.subject not in third_party))
 
     def test_e10_tools_are_verified_online(self):
         registry = FakeRegistry()
@@ -145,7 +148,9 @@ class ReportTests(unittest.TestCase):
         plan = build_plan(SPEC)
         report = verify_plan(plan, FakeRegistry(offline="*"), TODAY)
         self.assertTrue(report.ok)
-        self.assertTrue(all(c.status is Status.NON_VERIFIE for c in report.checks))
+        # Tout ce qui exige le reseau est NON VERIFIE ; seules les API etablies hors ligne (stdlib) sont PASS.
+        self.assertTrue(all(c.status is Status.NON_VERIFIE for c in report.checks
+                            if not (c.kind == "api" and c.message == "Bibliotheque standard Python")))
         self.assertIn("unverified-package", {x.code for x in report.diagnostics})
         self.assertEqual(report.package_status("pypi", "fastapi")[0], Status.NON_VERIFIE)
 

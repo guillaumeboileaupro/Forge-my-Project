@@ -13,6 +13,7 @@ from forge.diagnostics import ForgeError
 from forge.generator.render import render_plan
 from forge.planner.plan import build_plan
 from forge.skills.service import skills_for_plan
+from forge.verification import api
 from forge.verification.report import verify_plan
 
 
@@ -22,6 +23,7 @@ class Result:
     files: dict = field(default_factory=dict)
     verification: object = None
     skills: object = None
+    api_checks: list = field(default_factory=list)  # E11 : contrats d'API (statiques ou verifies en ligne)
 
     @property
     def diagnostics(self):
@@ -31,6 +33,9 @@ class Result:
         elif self.plan.spec.mcp_servers:
             found.append(d.warning("mcp-unverified", "Serveurs MCP NON VERIFIES : lancer la verification en ligne "
                                    "(registre MCP officiel, npm) avant d'utiliser la configuration"))
+        if self.verification is None:  # hors ligne : un import tiers non declare est une erreur demontree
+            found += [d.error("api-static", "%s : %s" % (c.subject, c.message), c.subject)
+                      for c in self.api_checks if c.status.value == "FAIL"]
         if self.skills is not None:
             found += list(self.skills.diagnostics)
         elif self.plan.spec.external_skills:
@@ -45,6 +50,7 @@ class Result:
             "files": sorted(self.files),
             "diagnostics": [x.as_dict() for x in self.diagnostics],
             "verification": self.verification.as_dict()["checks"] if self.verification else None,
+            "api": [c.as_dict() for c in self.api_checks],
             "skills": [{"name": r.name, "status": r.status, "commit": r.commit, "notes": r.notes}
                        for r in self.skills.records] if self.skills else None,
         }
@@ -66,6 +72,8 @@ def run(data, verify=False, skills=False, catalog=None, rules=None, verifier=Non
     if verify:
         result.verification = (verifier or verify_plan)(plan)
     result.files = render_plan(plan, verification=result.verification)
+    result.api_checks = ([c for c in result.verification.checks if c.kind == "api"] if result.verification is not None
+                         else api.static_checks(plan, result.files))
     if skills:
         result.skills = (skill_collector or skills_for_plan)(plan)
         _merge(result.files, result.skills.files)
