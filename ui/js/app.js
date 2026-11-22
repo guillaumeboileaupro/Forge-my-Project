@@ -286,6 +286,14 @@ function renderReport(payload) {
         `${check.status} - ${check.kind} ${check.subject} : ${check.message}`));
     }
     report.append(element('h3', {}, 'Verification en ligne'), table);
+  } else if (payload.api && payload.api.length) {
+    // E11 : contrats d'API etablis hors ligne ; les API tierces restent NON VERIFIE sans verification en ligne.
+    const table = element('ul', {class: 'diagnostics', id: 'api-contracts'});
+    for (const check of payload.api) {
+      table.append(element('li', {class: check.status === 'PASS' ? 'ok' : check.status === 'FAIL' ? 'error' : 'warning'},
+        `${check.status} - ${check.subject} : ${check.message} (${check.evidence})`));
+    }
+    report.append(element('h3', {}, "Contrats d'API (analyse statique, hors ligne)"), table);
   }
   renderUnverified(report);
 }

@@ -149,12 +149,6 @@ def check_runtime(product, version, today, fetch=fetch_json):
     return Check("runtime", subject, Status.NON_VERIFIE, "Date de fin de vie inconnue", url, details)
 
 
-def api_unverified(tech):
-    """Les API ne sont pas verifiables sans installer le package : etat explicite."""
-    return Check("api", tech.id, Status.NON_VERIFIE,
-                 "API non verifiee automatiquement : consulter la documentation officielle avant usage", tech.docs)
-
-
 def check_action(repository, tag, sha, fetch=fetch_json):
     """Verifie que le tag d'une action GitHub designe toujours le commit epingle."""
     subject = "%s@%s" % (repository, tag)

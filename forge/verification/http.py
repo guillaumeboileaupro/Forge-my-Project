@@ -9,7 +9,7 @@ import urllib.error
 import urllib.request
 from urllib.parse import urlsplit
 
-ALLOWED_HOSTS = {"pypi.org", "registry.npmjs.org", "api.osv.dev", "endoflife.date", "api.github.com", "raw.githubusercontent.com",
+ALLOWED_HOSTS = {"pypi.org", "files.pythonhosted.org", "registry.npmjs.org", "api.osv.dev", "endoflife.date", "api.github.com", "raw.githubusercontent.com",
                  "registry.modelcontextprotocol.io"}
 MAX_BYTES = 20 * 1024 * 1024
 USER_AGENT = "Forge-my-Project-verifier"
@@ -86,3 +86,14 @@ def fetch_json(url, payload=None, timeout=15):
         return Response(status, json.loads(raw.decode("utf-8")))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise FetchError("Reponse JSON invalide : " + url) from exc
+
+
+def fetch_bytes(url, timeout=30):
+    """GET binaire borne (archives npm, roues PyPI) ; FetchError si 404, trop volumineux ou injoignable."""
+    _check_url(url)
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    status, raw = _read(request, url, timeout)
+    if status == 404:
+        raise FetchError("Archive introuvable : " + url)
+    return raw
+

@@ -35,6 +35,11 @@ A l'expiration, la CI redevient rouge : verifier l'avis, puis retirer l'exceptio
 - La confirmation est verifiee par le serveur, jamais par le seul navigateur. Elle est liee a la configuration et aux controles exacts, et elle est perimee au redemarrage ou a tout changement.
 - Seuils inchanges : npm audit `high` ou `moderate`, Bandit `medium` ou `low`. L'exception datee GHSA-fc5q-39xc-vjpf (picomatch, 2026-12-17) n'est ni elargie ni confirmable autrement.
 
+## Verification statique des API (E11)
+- Les archives npm et les roues PyPI sont telechargees seulement si une verification en ligne est demandee, depuis des hotes en liste fermee (`registry.npmjs.org`, `pypi.org`, `files.pythonhosted.org`), avec une limite de 20 Mo.
+- Chaque archive est verifiee par l'integrite SHA-512 publiee par npm, ou par le SHA-256 publie par PyPI. Une archive non confirmee donne NON VERIFIE, jamais PASS.
+- Les archives sont lues en memoire comme du texte : jamais extraites sur disque, jamais installees ni executees. La lecture est bornee a 5 000 entrees.
+
 ## Bases de fusion (E07)
 - Le dossier d'etat local (0700, fichiers 0600) contient le contenu genere ecrit dans chaque destination, y compris les editions faites dans l'apercu. Ce sont des donnees locales de l'utilisateur, jamais transmises.
 - Une base n'est utilisee que si son empreinte SHA-256 et sa destination concordent. Le jeton de comparaison couvre les bases : une base changee entre la comparaison et l'ecriture rend la validation perimee (409).

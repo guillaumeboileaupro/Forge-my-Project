@@ -13,7 +13,8 @@ from forge.mcp.catalog import selected_servers
 from forge.verification import checks, npm_peers
 from forge.generator.stack import load_ci_catalog
 from forge.security.controls import load_security_tools
-from forge.verification.http import fetch_json
+from forge.verification import api
+from forge.verification.http import FetchError, fetch_bytes as http_fetch_bytes, fetch_json
 
 
 @dataclass(frozen=True)
@@ -124,8 +125,26 @@ def _verify_actions(fetch):
     return [checks.check_action(a["repository"], a["tag"], a["sha"], fetch) for a in actions]
 
 
-def verify_plan(plan, fetch=fetch_json, today=None):
-    """Verifie chaque technologie du plan. `today` (AAAA-MM-JJ) est injectable pour les tests."""
+def _no_archive(url):
+    raise FetchError("lecture d'archive non fournie : API non verifiee")
+
+
+def _api_checks(plan, fetch, fetch_bytes, npm_versions):
+    """E11 : contrats d'API des fichiers generes (rendu deterministe, independant des versions)."""
+    from forge.generator.render import render_plan  # import local : render depend de ce module
+    files = render_plan(plan)
+    pypi_versions = {t.package: plan.spec.versions.get(t.id) for t in plan.resolution.technologies
+                     if t.ecosystem == "pypi" and plan.spec.versions.get(t.id)}
+    return api.verify_contracts(plan, files, fetch, fetch_bytes, npm_versions, pypi_versions)
+
+
+def verify_plan(plan, fetch=fetch_json, today=None, fetch_bytes=None):
+    """Verifie chaque technologie du plan. `today` (AAAA-MM-JJ) est injectable pour les tests.
+
+    `fetch_bytes` lit les archives (npm, PyPI) ; avec un `fetch` injecte et sans lecteur
+    d'archive, les API restent NON VERIFIE (jamais de reseau implicite dans les tests)."""
+    if fetch_bytes is None:
+        fetch_bytes = http_fetch_bytes if fetch is fetch_json else _no_archive
     today = today or datetime.date.today().isoformat()
     fetch = _cached(fetch)
     results = []
@@ -134,7 +153,6 @@ def verify_plan(plan, fetch=fetch_json, today=None):
         if tech.package:
             wanted = npm_versions.get(tech.package, plan.spec.versions.get(tech.id))
             results.extend(_verify_package(tech.ecosystem, tech.package, wanted, fetch))
-            results.append(checks.api_unverified(tech))
             for package in active_companions(plan, tech):
                 results.extend(_verify_package(tech.ecosystem, package, npm_versions.get(package), fetch))
         if tech.eol_product and tech.id in plan.resolution.versions:
@@ -148,5 +166,6 @@ def verify_plan(plan, fetch=fetch_json, today=None):
     if ".github/workflows/ci.yml" in plan.files:
         results.extend(_verify_actions(fetch))
         results.extend(_verify_security_tools(plan, fetch))
+    results.extend(_api_checks(plan, fetch, fetch_bytes, npm_versions))
     diagnostics = tuple(x for x in map(_diagnostic, results) if x is not None)
     return VerificationReport(tuple(results), diagnostics)

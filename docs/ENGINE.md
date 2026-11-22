@@ -113,7 +113,7 @@ Uniquement sur demande (`verify`, `skills`, `skills-search`), en HTTPS vers une 
 
 ## Limites connues
 
-- Les API des packages ne sont pas verifiees automatiquement (etat NON VERIFIE explicite).
+- Les API utilisees par les fichiers generes sont verifiees statiquement (E11, section dediee) : PASS prouve, FAIL demontre, NON VERIFIE sinon.
 - La licence PyPI est celle de la derniere version publiee.
 - La recherche de skills externes lit chaque SKILL.md des catalogues reconnus : plusieurs dizaines de secondes.
 - Le catalogue couvre Python et Node.js/TypeScript ; toute autre pile est refusee comme inconnue.
@@ -147,4 +147,25 @@ Uniquement sur demande (`verify`, `skills`, `skills-search`), en HTTPS vers une 
 - une etape Trivy pour les projets Docker, active seulement si un `Dockerfile` existe : passerelle `scripts/security/image_scan_gate.py`.
 
 Versions, empreinte et seuils viennent de `catalogs/security/tools.json`. Leur chargement refuse un outil non epingle et tout assouplissement de seuil. Les detections sont prouvees en CI par `tests/test_semgrep_rules.py` (vrai Semgrep) et `tests/smoke_security.py` (script dangereux hors `src/`, `eval` TypeScript, image `python:3.6-slim`).
+
+## Verification statique des API (E11)
+
+`forge/verification/api.py` extrait les contrats d'API des fichiers generes :
+- Python : imports, lus avec `ast` ;
+- JavaScript et TypeScript : declarations `import`, imports dynamiques a chemin litteral, proprietes utilisees sur un import par defaut ;
+- catalogue : module importable des bibliotheques Python (champ `module` : fastapi, flask, django, pytest).
+
+Rien n'est execute ni installe.
+
+| Contrat | Hors ligne | En ligne (verification demandee) |
+| --- | --- | --- |
+| Bibliotheque standard Python, module integre Node, fichier du projet (`dist/` rapporte a `src/`) | PASS | PASS |
+| Module tiers non declare dans `pyproject.toml` / `package.json`, module integre inconnu, fichier absent | FAIL (erreur `api-static`, bloquante) | FAIL |
+| Paquet npm : sous-chemin, exports nommes, export par defaut, proprietes | NON VERIFIE | archive officielle (integrite SHA-512) : sous-chemin dans `exports`, declarations `.d.ts` suivies a travers les `export * from` relatifs. PASS si trouve ; FAIL si absence demontree (declarations completes) ; NON VERIFIE si reexport externe, paquet sans declarations ou archive non confirmee |
+| Module Python du catalogue | NON VERIFIE | roue officielle (SHA-256) : module present (PASS) ou absent (FAIL) ; sdist seule ou empreinte non confirmee : NON VERIFIE |
+
+- Les proprietes (`configs.recommended`) sont une preuve plus faible : leur presence est cherchee dans les declarations du paquet, et le message l'indique.
+- Les resultats figurent dans `verification` (type `api`) et dans le champ `api` de la reponse du plan, affiche hors ligne par l'interface.
+- Un FAIL bloque la generation, comme les autres controles.
+- Les six profils predefinis : tous les contrats sont PASS en ligne (verification du 22 novembre 2026).
 
