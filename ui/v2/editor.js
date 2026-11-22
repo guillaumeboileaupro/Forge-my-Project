@@ -62,12 +62,9 @@
     const rules = LANGUAGES[lang] || [];
     if (!rules.length || text.length > MAX_HIGHLIGHT) return [];
     if (!COMPILED[lang]) COMPILED[lang] = new RegExp(rules.map(rule => `(${rule[1]})`).join('|'), 'gm');
-    const pattern = COMPILED[lang];
-    pattern.lastIndex = 0;
     const tokens = [];
-    let match;
-    while ((match = pattern.exec(text)) !== null) {
-      if (match[0] === '') { pattern.lastIndex += 1; continue; }
+    for (const match of text.matchAll(COMPILED[lang])) { // matchAll avance seul sur une correspondance vide
+      if (match[0] === '') continue;
       const group = match.findIndex((value, index) => index > 0 && value !== undefined);
       tokens.push({start: match.index, end: match.index + match[0].length, cls: rules[group - 1][0]});
     }
