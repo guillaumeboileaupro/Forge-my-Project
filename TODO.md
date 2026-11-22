@@ -249,7 +249,7 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 | E07 | Fusion automatique a trois voies quand une base fiable existe, sinon resolution manuelle, sauvegarde et rollback | Codex | - | 2 j (16 h) | Codex non mesure ; Claude 0 h 07 (reprise) | inconnu | non calculable | DONE | PR #32 fusionnee (c8483d4, 18/11); docs/LOCAL_WRITE.md section E07 |
 | E08 | Infrastructure E2E des projets generes, adaptee a la stack, sans scenarios metier inventes | Claude | - | 2 j | 0 h 13 (Claude) | non renseigne | non calculable | DONE | PR #35 fusionnee (f88e5cf, 19/11); docs/TESTING.md genere, docs/ENGINE.md section E08 |
 | E09 | Assistant de protection de branche GitHub: preparer les commandes, ne pas appliquer automatiquement | Codex | - | 1 j | Codex non mesure ; Claude 0 h 05 (reprise) | inconnu | non calculable | DONE | PR #36 (statut effectif a sa fusion); docs/BRANCH_PROTECTION.md |
-| E10 | Scanner d'images Docker et SAST complementaire dont Semgrep, sans retrait des controles actuels | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
+| E10 | Scanner d'images Docker et SAST complementaire dont Semgrep, sans retrait des controles actuels | Claude | - | 2 j | - | - | - | IN PROGRESS | PR E10 en brouillon |
 | E11 | Verification statique des API Python/JS/TS lorsque possible; PASS/FAIL/NON VERIFIE | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E12 | Recherche des skills: cache expire, parallelisme, classement, reverification avant copie | Claude | - | 2 j | - | - | - | TODO | Voir ROADMAP_2026.md |
 | E13 | Enrichir les stacks Python/JS/Rust/Go/Java et permettre les catalogues/regles personnalises localement | Claude | - | 4 j | - | - | - | TODO | Voir ROADMAP_2026.md |
