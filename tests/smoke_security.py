@@ -20,7 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from smoke_generated import (commit_all, environment, generate, parse_workflow, profiles_by_id,  # noqa: E402
-                             run_steps, write_project)
+                             run_steps, runner_dir, write_project)
 
 
 def fake_github_token():
@@ -59,17 +59,40 @@ def inject_eval(root, files):
                               encoding="utf-8")
 
 
+def inject_dangerous_script(root, files):
+    """Hors de src/ (non couvert par Bandit) : seul Semgrep, qui analyse tout le depot, doit le voir."""
+    (root / "scripts" / "deploy_helper.py").write_text(
+        '"""Script volontairement dangereux."""\n\nimport os\n\n\n'
+        "def deploy(target: str) -> int:\n    return os.system(\"rsync -a dist/ \" + target)\n", encoding="utf-8")
+
+
+def inject_vulnerable_image(root, files):
+    """Image de base en fin de vie, aux vulnerabilites hautes et critiques connues."""
+    (root / "Dockerfile").write_text("FROM python:3.6-slim\nCOPY src /app/src\n", encoding="utf-8")
+
+
+def with_docker(profile):
+    answers = dict(profile["answers"], technologies=list(profile["answers"]["technologies"]) + ["docker"])
+    return dict(profile, id=profile["id"] + "-docker", answers=answers)
+
+
 SCENARIOS = {
     "python": ("python-api-fastapi", [
         ("temoin", None, "security", None),
         ("secret", inject_secret, "security", "Secrets"),
         ("injection shell", inject_shell_injection, "security", "SAST Python"),
         ("dependance vulnerable", inject_vulnerable_python_dependency, "security", "Audit des dependances Python"),
+        ("script dangereux hors src (Semgrep)", inject_dangerous_script, "security", "SAST multi-langage"),
     ]),
     "node": ("typescript-api-express", [
         ("temoin", None, "security", None),
         ("dependance vulnerable", inject_vulnerable_npm_dependency, "security", "Audit des dependances npm"),
         ("eval", inject_eval, "quality", "Lint"),
+        ("eval (Semgrep)", inject_eval, "security", "SAST multi-langage"),
+    ]),
+    "docker": ("python-api-fastapi", [
+        ("temoin sans Dockerfile", None, "security", None),
+        ("image vulnerable", inject_vulnerable_image, "security", "Analyse de l'image conteneur"),
     ]),
 }
 
@@ -87,6 +110,7 @@ def scenario(profile, label, inject, job, expected):
         failed = run_steps(steps, root, env, "%s/%s" % (profile["id"], label), stop_after=expected)
     finally:
         shutil.rmtree(root, ignore_errors=True)
+        shutil.rmtree(runner_dir(root), ignore_errors=True)
     if expected is None and failed:
         raise SystemExit("Temoin en echec (%s) : etape %s" % (profile["id"], failed))
     if expected and not (failed or "").startswith(expected):
@@ -99,8 +123,9 @@ def main(argv=None):
     profiles = profiles_by_id()
     for stack in stacks:
         profile_id, cases = SCENARIOS[stack]
+        profile = with_docker(profiles[profile_id]) if stack == "docker" else profiles[profile_id]
         for label, inject, job, expected in cases:
-            scenario(profiles[profile_id], label, inject, job, expected)
+            scenario(profile, label, inject, job, expected)
     return 0
 
 

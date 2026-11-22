@@ -105,6 +105,11 @@ def _verify_security_tools(plan, fetch):
         return [checks.Check("tool", "catalogs/security/tools.json", Status.FAIL, "Catalogue invalide : %s" % exc)]
     gitleaks = tools["gitleaks"]
     results = [checks.check_release_asset(gitleaks["repository"], gitleaks["version"], gitleaks["asset"], gitleaks["sha256"], fetch)]
+    # E10 : Semgrep (PyPI + OSV) pour tous les projets ; Trivy (release + empreinte) si une image peut exister.
+    results.extend(_verify_package("pypi", tools["semgrep"]["package"], tools["semgrep"]["version"], fetch))
+    if "docker" in plan.resolution.ids():
+        trivy = tools["trivy"]
+        results.append(checks.check_release_asset(trivy["repository"], trivy["version"], trivy["asset"], trivy["sha256"], fetch))
     if "python" in plan.resolution.ids():
         for name, version in sorted(tools["pypi"].items()):
             results.extend(_verify_package("pypi", name, version, fetch))

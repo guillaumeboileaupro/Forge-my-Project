@@ -8,6 +8,20 @@ La source officielle est [`assets/logo.svg`](../../assets/logo.svg), complétée
 
 Le logo complet est réservé à l'accueil et aux surfaces larges. Le favicon sert aux espaces compacts. Il ne faut ni recolorer le cuivre, ni redessiner le pictogramme, ni modifier ses proportions. Sur fond sombre, le logo conserve son fond clair : une future variante inversée exigerait une validation séparée.
 
+## Usage du cuivre (decision de la reprise E14)
+
+Le cuivre exact `#D97757` n'atteint que 2,75:1 sur le parchemin. Il ne peut donc porter ni texte ni indicateur fin en theme clair. Plutot qu'une teinte brune, la palette garde **la teinte (15°) et la saturation du logo** et ne fait varier que la luminosite :
+
+| Role | Clair | Sombre | Contraste minimal |
+| --- | --- | --- | --- |
+| Remplissage (bouton principal, option active, lien d'evitement) | `#D97757` (logo) | `#D97757` (logo) | texte encre `#292726` 4,76:1 |
+| Survol du remplissage | `#E08A6D` | `#E08A6D` | texte encre 5,68:1 |
+| Texte et liens cuivre (`--accent-default`) | `#AB4727` | `#E09075` | 4,7:1 sur toutes les surfaces |
+| Indicateurs fins (soulignement, bordure selectionnee) | `#D25D37` | `#D97757` (logo) | 3,2:1 sur toutes les surfaces |
+| Fond selectionne (`--accent-soft`) | `#F9E5DC` | `#4B322A` | texte cuivre 4,7:1, texte principal 10:1 et plus |
+
+Le rail reste a l'encre du logo, avec le cuivre exact pour l'element actif (4,76:1). Les controles natifs (cases, radios, progression) prennent le cuivre texte, jamais le bleu du navigateur.
+
 ## Principes
 
 1. L'outil ressemble à un atelier Unix calme, pas à un tableau de bord marketing.
@@ -20,7 +34,8 @@ Le logo complet est réservé à l'accueil et aux surfaces larges. Le favicon se
 ## Artefacts
 
 - [`tokens.css`](tokens.css) : couleurs, typographie, espacements, dimensions, rayons et mouvement.
-- [`components.css`](components.css) : boutons, champs, onglets, panneaux, diagnostics et focus de référence.
+- [`components.css`](components.css) : boutons, champs, onglets ARIA, rail et navigation, poignée, palette de commandes, tiroir, diagnostics, états et focus de référence.
+- [`components.html`](components.html) : page de référence de chaque composant et de ses états, en clair et en sombre.
 - [`mockups/index.html`](mockups/index.html) : six écrans représentatifs, thèmes clair/sombre et largeurs adaptatives.
 - [`../UI_V2_CONTRACTS.md`](../UI_V2_CONTRACTS.md) : frontières obligatoires pour E15 et E16.
 
@@ -62,3 +77,8 @@ Utiliser des SVG filaires de 16 ou 20 px, trait 1.5 px, extrémités arrondies, 
 - Maquettes purement statiques : les écritures, téléchargements et validations restent désactivés ou explicitement simulés.
 
 Une validation automatisée n'est pas une certification WCAG. E18 conserve la recette Firefox, le lecteur d'écran si disponible, les captures approuvées et la vérification manuelle aux résolutions cibles.
+
+## Origine du travail
+
+Conçu par Codex (identité, tokens, composants de base, six maquettes, contrats UI v2, 7 tests), puis terminé pendant la reprise par Claude Code, Codex étant indisponible (usage du cuivre, composants manquants, page de référence, palette de commandes, 5 tests). Le détail figure dans TODO.md (E14).
+

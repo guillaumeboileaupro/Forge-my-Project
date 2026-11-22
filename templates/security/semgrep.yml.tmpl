@@ -1,0 +1,112 @@
+# Regles Semgrep locales et versionnees de Forge-my-Project (E10).
+# Aucune regle n'est telechargee du registre Semgrep : l'analyse est reproductible et revue.
+# Severite : ERROR bloque au niveau strict ; WARNING bloque aussi au niveau hardened.
+# Une exception passe par un commentaire `nosemgrep: <id>` justifie dans le code et dans la PR.
+rules:
+  - id: forge.python.eval-exec
+    languages: [python]
+    severity: ERROR
+    message: "eval/exec sur une valeur non litterale : execution de code arbitraire possible."
+    patterns:
+      - pattern-either:
+          - pattern: eval($X, ...)
+          - pattern: exec($X, ...)
+      - pattern-not: eval("...", ...)
+      - pattern-not: exec("...", ...)
+
+  - id: forge.python.subprocess-shell
+    languages: [python]
+    severity: ERROR
+    message: "subprocess avec shell=True : injection de commande possible ; passer une liste d'arguments."
+    pattern: subprocess.$FUNC(..., shell=True, ...)
+
+  - id: forge.python.os-system
+    languages: [python]
+    severity: ERROR
+    message: "os.system/os.popen executent un shell : utiliser subprocess avec une liste d'arguments."
+    pattern-either:
+      - pattern: os.system(...)
+      - pattern: os.popen(...)
+
+  - id: forge.python.unsafe-deserialization
+    languages: [python]
+    severity: ERROR
+    message: "Deserialisation non sure (pickle/marshal) : execution de code si la donnee n'est pas maitrisee."
+    pattern-either:
+      - pattern: pickle.load(...)
+      - pattern: pickle.loads(...)
+      - pattern: marshal.load(...)
+      - pattern: marshal.loads(...)
+
+  - id: forge.python.yaml-unsafe-load
+    languages: [python]
+    severity: ERROR
+    message: "yaml.load sans SafeLoader : construction d'objets arbitraires ; utiliser yaml.safe_load."
+    pattern-either:
+      - pattern: yaml.unsafe_load(...)
+      - patterns:
+          - pattern: yaml.load(...)
+          - pattern-not: yaml.load(..., Loader=yaml.SafeLoader, ...)
+          - pattern-not: yaml.load(..., Loader=SafeLoader, ...)
+
+  - id: forge.python.tls-verify-disabled
+    languages: [python]
+    severity: ERROR
+    message: "Verification TLS desactivee (verify=False) : interception possible."
+    pattern: $MOD.$FUNC(..., verify=False, ...)
+
+  - id: forge.python.tempfile-mktemp
+    languages: [python]
+    severity: WARNING
+    message: "tempfile.mktemp est sujet aux courses : utiliser mkstemp ou TemporaryDirectory."
+    pattern: tempfile.mktemp(...)
+
+  - id: forge.js.eval
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: "eval ou new Function sur une valeur dynamique : execution de code arbitraire possible."
+    patterns:
+      - pattern-either:
+          - pattern: eval($X)
+          - pattern: new Function(...)
+      - pattern-not: eval("...")
+
+  - id: forge.js.child-process-exec
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: "exec/execSync de child_process lancent un shell : utiliser execFile ou spawn sans shell."
+    pattern-either:
+      - pattern: $CP.exec(...)
+      - pattern: $CP.execSync(...)
+      - pattern: "$CP.spawn(..., {..., shell: true, ...})"
+      - pattern: |
+          import { ..., exec, ... } from "$MOD";
+          ...
+          exec(...);
+      - pattern: |
+          import { ..., execSync, ... } from "$MOD";
+          ...
+          execSync(...);
+
+  - id: forge.js.react-dangerously-set-inner-html
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: "dangerouslySetInnerHTML : injection HTML/XSS si le contenu n'est pas assaini."
+    pattern: <$EL dangerouslySetInnerHTML={...} />
+
+  - id: forge.js.inner-html-assignment
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: "Affectation de innerHTML/outerHTML a une valeur dynamique : XSS possible ; preferer textContent."
+    patterns:
+      - pattern-either:
+          - pattern: $E.innerHTML = $V
+          - pattern: $E.outerHTML = $V
+      - pattern-not: $E.innerHTML = "..."
+      - pattern-not: $E.outerHTML = "..."
+
+  - id: forge.js.tls-reject-unauthorized
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: "rejectUnauthorized: false desactive la verification TLS."
+    pattern: "{..., rejectUnauthorized: false, ...}"

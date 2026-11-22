@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "verified_at": "2026-11-14",
+  "verified_at": "2026-11-22",
   "note": "Outils de securite des CI generees. Versions et empreintes verifiees sur les sources officielles (PyPI, release GitHub + fichier de sommes publie). Reverifiables par la verification en ligne.",
   "gitleaks": {
     "repository": "gitleaks/gitleaks",
@@ -14,7 +14,22 @@
     "pip-audit": "2.10.1",
     "cyclonedx-bom": "8.0.1"
   },
+  "semgrep": {
+    "package": "semgrep",
+    "version": "1.184.0",
+    "license": "LGPL-2.1-or-later",
+    "note": "PyPI officiel ; version publiee le 2026-11-05 (au moins deux semaines avant adoption), aucune vulnerabilite OSV le 2026-11-22. Regles locales : templates/security/semgrep.yml.tmpl."
+  },
+  "trivy": {
+    "repository": "aquasecurity/trivy",
+    "version": "0.76.2",
+    "asset": "trivy_0.76.2_Linux-64bit.tar.gz",
+    "sha256": "bc0fc726e017b8927a62b2d3531d7a84ee01769daf5c99ed866dced54089fdbf",
+    "license": "Apache-2.0"
+  },
   "sast_severity": {"strict": "medium", "hardened": "low"},
+  "semgrep_severity": {"strict": "ERROR", "hardened": "WARNING"},
+  "image_severity": {"strict": "high", "hardened": "medium"},
   "npm_audit_level": {"strict": "high", "hardened": "moderate"},
   "npm_audit_exceptions": [
     {
