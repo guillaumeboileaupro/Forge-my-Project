@@ -6,8 +6,8 @@ button, .button { min-height: var(--control-height); border: 1px solid var(--bor
 button:hover { border-color: var(--border-strong); background: var(--surface-subtle); }
 button:active { transform: translateY(1px); }
 button:disabled { opacity: .55; cursor: not-allowed; transform: none; }
-.button-primary { color: var(--text-inverse); border-color: var(--accent-default); background: var(--accent-default); font-weight: 650; }
-.button-primary:hover { border-color: var(--accent-hover); background: var(--accent-hover); }
+.button-primary { color: var(--on-accent); border-color: var(--accent-fill); background: var(--accent-fill); font-weight: 700; }
+.button-primary:hover { border-color: var(--accent-fill-hover); background: var(--accent-fill-hover); }
 :focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
 label { display: block; margin-bottom: var(--space-2); font-weight: 650; }
 input, select, textarea { width: 100%; min-height: var(--control-height); border: 1px solid var(--border-default); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3); background: var(--surface-raised); }
@@ -19,13 +19,69 @@ textarea, code, pre, .mono { font-family: var(--font-mono); }
 .panel-title { margin: 0; font-family: var(--font-mono); font-size: var(--text-sm); }
 .tabs { display: flex; gap: var(--space-1); overflow-x: auto; border-bottom: 1px solid var(--border-default); }
 .tab { display: inline-flex; min-height: 2.5rem; align-items: center; padding: 0 var(--space-4); border-bottom: 2px solid transparent; white-space: nowrap; }
-.tab[aria-current="page"] { border-bottom-color: var(--accent-default); color: var(--accent-default); font-weight: 700; }
+.tab[aria-current="page"], .tab[aria-selected="true"] { border-bottom-color: var(--accent-indicator); color: var(--accent-default); font-weight: 700; }
 .diagnostic { display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-3); align-items: start; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border-default); }
 .status { font-family: var(--font-mono); font-size: var(--text-xs); font-weight: 700; }
 .status-pass { color: var(--status-pass); }
 .status-warn { color: var(--status-warn); }
 .status-fail { color: var(--status-fail); }
 .badge { display: inline-flex; align-items: center; min-height: 1.5rem; border-radius: var(--radius-sm); padding: 0 var(--space-2); background: var(--surface-subtle); font-family: var(--font-mono); font-size: var(--text-xs); }
-.skip-link { position: fixed; z-index: 100; top: var(--space-2); left: var(--space-2); transform: translateY(-160%); padding: var(--space-3); color: var(--text-inverse); background: var(--accent-default); }
+.skip-link { position: fixed; z-index: 100; top: var(--space-2); left: var(--space-2); transform: translateY(-160%); padding: var(--space-3); color: var(--on-accent); background: var(--accent-fill); }
 .skip-link:focus { transform: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* --- Complements E14 (reprise) : composants de reference pour E15/E16 --------------------------
+   Les classes .is-hover / .is-active rendent visibles, sur la page de reference, des etats
+   normalement declenches par la souris ; elles ne remplacent jamais :hover, :active ou :focus-visible. */
+button.is-hover { border-color: var(--border-strong); background: var(--surface-subtle); }
+.button-primary.is-hover { border-color: var(--accent-fill-hover); background: var(--accent-fill-hover); }
+button.is-active { transform: translateY(1px); }
+button.is-focus { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+[aria-busy="true"] { cursor: progress; }
+input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"] { border-color: var(--status-fail); }
+.kbd { display: inline-flex; min-width: 1.5rem; justify-content: center; border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: var(--radius-sm); padding: 0 var(--space-1); color: var(--text-secondary); background: var(--surface-subtle); font-family: var(--font-mono); font-size: var(--text-xs); }
+
+/* Rail d'activite et navigation laterale */
+.rail { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); width: var(--rail-width); padding: var(--space-2) 0; color: var(--brand-paper); background: var(--brand-ink); }
+.rail-item { width: 2.75rem; min-height: 2.75rem; padding: 0; border: 0; border-left: 3px solid transparent; color: inherit; background: transparent; font-family: var(--font-mono); font-weight: 700; }
+.rail-item:hover, .rail-item[aria-current="page"] { color: var(--brand-copper); border-left-color: var(--brand-copper); background: rgb(255 255 255 / 7%); }
+.nav-list { margin: 0; padding: var(--space-2); list-style: none; }
+.nav-item { display: flex; width: 100%; min-height: var(--control-height); align-items: center; gap: var(--space-2); border: 0; border-left: 3px solid transparent; text-align: left; background: transparent; }
+.nav-item[aria-current] { border-left-color: var(--accent-indicator); color: var(--accent-default); background: var(--accent-soft); font-weight: 700; }
+
+/* Onglets : modele ARIA tabs (fleches, Home/End, activation explicite) */
+[role="tablist"] { display: flex; gap: var(--space-1); overflow-x: auto; border-bottom: 1px solid var(--border-default); }
+[role="tab"] { min-height: 2.5rem; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; white-space: nowrap; }
+[role="tab"][aria-selected="true"] { border-bottom-color: var(--accent-indicator); color: var(--accent-default); font-weight: 700; }
+[role="tabpanel"] { padding: var(--space-4); }
+
+/* Poignee de redimensionnement : role separator, cible 16 px, trait visible 8 px */
+.splitter { position: relative; flex: 0 0 1rem; cursor: col-resize; background: transparent; }
+.splitter::before { content: ""; position: absolute; inset: 0 calc(50% - 0.25rem); border-radius: var(--radius-sm); background: var(--border-default); }
+.splitter:hover::before, .splitter:focus-visible::before { background: var(--accent-indicator); }
+
+/* Palette de commandes : dialog modal + combobox + listbox (aria-activedescendant) */
+.palette-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: start center; padding-top: 12vh; background: rgb(41 39 38 / 45%); }
+.command-palette { width: min(40rem, calc(100vw - 2rem)); border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--surface-raised); box-shadow: var(--shadow-overlay); }
+.command-palette input { border: 0; border-bottom: 1px solid var(--border-default); border-radius: var(--radius-md) var(--radius-md) 0 0; font-family: var(--font-mono); }
+.palette-list { max-height: 50vh; margin: 0; padding: var(--space-1); overflow: auto; list-style: none; }
+.palette-option { display: flex; min-height: var(--control-height); align-items: center; justify-content: space-between; gap: var(--space-3); border-radius: var(--radius-sm); padding: 0 var(--space-3); cursor: pointer; }
+.palette-option[aria-selected="true"] { color: var(--on-accent); background: var(--accent-fill); }
+.palette-option[aria-selected="true"] .kbd { color: var(--on-accent); border-color: var(--on-accent); background: transparent; }
+.palette-option[aria-disabled="true"] { color: var(--text-secondary); cursor: not-allowed; }
+.palette-empty, .palette-hint { margin: 0; padding: var(--space-3); color: var(--text-secondary); font-size: var(--text-xs); }
+
+/* Tiroir (mobile < 768 px) */
+.drawer { position: fixed; inset: 0 auto 0 0; z-index: 40; width: min(20rem, 88vw); overflow: auto; border-right: 1px solid var(--border-strong); background: var(--surface-panel); box-shadow: var(--shadow-overlay); }
+
+/* Etats de contenu : jamais signales par la seule couleur */
+.state { display: grid; gap: var(--space-2); justify-items: start; border: 1px dashed var(--border-default); border-radius: var(--radius-sm); padding: var(--space-4); color: var(--text-secondary); }
+.state strong { color: var(--text-primary); font-family: var(--font-mono); }
+.state-unavailable strong::before { content: "? "; color: var(--status-warn); }
+.state-error strong::before { content: "× "; color: var(--status-fail); }
+.state-loading strong::before { content: "… "; }
+.status-unverified { color: var(--status-warn); }
+
+/* Controles natifs : cuivre de l'identite plutot que le bleu du navigateur ; desactive distinct. */
+input[type="checkbox"], input[type="radio"], progress { accent-color: var(--accent-default); }
+input:disabled, select:disabled, textarea:disabled { border-style: dashed; color: var(--text-secondary); background: var(--surface-subtle); cursor: not-allowed; }

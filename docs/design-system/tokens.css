@@ -12,10 +12,16 @@
   --text-inverse: #fffaf4;
   --border-default: #c9c0b6;
   --border-strong: #766d66;
-  --accent-default: #963b20;
-  --accent-hover: #762a16;
-  --accent-soft: #f8dfd5;
-  --focus-ring: #8a341d;
+  /* Cuivre du logo : exact pour les remplissages et les grandes surfaces graphiques ;
+     derives a la meme teinte (15 deg) et saturation pour le texte et les indicateurs fins. */
+  --accent-fill: #d97757;          /* = --brand-copper ; texte --on-accent : 4.76:1 */
+  --accent-fill-hover: #e08a6d;    /* encre dessus : 5.68:1 */
+  --on-accent: #292726;            /* = --brand-ink */
+  --accent-default: #ab4727;       /* texte et liens : >= 4.7:1 sur toutes les surfaces claires */
+  --accent-hover: #9a4023;         /* >= 5.5:1 */
+  --accent-indicator: #d25d37;     /* soulignement, bordure selectionnee : >= 3.2:1 */
+  --accent-soft: #f9e5dc;          /* fond selectionne : texte cuivre 4.72:1, texte principal 12.2:1 */
+  --focus-ring: #ab4727;           /* >= 4.7:1 : focus toujours visible */
   --status-pass: #2f6f4e;
   --status-pass-bg: #e1f0e7;
   --status-warn: #7a5700;
@@ -61,10 +67,14 @@
   --text-inverse: #292726;
   --border-default: #5c5550;
   --border-strong: #aaa098;
-  --accent-default: #f0a78e;
-  --accent-hover: #f4b19a;
-  --accent-soft: #53382f;
-  --focus-ring: #f4b19a;
+  --accent-fill: #d97757;          /* cuivre exact du logo, texte encre : 4.76:1 */
+  --accent-fill-hover: #e08a6d;
+  --on-accent: #292726;
+  --accent-default: #e09075;       /* texte et liens : >= 4.7:1 sur toutes les surfaces sombres */
+  --accent-hover: #e5a18b;         /* >= 5.5:1 */
+  --accent-indicator: #d97757;     /* cuivre exact : >= 3.77:1 sur toutes les surfaces sombres */
+  --accent-soft: #4b322a;          /* fond selectionne : texte cuivre 4.70:1, texte principal 10.3:1 */
+  --focus-ring: #e09075;
   --status-pass: #8fd0aa;
   --status-pass-bg: #253f32;
   --status-warn: #f0cc70;

@@ -26,6 +26,7 @@
       <option value="diagnostics">6. Diagnostics et sécurité</option>
     </select>
     <button type="button" id="theme" aria-pressed="false">Thème sombre</button>
+    <button type="button" id="open-palette" aria-haspopup="dialog" aria-keyshortcuts="Control+K Control+Shift+P">Commandes <span class="kbd" aria-hidden="true">Ctrl K</span></button>
   </header>
 
   <main id="workspace" class="workspace" tabindex="-1">
@@ -120,6 +121,27 @@ Construire une API locale maintenable.
       <div class="preview-body"><p class="eyebrow">CONFIGURATION</p><dl><div><dt>Projet</dt><dd>demo-api</dd></div><div><dt>Type</dt><dd>API</dd></div><div><dt>Sécurité</dt><dd>Stricte</dd></div><div><dt>Fichiers</dt><dd>24</dd></div></dl><p class="eyebrow">ÉTAT</p><p class="state-line"><span class="status-warn">●</span> Revalidation nécessaire</p><p class="field-help">Aucune écriture locale effectuée.</p></div>
     </aside>
   </main>
+
+  <div class="palette-backdrop" id="palette" hidden>
+    <div class="command-palette" role="dialog" aria-modal="true" aria-labelledby="palette-title">
+      <h2 class="sr-only" id="palette-title">Palette de commandes</h2>
+      <label class="sr-only" for="palette-input">Rechercher une commande</label>
+      <input id="palette-input" type="text" role="combobox" aria-autocomplete="list" aria-expanded="true"
+             aria-controls="palette-list" aria-activedescendant="" autocomplete="off" spellcheck="false" placeholder="&gt; commande…">
+      <ul class="palette-list" id="palette-list" role="listbox" aria-label="Commandes disponibles">
+        <li class="palette-option" role="option" id="cmd-welcome" data-screen-target="welcome">Aller à : Accueil <span class="kbd">Ctrl 1</span></li>
+        <li class="palette-option" role="option" id="cmd-questionnaire" data-screen-target="questionnaire">Aller à : Questionnaire <span class="kbd">Ctrl 2</span></li>
+        <li class="palette-option" role="option" id="cmd-technologies" data-screen-target="technologies">Aller à : Technologies et agents <span class="kbd">Ctrl 3</span></li>
+        <li class="palette-option" role="option" id="cmd-explorer" data-screen-target="explorer">Aller à : Exploration du projet <span class="kbd">Ctrl 4</span></li>
+        <li class="palette-option" role="option" id="cmd-editor" data-screen-target="editor">Aller à : Édition et validation <span class="kbd">Ctrl 5</span></li>
+        <li class="palette-option" role="option" id="cmd-diagnostics" data-screen-target="diagnostics">Aller à : Diagnostics et sécurité <span class="kbd">Ctrl 6</span></li>
+        <li class="palette-option" role="option" id="cmd-theme" data-action="theme">Basculer le thème clair / sombre</li>
+        <li class="palette-option" role="option" id="cmd-checks" aria-disabled="true">Relancer les contrôles <span class="kbd">indisponible dans la maquette</span></li>
+      </ul>
+      <p class="palette-empty" id="palette-empty" role="status" hidden>Aucune commande ne correspond.</p>
+      <p class="palette-hint">↑ ↓ pour choisir · Entrée pour exécuter · Échap pour fermer. Seules les commandes réellement disponibles sont proposées ; aucune saisie n'est exécutée comme commande système.</p>
+    </div>
+  </div>
 
   <footer class="statusbar"><span>local · 127.0.0.1</span><span>UTF-8</span><span>0 erreur JS</span><span>Maquette statique E14</span></footer>
 </body>

@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Composants de référence — Forge-my-Project</title>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="components.css">
+  <link rel="stylesheet" href="reference.css">
+  <script src="components.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#content">Aller aux composants</a>
+  <header class="ref-bar">
+    <img src="../../assets/favicon.svg" alt="" width="32" height="32">
+    <h1>Composants de référence <small>Design system v2 · E14</small></h1>
+    <button type="button" id="theme" aria-pressed="false">Thème sombre</button>
+    <a class="button" href="mockups/index.html">Maquettes</a>
+  </header>
+
+  <main id="content" class="ref-main" tabindex="-1">
+    <section aria-labelledby="palette-heading">
+      <h2 id="palette-heading">Palette</h2>
+      <p>Trois couleurs exactes du logo (<code>assets/logo.svg</code>). Les teintes dérivées gardent la teinte (15°) et la saturation du cuivre ; seule la luminosité change pour atteindre les seuils WCAG. Rapports mesurés sur la surface la plus défavorable du thème.</p>
+      <div class="swatches">
+        <figure><span style="background:#f5f0e8"></span><figcaption><b>#F5F0E8</b> parchemin · logo</figcaption></figure>
+        <figure><span style="background:#292726"></span><figcaption><b>#292726</b> encre · logo</figcaption></figure>
+        <figure><span style="background:#d97757"></span><figcaption><b>#D97757</b> cuivre · logo · remplissages, texte encre 4.76:1</figcaption></figure>
+        <figure><span style="background:#ab4727"></span><figcaption><b>#AB4727</b> cuivre texte (clair) · ≥ 4.7:1</figcaption></figure>
+        <figure><span style="background:#d25d37"></span><figcaption><b>#D25D37</b> cuivre indicateur (clair) · ≥ 3.2:1</figcaption></figure>
+        <figure><span style="background:#e09075"></span><figcaption><b>#E09075</b> cuivre texte (sombre) · ≥ 4.7:1</figcaption></figure>
+      </div>
+    </section>
+
+    <section aria-labelledby="type-heading">
+      <h2 id="type-heading">Typographie</h2>
+      <p class="mono specimen-mono">$ forge generate --profile python-api-fastapi</p>
+      <p>Texte courant en police système : formulaires, explications et messages longs.</p>
+      <p><span class="eyebrow-ref">ÉTIQUETTE MONO</span> · <code>chemins/et/commandes.py</code> · <span class="kbd">Ctrl K</span></p>
+    </section>
+
+    <section aria-labelledby="buttons-heading">
+      <h2 id="buttons-heading">Boutons</h2>
+      <div class="row">
+        <button type="button" class="button-primary">Principal</button>
+        <button type="button" class="button-primary is-hover">Principal survolé</button>
+        <button type="button" class="button-primary is-focus">Principal focus</button>
+        <button type="button" class="button-primary" disabled>Principal désactivé</button>
+      </div>
+      <div class="row">
+        <button type="button">Secondaire</button>
+        <button type="button" class="is-hover">Survolé</button>
+        <button type="button" class="is-active">Appuyé</button>
+        <button type="button" class="is-focus">Focus visible</button>
+        <button type="button" disabled>Désactivé</button>
+        <button type="button" aria-busy="true" disabled>Chargement…</button>
+      </div>
+    </section>
+
+    <section aria-labelledby="fields-heading">
+      <h2 id="fields-heading">Champs</h2>
+      <div class="grid-2">
+        <div><label for="f-name">Nom du projet</label><input id="f-name" value="demo-api" aria-describedby="f-name-help"><p class="field-help" id="f-name-help">Minuscules, chiffres et tirets.</p></div>
+        <div><label for="f-bad">Nom invalide</label><input id="f-bad" value="Demo API" aria-invalid="true" aria-describedby="f-bad-error"><p class="field-help field-error" id="f-bad-error">× Caractères non autorisés : espace et majuscules.</p></div>
+        <div><label for="f-type">Type</label><select id="f-type"><option>API / service HTTP</option><option>Bibliothèque</option></select></div>
+        <div><label for="f-off">Indisponible</label><input id="f-off" value="—" disabled></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="nav-heading">
+      <h2 id="nav-heading">Rail et navigation latérale</h2>
+      <div class="row nav-demo">
+        <nav class="rail" aria-label="Rail d'exemple">
+          <button class="rail-item" type="button" aria-current="page" aria-label="Configurer">⌘</button>
+          <button class="rail-item" type="button" aria-label="Explorer">&lt;/&gt;</button>
+          <button class="rail-item" type="button" aria-label="Diagnostics">!</button>
+        </nav>
+        <nav class="panel nav-panel" aria-label="Navigation d'exemple">
+          <ul class="nav-list">
+            <li><button class="nav-item" type="button">01 Projet</button></li>
+            <li><button class="nav-item" type="button" aria-current="step">02 Technologies</button></li>
+            <li><button class="nav-item" type="button">03 Agents</button></li>
+          </ul>
+        </nav>
+      </div>
+    </section>
+
+    <section aria-labelledby="tabs-heading">
+      <h2 id="tabs-heading">Onglets</h2>
+      <p>Modèle ARIA <code>tablist</code> : flèches gauche/droite, Home/End, activation par Entrée ou Espace.</p>
+      <div class="panel">
+        <div role="tablist" aria-label="Fichiers ouverts" id="demo-tabs">
+          <button role="tab" type="button" id="tab-agents" aria-selected="true" aria-controls="panel-agents">AGENTS.md</button>
+          <button role="tab" type="button" id="tab-ci" aria-selected="false" aria-controls="panel-ci" tabindex="-1">ci.yml</button>
+          <button role="tab" type="button" id="tab-readme" aria-selected="false" aria-controls="panel-readme" tabindex="-1">README.md</button>
+        </div>
+        <div role="tabpanel" id="panel-agents" aria-labelledby="tab-agents"><code># demo-api - instructions pour les agents</code></div>
+        <div role="tabpanel" id="panel-ci" aria-labelledby="tab-ci" hidden><code>name: CI</code></div>
+        <div role="tabpanel" id="panel-readme" aria-labelledby="tab-readme" hidden><code># demo-api</code></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="panels-heading">
+      <h2 id="panels-heading">Panneaux modulaires et poignée</h2>
+      <div class="split-demo">
+        <section class="panel" aria-label="Navigation"><div class="panel-header"><h3 class="panel-title">NAVIGATION</h3></div></section>
+        <div class="splitter" role="separator" tabindex="0" aria-orientation="vertical" aria-label="Largeur de la navigation"
+             aria-valuemin="240" aria-valuemax="320" aria-valuenow="272"></div>
+        <section class="panel" aria-label="Contenu"><div class="panel-header"><h3 class="panel-title">CONTENU</h3><span class="badge">272 px</span></div></section>
+      </div>
+    </section>
+
+    <section aria-labelledby="diag-heading">
+      <h2 id="diag-heading">Diagnostics</h2>
+      <p>Libellé, symbole et couleur combinés : la couleur seule ne porte jamais l'information.</p>
+      <div class="panel">
+        <div class="diagnostic"><span class="status status-fail">× FAIL</span><div><strong>Vulnérabilité haute</strong><p>pip-audit : urllib3 1.24.1</p></div><span class="badge">security</span></div>
+        <div class="diagnostic"><span class="status status-unverified">? NON VÉRIFIÉ</span><div><strong>Serveur MCP non vérifié</strong><p>Registre injoignable : confirmer en connaissance de cause.</p></div><span class="badge">mcp</span></div>
+        <div class="diagnostic"><span class="status status-pass">✓ PASS</span><div><strong>Actions épinglées</strong><p>SHA complets vérifiés.</p></div><span class="badge">ci</span></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="states-heading">
+      <h2 id="states-heading">États de contenu</h2>
+      <div class="grid-2">
+        <div class="state state-loading" role="status"><strong>Chargement</strong>Vérification en ligne en cours…</div>
+        <div class="state"><strong>Vide</strong>Aucun fichier modifié.</div>
+        <div class="state state-unavailable"><strong>Indisponible</strong>gh non authentifié : assistant de protection désactivé.</div>
+        <div class="state state-error" role="alert"><strong>Erreur</strong>Écriture refusée : confirmation périmée.</div>
+      </div>
+    </section>
+
+    <section aria-labelledby="palette-cmd-heading">
+      <h2 id="palette-cmd-heading">Palette de commandes</h2>
+      <p>Instance statique ; la version interactive est dans les maquettes (<span class="kbd">Ctrl K</span> ou <span class="kbd">Ctrl Shift P</span>).</p>
+      <div class="command-palette static-palette">
+        <label class="sr-only" for="ref-palette-input">Rechercher une commande</label>
+        <input id="ref-palette-input" type="text" value="&gt; aller" readonly>
+        <ul class="palette-list" role="listbox" aria-label="Exemple de commandes">
+          <li class="palette-option" role="option" aria-selected="true">Aller à : Questionnaire <span class="kbd">Ctrl 2</span></li>
+          <li class="palette-option" role="option" aria-selected="false">Aller à : Diagnostics et sécurité <span class="kbd">Ctrl 6</span></li>
+          <li class="palette-option" role="option" aria-disabled="true">Relancer les contrôles <span class="kbd">indisponible</span></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

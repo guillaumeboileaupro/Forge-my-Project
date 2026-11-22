@@ -122,5 +122,81 @@ class DesignSystemTests(unittest.TestCase):
         self.assertNotRegex(sources.lower(), r"cerveau|brain|néon|neon|sparkle")
 
 
+
+class DesignSystemCompletionTests(unittest.TestCase):
+    """Reprise E14 : cuivre fidele au logo, composants de reference, palette de commandes."""
+
+    setUp = DesignSystemTests.setUp
+    token = DesignSystemTests.token
+
+    LIGHT_SURFACES = ("surface-canvas", "surface-panel", "surface-raised", "surface-subtle")
+
+    def hls(self, hex_color):
+        import colorsys
+        return colorsys.rgb_to_hls(*rgb(hex_color))
+
+    def test_copper_family_keeps_the_logo_hue_and_saturation(self):
+        brand_h, _, brand_s = self.hls(self.token("brand-copper"))
+        for dark in (False, True):
+            self.assertEqual(self.token("accent-fill", dark), self.token("brand-copper"))  # remplissage = cuivre exact
+            for name in ("accent-default", "accent-hover", "accent-indicator"):
+                with self.subTest(name=name, dark=dark):
+                    hue, _, saturation = self.hls(self.token(name, dark))
+                    self.assertAlmostEqual(hue * 360, brand_h * 360, delta=2)
+                    self.assertAlmostEqual(saturation, brand_s, delta=0.05)
+
+    def test_copper_contrasts_on_every_surface(self):
+        for dark in (False, True):
+            surfaces = [self.token(name, dark) for name in self.LIGHT_SURFACES]
+            checks = [("accent-default", 4.5), ("accent-hover", 4.5), ("focus-ring", 3.0), ("accent-indicator", 3.0)]
+            for name, minimum in checks:
+                for surface in surfaces:
+                    with self.subTest(name=name, surface=surface, dark=dark):
+                        self.assertGreaterEqual(contrast(self.token(name, dark), surface), minimum)
+            self.assertGreaterEqual(contrast(self.token("on-accent", dark), self.token("accent-fill", dark)), 4.5)
+            self.assertGreaterEqual(contrast(self.token("on-accent", dark), self.token("accent-fill-hover", dark)), 4.5)
+            self.assertGreaterEqual(contrast(self.token("text-primary", dark), self.token("accent-soft", dark)), 4.5)
+
+    def test_reference_page_covers_every_component(self):
+        page = (DESIGN / "components.html").read_text(encoding="utf-8")
+        for heading in ("Palette", "Typographie", "Boutons", "Champs", "Rail et navigation latérale", "Onglets",
+                        "Panneaux modulaires et poignée", "Diagnostics", "États de contenu", "Palette de commandes"):
+            self.assertIn(">%s</h2>" % heading, page)
+        inspector = MarkupInspector()
+        inspector.feed(page)
+        self.assertEqual(sorted(set(inspector.references) - inspector.ids), [])
+        for state in ('disabled', 'aria-invalid="true"', 'aria-busy="true"', 'is-hover', 'is-focus', 'aria-current'):
+            self.assertIn(state, page)
+        for controls in re.findall(r'aria-controls="([^"]+)"', page):
+            self.assertIn('id="%s"' % controls, page)
+        self.assertRegex(page, r'role="separator"[^>]*aria-valuemin="\d+"[^>]*aria-valuemax="\d+"[^>]*aria-valuenow="\d+"')
+        css = (DESIGN / "components.css").read_text(encoding="utf-8")
+        for selector in (".rail", ".nav-item", '[role="tab"]', ".splitter", ".command-palette", ".palette-option",
+                         ".drawer", ".state", ".kbd", "accent-color"):
+            self.assertIn(selector, css)
+
+    def test_command_palette_follows_the_combobox_pattern(self):
+        html = self.html_path.read_text(encoding="utf-8")
+        self.assertRegex(html, r'role="dialog" aria-modal="true" aria-labelledby="palette-title"')
+        self.assertRegex(html, r'role="combobox"[^>]*aria-controls="palette-list"')
+        self.assertIn('id="palette-list" role="listbox"', html)
+        options = re.findall(r'<li class="palette-option" role="option" id="([^"]+)"', html)
+        self.assertGreaterEqual(len(options), 7)
+        self.assertIn('aria-disabled="true"', html)  # commande indisponible : visible mais non executable
+        self.assertIn('aria-keyshortcuts="Control+K Control+Shift+P"', html)
+        script = (DESIGN / "mockups" / "mockups.js").read_text(encoding="utf-8")
+        for key in ("ArrowDown", "ArrowUp", "Enter", "Escape", "aria-activedescendant", "returnFocus"):
+            self.assertIn(key, script)
+
+    def test_reference_assets_stay_local_and_scripts_parse(self):
+        files = [DESIGN / "components.html", DESIGN / "reference.css", DESIGN / "components.js"]
+        self.assertNotRegex("\n".join(path.read_text(encoding="utf-8") for path in files), r"https?://")
+        node = __import__("shutil").which("node")
+        if node:
+            for script in (DESIGN / "components.js", DESIGN / "mockups" / "mockups.js"):
+                done = __import__("subprocess").run([node, "--check", str(script)], capture_output=True, text=True)
+                self.assertEqual(done.returncode, 0, done.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()
