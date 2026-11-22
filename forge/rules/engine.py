@@ -22,6 +22,7 @@ SECTIONS = (
     "architecture", "conventions", "testing", "security", "dependencies",
     "workflow", "pitfalls", "deployment", "dod",
 )
+TECH_CONDITIONS = {"technologies_all", "technologies_any", "technologies_none"}
 CONDITIONS = {"technologies_all", "technologies_any", "technologies_none", "agents_any", "project_types", "security", "options"}
 # Seul emplacement autorise dans un chemin de sortie : nom de package Python valide.
 PACKAGE_PLACEHOLDER = "{package}"
@@ -60,6 +61,8 @@ class Composition:
     sections: dict = field(default_factory=lambda: {name: [] for name in SECTIONS})
     skills: list = field(default_factory=list)
     diagnostics: list = field(default_factory=list)
+    triggers: dict = field(default_factory=dict)  # E16 : regle -> technologies selectionnees qui l'activent
+    details: dict = field(default_factory=dict)  # E16 : regle -> description, obligatoire, source
 
 
 def _require(condition, message):
@@ -228,6 +231,11 @@ def compose(rules, spec, technology_ids):
         if not (rule.mandatory or matches(rule, spec, technology_ids)):
             continue
         composition.rules.append(rule.id)
+        named = set(rule.when.get("technologies_all", ())) | set(rule.when.get("technologies_any", ()))
+        composition.triggers[rule.id] = sorted(named & technology_ids)
+        composition.details[rule.id] = {"description": rule.description, "mandatory": rule.mandatory,
+                                        "source": rule.source,
+                                        "conditions": sorted(set(rule.when) - TECH_CONDITIONS)}
         _add_files(rule, composition)
         for name, items in rule.sections.items():
             target = composition.sections[name]
