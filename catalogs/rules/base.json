@@ -72,6 +72,14 @@
     {
       "path": "scripts/hooks/attribution_guard.py",
       "template": "hooks/attribution_guard.py.tmpl"
+    },
+    {
+      "path": ".semgrep/forge.yml",
+      "template": "security/semgrep.yml.tmpl"
+    },
+    {
+      "path": "scripts/security/semgrep_gate.py",
+      "template": "security/semgrep_gate.py.tmpl"
     }
   ],
   "sections": {

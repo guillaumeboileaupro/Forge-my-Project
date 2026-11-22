@@ -140,3 +140,11 @@ Uniquement sur demande (`verify`, `skills`, `skills-search`), en HTTPS vers une 
 - CI : job `Bout en bout (livrable)`, bloquant, et contexte ajoute a la commande de protection de branche generee.
 - Sans lanceur de tests Python, ni fichier ni job ne sont generes, et TESTING.md indique NON APPLICABLE. Les parcours navigateur, HTTP et CLI restent NON APPLICABLES tant que le squelette n'a pas de code metier ; aucun scenario n'est invente.
 
+## Semgrep et analyse d'image (E10)
+
+`forge/security/controls.py` ajoute au job `security` genere :
+- une etape Semgrep pour tous les projets, apres les controles existants : regles locales `.semgrep/forge.yml` et passerelle `scripts/security/semgrep_gate.py` ;
+- une etape Trivy pour les projets Docker, active seulement si un `Dockerfile` existe : passerelle `scripts/security/image_scan_gate.py`.
+
+Versions, empreinte et seuils viennent de `catalogs/security/tools.json`. Leur chargement refuse un outil non epingle et tout assouplissement de seuil. Les detections sont prouvees en CI par `tests/test_semgrep_rules.py` (vrai Semgrep) et `tests/smoke_security.py` (script dangereux hors `src/`, `eval` TypeScript, image `python:3.6-slim`).
+

@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+"""Passerelle Semgrep : decision bloquante et rapport lisible a partir du JSON de Semgrep.
+
+Genere par Forge-my-Project. Refuse (code 1) :
+- un rapport absent, illisible ou d'un format inattendu ;
+- une analyse sans aucun fichier analyse (aucune analyse reelle : jamais PASS) ;
+- une analyse incomplete (erreurs de regle, de configuration ou de cible) ;
+- tout resultat de severite bloquante : ERROR (niveau strict), ERROR ou WARNING (hardened).
+Les regles sont locales (.semgrep/forge.yml) : aucune regle n'est telechargee.
+"""
+
+import json
+import sys
+
+BLOCKING = {"ERROR": ("ERROR",), "WARNING": ("ERROR", "WARNING")}
+
+
+def load(path):
+    with open(path, encoding="utf-8") as handle:
+        report = json.load(handle)
+    if not isinstance(report, dict):
+        raise ValueError("objet JSON attendu")
+    results, errors, paths = report.get("results"), report.get("errors"), report.get("paths")
+    if not isinstance(results, list) or not isinstance(errors, list) or not isinstance(paths, dict):
+        raise ValueError("sections results, errors ou paths absentes")
+    scanned = paths.get("scanned")
+    if not isinstance(scanned, list):
+        raise ValueError("liste des fichiers analyses absente")
+    return results, errors, scanned
+
+
+def describe(result):
+    extra = result.get("extra") or {}
+    start = result.get("start") or {}
+    message = str(extra.get("message", "")).strip()
+    location = f"{result.get('path')}:{start.get('line')}"
+    return f"{extra.get('severity')} {result.get('check_id')} {location} : {message}"
+
+
+def main(argv):
+    if len(argv) != 2 or argv[1] not in BLOCKING:
+        print("usage : semgrep_gate.py RAPPORT.json ERROR|WARNING", file=sys.stderr)
+        return 1
+    try:
+        results, errors, scanned = load(argv[0])
+    except (OSError, ValueError) as exc:
+        print(f"Semgrep : rapport inexploitable ({exc}) : refus", file=sys.stderr)
+        return 1
+    if not scanned:
+        print("Semgrep : aucun fichier analyse, aucune analyse reelle : refus", file=sys.stderr)
+        return 1
+    if errors:
+        print(f"Semgrep : analyse incomplete ({len(errors)} erreur(s)) : refus", file=sys.stderr)
+        for error in errors:
+            detail = str(error.get("message", ""))[:300]
+            print(f"  - {error.get('type')} {detail}", file=sys.stderr)
+        return 1
+    blocking = [r for r in results if (r.get("extra") or {}).get("severity") in BLOCKING[argv[1]]]
+    for result in results:
+        print(("BLOQUANT " if result in blocking else "info     ") + describe(result))
+    if blocking:
+        count = len(blocking)
+        print(f"Semgrep : {count} resultat(s) bloquant(s) (severite >= {argv[1]})", file=sys.stderr)
+        return 1
+    print(
+        f"Semgrep : {len(scanned)} fichier(s) analyse(s), aucun resultat bloquant "
+        f"({len(results)} non bloquant(s))."
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

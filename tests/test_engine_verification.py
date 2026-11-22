@@ -30,7 +30,11 @@ TOOLS = load_security_tools()
 RELEASES = {
     "https://api.github.com/repos/gitleaks/gitleaks/releases/tags/v%s" % TOOLS["gitleaks"]["version"]: {
         "assets": [{"name": TOOLS["gitleaks"]["asset"], "digest": "sha256:" + TOOLS["gitleaks"]["sha256"]}]},
+    "https://api.github.com/repos/aquasecurity/trivy/releases/tags/v%s" % TOOLS["trivy"]["version"]: {
+        "assets": [{"name": TOOLS["trivy"]["asset"], "digest": "sha256:" + TOOLS["trivy"]["sha256"]}]},
 }
+PYPI["https://pypi.org/pypi/semgrep/json"] = {"info": {"version": TOOLS["semgrep"]["version"], "license": "LGPL-2.1-or-later"},
+                                              "releases": {TOOLS["semgrep"]["version"]: [{}]}}
 for _name, _version in TOOLS["pypi"].items():
     PYPI["https://pypi.org/pypi/%s/json" % _name] = {"info": {"version": _version, "license": "Apache-2.0"},
                                                      "releases": {_version: [{}]}}
@@ -113,6 +117,20 @@ class ReportTests(unittest.TestCase):
         report = verify_plan(plan, registry, TODAY)
         self.assertTrue(report.ok)
         self.assertEqual({c.status for c in report.checks if c.kind == "api"}, {Status.NON_VERIFIE})
+
+    def test_e10_tools_are_verified_online(self):
+        registry = FakeRegistry()
+        report = verify_plan(build_plan(dict(SPEC, technologies=SPEC["technologies"] + ["docker"])), registry, TODAY)
+        subjects = {(c.kind, c.subject): c.status for c in report.checks}
+        self.assertEqual(subjects[("package", "pypi:semgrep")], Status.PASS)
+        self.assertEqual(subjects[("vulnerabilities", "pypi:semgrep@%s" % TOOLS["semgrep"]["version"])], Status.PASS)
+        self.assertEqual(subjects[("tool", "aquasecurity/trivy v%s" % TOOLS["trivy"]["version"])], Status.PASS)
+        # Empreinte Trivy differente sur GitHub : FAIL bloquant, jamais PASS.
+        tampered = FakeRegistry()
+        url = "https://api.github.com/repos/aquasecurity/trivy/releases/tags/v%s" % TOOLS["trivy"]["version"]
+        with mock.patch.dict(RELEASES, {url: {"assets": [{"name": TOOLS["trivy"]["asset"], "digest": "sha256:" + "0" * 64}]}}):
+            report = verify_plan(build_plan(dict(SPEC, technologies=SPEC["technologies"] + ["docker"])), tampered, TODAY)
+        self.assertFalse(report.ok)
 
     def test_vulnerable_or_fictional_dependency_blocks_generation(self):
         registry = FakeRegistry({"fastapi@1.2.0": [{"id": "GHSA-x", "database_specific": {"severity": "CRITICAL"}}]})

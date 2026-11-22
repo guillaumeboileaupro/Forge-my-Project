@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+"""Passerelle de l'analyse d'image conteneur (Trivy, rapport JSON).
+
+Genere par Forge-my-Project. Refuse (code 1) un rapport absent, illisible ou d'un format
+inattendu, un rapport sans resultat d'analyse, et toute vulnerabilite de severite
+superieure ou egale au seuil (high au niveau strict, medium au niveau hardened).
+Aucune exception : une vulnerabilite non corrigee reste bloquante (pas d'ignore-unfixed).
+"""
+
+import json
+import sys
+
+LEVELS = ["UNKNOWN", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+
+
+def vulnerabilities(path):
+    with open(path, encoding="utf-8") as handle:
+        report = json.load(handle)
+    if not isinstance(report, dict) or report.get("SchemaVersion") != 2:
+        raise ValueError("rapport Trivy SchemaVersion 2 attendu")
+    results = report.get("Results")
+    if not isinstance(results, list) or not results:
+        raise ValueError("aucun resultat d'analyse : image non analysee")
+    found = []
+    for result in results:
+        if not isinstance(result, dict):
+            raise ValueError("resultat invalide")
+        for vulnerability in result.get("Vulnerabilities") or []:
+            found.append((result.get("Target", "?"), vulnerability))
+    return report.get("ArtifactName", "?"), found
+
+
+def main(argv):
+    if len(argv) != 2 or argv[1].upper() not in LEVELS:
+        print("usage : image_scan_gate.py RAPPORT.json low|medium|high|critical", file=sys.stderr)
+        return 1
+    threshold = LEVELS.index(argv[1].upper())
+    try:
+        artifact, found = vulnerabilities(argv[0])
+    except (OSError, ValueError) as exc:
+        print(f"Analyse d'image : rapport inexploitable ({exc}) : refus", file=sys.stderr)
+        return 1
+    blocking = []
+    for target, item in found:
+        severity = str(item.get("Severity", "UNKNOWN")).upper()
+        rank = LEVELS.index(severity) if severity in LEVELS else LEVELS.index("UNKNOWN")
+        fixed = item.get("FixedVersion") or "aucun correctif"
+        line = (
+            f"{severity} {item.get('VulnerabilityID')} {item.get('PkgName')} "
+            f"{item.get('InstalledVersion')} (corrige : {fixed}) [{target}]"
+        )
+        if rank >= threshold:
+            blocking.append(line)
+        print(("BLOQUANT " if rank >= threshold else "info     ") + line)
+    if blocking:
+        count, level = len(blocking), argv[1].lower()
+        print(f"Image {artifact} : {count} vulnerabilite(s) bloquante(s) (severite >= {level})",
+              file=sys.stderr)
+        return 1
+    level = argv[1].lower()
+    print(f"Image {artifact} analysee : aucune vulnerabilite >= {level} ({len(found)} au total).")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

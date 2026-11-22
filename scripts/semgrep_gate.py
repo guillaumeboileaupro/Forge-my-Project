@@ -1,0 +1,1 @@
+../templates/security/semgrep_gate.py.tmpl

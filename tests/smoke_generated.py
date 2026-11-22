@@ -80,14 +80,20 @@ def commit_all(root, message="smoke"):
     subprocess.run(["git", "commit", "-q", "--allow-empty", "-m", message], cwd=root, check=True, env=env)
 
 
+def runner_dir(root):
+    """Comme sur GitHub Actions, RUNNER_TEMP est hors du depot (Semgrep analyse tout le depot)."""
+    return root.with_name(root.name + "-runner")
+
+
 def environment(root, answers):
-    env = dict(os.environ, RUNNER_TEMP=str(root / ".runner"))
+    runner = runner_dir(root)
+    env = dict(os.environ, RUNNER_TEMP=str(runner))
     # Evenement GitHub de Forge-my-Project : etranger au depot genere (job attribution).
     for key in ("GITHUB_EVENT_NAME", "GITHUB_EVENT_PATH"):
         env.pop(key, None)
-    (root / ".runner").mkdir(exist_ok=True)
+    runner.mkdir(exist_ok=True)
     if "python" in answers["technologies"]:
-        target = root / ".runner" / "venv"
+        target = runner / "venv"
         try:
             venv.EnvBuilder(with_pip=True).create(target)
         except subprocess.CalledProcessError:
@@ -129,6 +135,7 @@ def smoke(profile, verify):
         print("[%s] PASS" % profile["id"], flush=True)
     finally:
         shutil.rmtree(root, ignore_errors=True)
+        shutil.rmtree(runner_dir(root), ignore_errors=True)
 
 
 def profiles_by_id():

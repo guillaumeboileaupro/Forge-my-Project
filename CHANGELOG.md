@@ -4,6 +4,10 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 
 ## [Unreleased]
 
+### Securite
+- Semgrep 1.184.0 avec regles locales versionnees pour Forge et les projets generes (aucune regle telechargee, aucune telemetrie), et passerelle qui refuse un resultat bloquant, un rapport invalide ou une analyse incomplete ou vide (E10).
+- Analyse de l'image conteneur avec Trivy 0.76.2 (empreinte verifiee) des projets Docker des qu'un Dockerfile existe, bloquante en `high`/`critical` (`medium` en hardened), sans ignorer les vulnerabilites non corrigees ; NON VERIFIE sans Dockerfile (E10).
+
 ## [1.1.0] - 2026-11-19
 
 Tag `v1.1.0` sur le commit de release de main. Jalon v1.1.0 de docs/RELEASES.md (E07, E08, E09), avec E06 en plus.
