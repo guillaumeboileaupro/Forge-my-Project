@@ -184,10 +184,10 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 
 | Question | Reponse validee | Decision et critere verifiable | Taches / jalon | Etat |
 | --- | --- | --- | --- | --- |
-| Q01 | A | Linux uniquement, sans promesse Windows/macOS | E04, v1.0.0 | TODO |
-| Q02 | B, recadree Linux | Ecriture directe dans les dossiers Linux; ne pas developper Windows | E04, E07 | TODO |
+| Q01 | A | Linux uniquement, sans promesse Windows/macOS | E04, v1.0.0 | DONE (README: scripts Linux, macOS/Windows non pris en charge; v1.0.0 publiee le 19/11) |
+| Q02 | B, recadree Linux | Ecriture directe dans les dossiers Linux; ne pas developper Windows | E04, E07 | DONE (E07, PR #32: ecriture locale Linux; ecriture refusee sous Windows, ZIP conserve) |
 | Q03 | A + B | GitHub Actions et tests manuels Linux | E05, E18 | PARTIEL (E05: controles reguliers definis dans docs/MAINTENANCE.md; recette manuelle E18 a faire) |
-| Q04 | B | `installer.sh` et `start.sh`; examiner la PR existante de `start.py` avant doublon | E04 | TODO |
+| Q04 | B | `installer.sh` et `start.sh`; examiner la PR existante de `start.py` avant doublon | E04 | DONE (E04, PR #25: installer.sh et start.sh, start.py conserve) |
 | Q05 | Reportee | MCP GitHub authentifie NON VERIFIE; conserver dans les pistes futures sans PR maintenant | Backlog long terme | REPORTE |
 | Q06 | A puis B puis C | Maintenir GitHub/Playwright, puis MCP officiels, enfin recherche libre verifiee | Backlog MCP progressif | FUTUR |
 | Q07 | Tout (A+B+C+D) | Maintenir les scans existants, ajouter analyse Docker et Semgrep, bloquer sev. haute/critique | E10 | DONE (E10, PR #38 fusionnee) |
@@ -195,7 +195,7 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 | Q09 | B | Fusion trois voies seulement avec base fiable; garder diff, fusion manuelle et rollback | E07, v1.1.0 | DONE (E07, PR #32 fusionnee) |
 | Q10 | A + B | TESTING.md et infrastructure E2E cible prete a completer sans tests metier inventes | E08, v1.1.0 | DONE (E08, PR #35 fusionnee) |
 | Q11 | B | Assistant qui prepare les commandes de protection GitHub, sans les executer | E09, v1.1.0 | DONE (E09, PR #36) |
-| Q12 | B avec PR courtes | Agents et PR en parallele; taches petites, CI verte et fusion rapide | E05, AGENTS.md | TODO |
+| Q12 | B avec PR courtes | Agents et PR en parallele; taches petites, CI verte et fusion rapide | E05, AGENTS.md | REGLE (AGENTS.md: petites PR en parallele sur composants distincts) |
 | Q13 | C (correction de A) | Archiver inventaire noms/SHA des branches docs/* avant suppression sur preuve de fusion | E01 | DONE |
 | Q14 | A | Supprimer codex/file-preview apres verification d'integration et absence de travail local | E01 | DONE (25/11: branche locale et worktree retires apres verification d'integration; seul main subsiste) |
 | Q15 | C | Nettoyage automatise worktrees apres fusion, mode simulation, refus si sale ou actif | E01 | DONE (`scripts/worktree_cleanup.py`, simulation par defaut, refus si sale, actif, verrouille ou non integre) |
