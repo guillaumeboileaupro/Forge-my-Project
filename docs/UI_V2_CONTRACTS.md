@@ -75,6 +75,16 @@ E15 et E16 restent derrière une route ou un point d'entrée distinct jusqu'à E
 - Le diagramme se construit uniquement depuis `graph` (`docs/CONTRACTS.md`). Arbre, diagramme et contenu partagent `selectedPath` ; un chemin absent du plan est refusé.
 - E15 pourra intégrer ces vues dans ses panneaux (`configuration`, `preview`, `diagnostics`) sans changer ce contrat.
 
+## Recette E18a (sous-lot E18 sans la coque)
+
+Recette automatisée de `/v2/parcours` et défauts corrigés : voir `docs/E18A_ACCEPTANCE.md`. Règles ajoutées, valables pour E15 et E17 :
+- aucune image externe (la CSP n'a pas d'`img-src`) ; SVG inline ;
+- `color-scheme` et `scrollbar-color` suivent le thème ;
+- cibles d'au moins 36 px, et 44 px sous 768 px ou en pointeur grossier ;
+- une barre collante réserve sa hauteur par `scroll-padding` ;
+- l'éditeur ne peint que les lignes visibles ;
+- les marques `performance` `forge-ready` et `forge-plan` servent aux mesures de budget.
+
 ## Implémentation E17a (sous-lot E17 sans la coque)
 
 Découpage décidé par le propriétaire le 22/11/2026 : E15 n'étant pas commencée, E17a livre les composants dans `/v2/parcours` ; E17 (dépend de E15) les place dans les panneaux `editor` et `diagnostics` de la coque, sans changer ce contrat.

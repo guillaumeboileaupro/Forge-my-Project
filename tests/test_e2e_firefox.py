@@ -58,7 +58,9 @@ class FirefoxFormTests(unittest.TestCase):
         cls.tmp = tempfile.mkdtemp(prefix="forge-e2e-", dir=root)
         port = free_port()
         cls.driver_url = "http://127.0.0.1:%d" % port
-        cls.driver = subprocess.Popen(["geckodriver", "--port", str(port), "--profile-root", cls.tmp], stdout=subprocess.DEVNULL,
+        # Arguments supplementaires (ex. --allow-system-access pour la session telephone E18a) : aucun par defaut.
+        cls.driver = subprocess.Popen(["geckodriver", "--port", str(port), "--profile-root", cls.tmp,
+                                       *getattr(cls, "GECKODRIVER_ARGS", ())], stdout=subprocess.DEVNULL,
                                       stderr=subprocess.DEVNULL, env=dict(os.environ, TMPDIR=cls.tmp))
         for _ in range(100):
             try:

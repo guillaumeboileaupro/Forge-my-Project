@@ -6,6 +6,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 
 ### Ajoute
 - Verification statique des API utilisees par les projets generes : imports Python et JavaScript/TypeScript, sous-chemins, exports nommes et par defaut, modules des bibliotheques Python ; PASS prouve, FAIL demontre (bloquant) ou NON VERIFIE, hors ligne et en ligne a partir des archives officielles verifiees par empreinte (E11).
+- Recette progressive automatisee du parcours v2 dans Firefox : clavier seul, ordre et visibilite du focus, cibles, resolutions de reference (360 a 1920 px), contrastes rendus des deux themes, budgets de performance mesures, aucune erreur JavaScript ni ressource bloquee ; rapport docs/E18A_ACCEPTANCE.md (E18a).
 - Parcours v2 : editeur leger (coloration, numeros de ligne, recherche/remplacement, retablissement), panneau diagnostics filtrable avec navigation vers le champ ou le fichier, et flux securises existants (validation, comparaison, conflits, confirmation NON VERIFIE, ecriture) ; aucun endpoint modifie (E17a).
 - Preversion du parcours v2 sur `/v2/parcours` : questionnaire progressif et conditionnel issu du catalogue, apercu differe du plan, arborescence et diagramme technologies -> regles -> fichiers synchronises ; champ `graph` de `/api/plan`. L'interface actuelle est inchangee (E16).
 - Piles Rust (Cargo, rustfmt, Clippy), Go (go test, go vet, gofmt) et Java (Maven, JUnit Jupiter, ecosysteme Maven verifie sur Maven Central), avec actions setup-go et setup-java epinglees et trois profils predefinis executes par la CI ; catalogue et regles personnels locaux, valides, bornes et jamais executes (E13).
@@ -18,6 +19,9 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 ### Securite
 - Semgrep 1.184.0 avec regles locales versionnees pour Forge et les projets generes (aucune regle telechargee, aucune telemetrie), et passerelle qui refuse un resultat bloquant, un rapport invalide ou une analyse incomplete ou vide (E10).
 - Analyse de l'image conteneur avec Trivy 0.76.2 (empreinte verifiee) des projets Docker des qu'un Dockerfile existe, bloquante en `high`/`critical` (`medium` en hardened), sans ignorer les vulnerabilites non corrigees ; NON VERIFIE sans Dockerfile (E10).
+
+### Corrige
+- Parcours v2 : logo invisible (image bloquee par la CSP, desormais en SVG inline), contraste du sous-titre en theme sombre, barres de defilement claires en theme sombre, champ focalise masque par la barre d'actions collante a 360 px, cibles de 32 px relevees a 36/44 px, et editeur sous le budget de 100 ms sur un fichier de 2 000 lignes (rendu des seules lignes visibles, remplacement en une copie) (E18a).
 
 ## [1.1.0] - 2026-11-19
 

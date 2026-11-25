@@ -45,6 +45,14 @@ class RouteTests(unittest.TestCase):
         self.assertEqual(self.get("/v2/tokens.css")[2],
                          (ROOT / "docs" / "design-system" / "tokens.css").read_text(encoding="utf-8"))
 
+    def test_no_external_image_that_the_csp_would_block(self):
+        """La CSP n'autorise aucune image (default-src 'none') : le logo est inline et identique a l'actif."""
+        html = (ROOT / "ui" / "v2" / "journey.html").read_text(encoding="utf-8")
+        self.assertNotRegex(html, r"<img\b|url\(")
+        logo = (ROOT / "assets" / "favicon.svg").read_text(encoding="utf-8")
+        for shape in re.findall(r'<(?:path|circle|rect)[^>]+>', logo):
+            self.assertIn(shape, html)
+
     def test_current_interface_is_unchanged(self):
         status, _, body = self.get("/")
         self.assertEqual(status, 200)

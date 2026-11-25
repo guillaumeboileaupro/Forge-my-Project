@@ -21,7 +21,7 @@ jobs:
       - name: Browser E2E (Firefox headless)
         env:
           FORGE_E2E: '1'
-        run: python3 -m unittest tests.test_e2e_firefox tests.test_e2e_journey_firefox tests.test_e2e_editor_firefox -v
+        run: firefox --version && geckodriver --version | head -1 && python3 -m unittest tests.test_e2e_firefox tests.test_e2e_journey_firefox tests.test_e2e_editor_firefox tests.test_e2e_acceptance_firefox -v
 
   generated-projects:
     name: CI generee des profils predefinis

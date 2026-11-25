@@ -1,6 +1,15 @@
 /* Parcours v2 (E16) : tokens du design system E14 (docs/design-system/tokens.css). */
+/* Cibles : 36 px en mode compact, 44 px (--control-height) sur ecran etroit ou tactile (design system E14). */
+:root { --compact-target: 2.25rem; }
+@media (max-width: 767px), (pointer: coarse) { :root { --compact-target: var(--control-height); } }
+
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+/* Controles natifs (barres de defilement, champs) accordes au theme (E18a). */
+:root { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+:root { scrollbar-color: var(--border-strong) var(--surface-subtle); }
+.logo { flex: none; }
 
 body {
   margin: 0;
@@ -37,8 +46,8 @@ body {
   color: var(--brand-paper);
 }
 .topbar h1 { margin: 0; font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 600; }
-.topbar .muted { color: var(--border-default); font-weight: 400; }
-.topbar-link { margin-left: auto; color: var(--brand-paper); }
+.topbar .muted { color: var(--brand-paper); font-weight: 400; }
+.topbar-link { margin-left: auto; color: var(--brand-paper); display: inline-flex; align-items: center; min-height: var(--compact-target); }
 
 .banner {
   margin: 0;
@@ -155,7 +164,7 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 .tree > ul { padding-left: 0; }
 .tree summary { cursor: pointer; }
 .tree .file {
-  min-height: 2rem;
+  min-height: var(--compact-target);
   padding: 0 var(--space-2);
   border: var(--border-width) solid transparent;
   background: transparent;
@@ -201,12 +210,12 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 .editor-path { font-size: var(--text-sm); overflow-wrap: anywhere; }
 .editor-spacer { flex: 1 1 auto; }
 .editor-toolbar button, .editor-search button, .diag-go, .diag-toggle, .wf-dirs button, .wf-entries button {
-  min-height: 2rem;
+  min-height: var(--compact-target);
   padding: var(--space-1) var(--space-3);
   font-size: var(--text-sm);
 }
 .editor-search { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); }
-.editor-search input[type="search"], .editor-search input[type="text"] { flex: 1 1 9rem; width: auto; min-height: 2rem; padding: var(--space-1) var(--space-2); }
+.editor-search input[type="search"], .editor-search input[type="text"] { flex: 1 1 9rem; width: auto; min-height: var(--compact-target); padding: var(--space-1) var(--space-2); }
 .editor-count { font-size: var(--text-sm); }
 .editor-body {
   display: grid;
@@ -257,6 +266,7 @@ textarea.editor-input {
 textarea.editor-input:disabled { cursor: default; }
 textarea.editor-input::selection { background: var(--accent-soft); color: transparent; }
 textarea.editor-input:focus-visible { outline-offset: -2px; }
+.editor-gap { display: block; }
 .editor-status { margin: var(--space-1) 0 0; font-size: var(--text-xs); }
 .tok-comment { color: var(--text-secondary); font-style: italic; }
 .tok-keyword { color: var(--accent-default); font-weight: 600; }
@@ -270,7 +280,7 @@ textarea.editor-input:focus-visible { outline-offset: -2px; }
 .diag-toolbar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
 .diag-filters { display: flex; flex-wrap: wrap; gap: var(--space-1); }
 .diag-toggle[aria-pressed="false"] { opacity: 0.6; text-decoration: line-through; }
-.diag-search { flex: 1 1 10rem; width: auto; min-height: 2rem; padding: var(--space-1) var(--space-2); }
+.diag-search { flex: 1 1 10rem; width: auto; min-height: var(--compact-target); padding: var(--space-1) var(--space-2); }
 .diag-summary { margin: var(--space-2) 0; font-size: var(--text-sm); }
 .diag-meta { font-size: var(--text-xs); }
 .diag-go { margin-top: var(--space-1); }
@@ -304,6 +314,8 @@ textarea.editor-input:focus-visible { outline-offset: -2px; }
   .layout { grid-template-columns: minmax(0, 1fr); padding: var(--space-2); }
   .topbar h1 .muted { display: none; }
   .step-actions { position: sticky; bottom: 0; background: var(--surface-panel); padding: var(--space-2) 0; }
+  /* La barre collante ne masque jamais l'element focalise ou amene a l'ecran (WCAG 2.4.11). */
+  html { scroll-padding-bottom: calc(var(--control-height) + 2 * var(--space-2) + var(--space-4)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
