@@ -213,10 +213,10 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 
 | Question | Reponse validee | Decision et critere verifiable | Taches | Etat |
 | --- | --- | --- | --- | --- |
-| UI-01 | A+B | Interface de type VS Code ET design moderne; repartir de zero sur l'UI en gardant le moteur | E14, E15 | IN PROGRESS (E14 DONE, coque E15 en revue) |
-| UI-02 | A | Panneaux gauche/centre/droite deplacables, masquables, redimensionnables et persistants | E15 | IN PROGRESS (E15 en revue) |
-| UI-03 | A+D | Minimalisme pro, themes sombre/clair, couleurs, densites et accessibilite | E14, E15, E18 | IN PROGRESS (E14 DONE, themes et densites E15 en revue, recette E18) |
-| UI-04 | D | Barre laterale permanente, onglets, palette Ctrl+Shift+P, raccourcis | E15 | IN PROGRESS (E15 en revue : palette Ctrl+K, Ctrl+Shift+P reserve par Firefox) |
+| UI-01 | A+B | Interface de type VS Code ET design moderne; repartir de zero sur l'UI en gardant le moteur | E14, E15 | IN PROGRESS (E14 et E15 DONE ; bascule apres recette E18) |
+| UI-02 | A | Panneaux gauche/centre/droite deplacables, masquables, redimensionnables et persistants | E15 | DONE (E15, PR #49) |
+| UI-03 | A+D | Minimalisme pro, themes sombre/clair, couleurs, densites et accessibilite | E14, E15, E18 | IN PROGRESS (E14 et E15 DONE ; recette accessibilite E18) |
+| UI-04 | D | Barre laterale permanente, onglets, palette Ctrl+Shift+P, raccourcis | E15 | DONE (E15, PR #49 : palette Ctrl+K, Ctrl+Shift+P reserve par Firefox ; raccourcis des panneaux editeur/diagnostics en E17) |
 | UI-05 | A+C | Questionnaire progressif et conditionnel avec barre de progression et apercu interactif | E16 | DONE (E16, PR #43) |
 | UI-06 | C | Arborescence et diagramme d'architecture interactifs, synchronises dans les deux sens | E16 | DONE (E16, PR #43) |
 | UI-07 | B | Panneau diagnostics central, gravites, filtres, clic vers le champ concerne | E17a, E17 | IN PROGRESS (E17a DONE, integration a la coque en E17) |
@@ -254,7 +254,7 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 | E12 | Recherche des skills: cache expire, parallelisme, classement, reverification avant copie | Claude | - | 2 j | 0 h 11 (Claude) | non renseigne | non calculable | DONE | PR #41 fusionnee (8e8f01b); docs/ENGINE.md section E12 |
 | E13 | Enrichir les stacks Python/JS/Rust/Go/Java et permettre les catalogues/regles personnalises localement | Claude | - | 4 j | 0 h 24 (Claude) | non renseigne | non calculable | DONE | PR #42 fusionnee (c058acd); docs/ENGINE.md section E13 |
 | E14 | Definir le design system et les contrats de la nouvelle UI avant de coder | Codex + Claude | - | 2 j (16 h) | 0 h 15 (Codex, declare par Codex) + 0 h 10 (Claude, reprise) | non renseigne | non calculable | DONE | PR #39 fusionnee (e8d6643, 22/11); docs/design-system/ |
-| E15 | Nouvelle coque UI: look professionnel minimal, themes clair/sombre, densite, panneaux deplacables et redimensionnables, onglets, navigation, palette | Claude (reattribuee par le proprietaire le 25/11) | E14 | 4 j | 0 h 27 (Claude) | non renseigne | non calculable | IN PROGRESS | PR ouverte (branche feat/e15-shell) ; docs/UI_V2_CONTRACTS.md section E15 |
+| E15 | Nouvelle coque UI: look professionnel minimal, themes clair/sombre, densite, panneaux deplacables et redimensionnables, onglets, navigation, palette | Claude (reattribuee par le proprietaire le 25/11) | E14 | 4 j | 0 h 27 (Claude) | non renseigne | non calculable | DONE | PR #49 fusionnee (1970629) ; docs/UI_V2_CONTRACTS.md section E15 |
 | E16 | Parcours questionnaire progressif et conditionnel avec apercu dynamique, arbre et diagramme synchronises | Claude | E14 | 4 j | 0 h 14 (Claude) | non renseigne | non calculable | DONE | PR #43 fusionnee (022f932); route /v2/parcours, docs/UI_V2_CONTRACTS.md section E16 |
 | E17 | Integration de l'editeur et du panneau diagnostics E17a dans la coque E15 (panneaux `editor` et `diagnostics`, onglets, raccourcis) | Codex + Claude (fichiers separes) | E15,E16 | 1 j | - | - | - | TODO | Voir ROADMAP_2026.md ; sous-lot E17a |
 | E17a | Sous-lot E17 sans la coque : editeur leger (coloration, lignes, recherche/remplacement), panneau diagnostics filtrable et navigable, flux securises validation/comparaison/ecriture dans /v2/parcours | Claude | E16 | 2 j | 0 h 21 (Claude) | non renseigne | non calculable | DONE | Decoupage decide par le proprietaire le 22/11 (E15 non commencee) ; PR #44 fusionnee (67a55de) |
@@ -401,6 +401,7 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 - Tests: `tests/test_e2e_shell_firefox.py` (8, Firefox reel) ; `tests/test_journey_v2.py` (11 : coque sans `fetch`, stockage limite a sa cle, ordre de chargement). 9 mutations injectees, toutes detectees. Firefox: 40 OK (12 + 6 + 7 + 7 + 8) ; suite locale 487 OK (47 ignores sans E2E).
 - Defaut trouve par la recette: le glisser d'un separateur s'arretait apres le premier deplacement (reinsertion DOM a chaque rendu, capture du pointeur perdue) ; corrige en ne reordonnant que si l'ordre change.
 - Limites: raccourcis limites a `Ctrl+K` et Echap (Ctrl+Shift+P, Ctrl+1..8 et F6 reserves par Firefox) ; deplacement par echange de cotes, pas de glisser-deposer de panneau ; panneaux `editor` et `diagnostics` hors coque jusqu'a E17 ; pas de lecteur d'ecran ; captures non approuvees.
+- Fusion: PR #49 (1970629) apres CI verte (8/8) ; statuts suivis par une PR distincte.
 - Revue: auto-revue de l'auteur (non independante).
 
 ### E18a - 22 novembre 2026 (Claude Code, branche feat/e18a-progressive-acceptance)
