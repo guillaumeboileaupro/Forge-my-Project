@@ -25,8 +25,11 @@ Conserver la distinction entre generation de texte, verification et installation
 - Python 3.11+, stdlib par defaut; HTML/CSS/JS sans framework tant que cela suffit.
 - Fonctions courtes, modules orientes responsabilite, entrees validees, erreurs explicites.
 - Ne pas inventer de package, module, serveur MCP, action CI ni API. Verifier registre officiel, version, licence et documentation avant adoption.
-- Codex et Claude Code peuvent developper en parallele, avec composants distincts, worktrees independants et petites PR rapidement fusionnables.
+- Codex et Claude Code peuvent developper en parallele sur des composants distincts et petites PR, sans creer de worktree ou dossier parallele par defaut. Reutiliser les espaces autorises existants ; ne jamais partager un checkout actif entre agents.
 - Pas de modification de main sans demande explicite; ne jamais forcer un push.
+- Frontiere stricte : aucune creation, ecriture, suppression, copie, deplacement ou renommage hors du dossier racine du depot, y compris dans `../`, `~/Tools`, `/tmp` ou un autre depot. Exception uniquement sur autorisation explicite du proprietaire pour un chemin precis. Cette regle s'applique aussi aux scripts, tests, caches, fichiers temporaires et worktrees.
+- Ne jamais creer de dossier frere `Forge-my-Project-*` ni de worktree externe. Un worktree n'est jamais obligatoire ; sa creation exige une autorisation explicite et un emplacement approuve a l'interieur du depot, techniquement sur, et ignore par Git. Si impossible, arreter et demander une alternative, sans creer de dossier ailleurs.
+- Skill obligatoire avant toute operation Git ou sur des dossiers : `repository-lifecycle` du depot `my-skills` ; si indisponible, appliquer les protections strictes ci-dessus plutot que supposer une autorisation.
 - Eviter changements hors perimetre, commits de secrets et contournements des tests.
 - Documentation en francais, commandes reproductibles.
 - Regles detaillees de nommage, de PR et de fichiers generes: docs/CONVENTIONS.md.
@@ -62,7 +65,7 @@ Tester le formulaire sur http://127.0.0.1:8765 et les archives Python/JS avant d
 - Reference obligatoire: `docs/ROADMAP_2026.md` (34 decisions), `docs/SPECIFICATIONS.md`, `docs/DEVELOPMENT_PLAN.md` et la section E01-E18 de `TODO.md`.
 - L'interface actuelle est consideree inadaptee; reconstruire son design et son ergonomie de zero tout en conservant le moteur et la totalite des fonctionnalites existantes. Validation visuelle, fonctionnelle, accessibilite et performances avant bascule.
 - **Attribution Git reservee au proprietaire**: ne jamais ajouter `Co-Authored-By` pour Claude/Anthropic/Codex ou autres agents, ni utiliser un agent comme auteur ou committer. Verifier l'identite Git et les trailers avant commit et push. Des hooks locaux seuls ne constituent pas une garantie: renforcer via CI et protection de branche lorsque disponible. Outil: `scripts/attribution_guard.py` (commit-msg, pre-push, job CI `attribution`, installation dans les depots existants et futurs), voir docs/GIT_ATTRIBUTION.md.
-- Plusieurs agents/PR en parallele mais taches courtes et fichiers non chevauchants. Pas de push force ni contournement des controles; synchroniser apres fusion et nettoyer de facon sure.
+- Plusieurs agents/PR en parallele mais taches courtes et fichiers non chevauchants. Aucun nouveau worktree ou repertoire hors depot, meme temporaire. Pas de push force ni contournement des controles; synchroniser apres fusion et nettoyer uniquement les ressources explicitement autorisees, apres verification et accord du proprietaire.
 - Suivi **saisi manuellement** dans TODO: charge humaine estimee, execution IA mesuree, temps humain reel s'il est connu, ecart humain si calculable. Ne jamais presenter des minutes d'execution d'agent comme des heures de developpement humain; aucune conversion automatique de l'historique Git.
 - Maintenance, anomalies (P0-P3), regressions et rollback: `docs/MAINTENANCE.md`. Toute PR qui change un comportement visible ajoute sa ligne dans `CHANGELOG.md` (`[Unreleased]`).
 - Trois releases ciblees v1.0.0, v1.1.0, v2.0.0, criteres dans `docs/RELEASES.md`; seul le proprietaire publie une release. La piste extension VS Code dans `long-terme-ideas-project-liste.md` reste une idee, pas une tache active.
