@@ -213,12 +213,15 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 
 /* --- E17a : atelier (editeur, diagnostics, validation et ecriture) --- */
 .workbench {
+  --side-col: minmax(var(--preview-width), 1fr);
   grid-area: bench;
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(var(--preview-width), 1fr);
-  gap: var(--space-4);
+  grid-template-columns: minmax(0, 1.5fr) var(--split-width) var(--side-col);
+  row-gap: var(--space-4);
   align-items: start;
 }
+/* E17 : editeur masque, la colonne diagnostics + validation prend toute la largeur. */
+.workbench.without-editor { grid-template-columns: minmax(0, 1fr); }
 .side { display: grid; gap: var(--space-4); min-width: 0; }
 
 .editor-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); }
@@ -326,6 +329,7 @@ textarea.editor-input:focus-visible { outline-offset: -2px; }
   }
   .layout > [data-slot="right-split"] { display: none; }
   .workbench { grid-template-columns: minmax(0, 1fr); }
+  .workbench > .splitter { display: none; }
 }
 
 @media (max-width: 767px) {

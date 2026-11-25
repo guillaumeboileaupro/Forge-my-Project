@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/v2/journey.css">
   <link rel="stylesheet" href="/v2/shell.css">
   <script src="/v2/shell.js" defer></script>
+  <script src="/v2/filetabs.js" defer></script>
   <script src="/v2/editor.js" defer></script>
   <script src="/v2/diagnostics.js" defer></script>
   <script src="/v2/workflow.js" defer></script>
@@ -45,10 +46,10 @@
     <button type="button" class="rail-item" data-toggle="preview" aria-pressed="true" aria-label="Panneau Aperçu">
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M4 5h16v14H4zM14 5v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
     </button>
-    <button type="button" class="rail-item" data-goto="editor" aria-label="Aller à l'éditeur" title="Aller à l'éditeur">
+    <button type="button" class="rail-item" data-toggle="editor" aria-pressed="true" aria-label="Panneau Éditeur">
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="m9 8-4 4 4 4m6-8 4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <button type="button" class="rail-item" data-goto="diagnostics" aria-label="Aller aux diagnostics" title="Aller aux diagnostics">
+    <button type="button" class="rail-item" data-toggle="diagnostics" aria-pressed="true" aria-label="Panneau Diagnostics">
       <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M12 4 3 20h18L12 4zm0 6v4m0 3v.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
   </nav>
@@ -112,13 +113,29 @@
     </section>
 
     <div class="workbench">
-      <section class="panel editor-panel" aria-labelledby="editor-title">
-        <h2 id="editor-title" class="section-title">Éditeur <span id="selected-path" class="mono muted"></span></h2>
-        <div id="editor"></div>
+      <section class="panel editor-panel" id="editor-panel" data-panel="editor" aria-labelledby="editor-title">
+        <div class="panel-head">
+          <h2 id="editor-title" class="section-title">Éditeur <span id="selected-path" class="mono muted"></span></h2>
+          <div class="panel-tools">
+            <button type="button" class="icon-button" data-hide="editor" aria-label="Masquer le panneau Éditeur" title="Masquer le panneau Éditeur">×</button>
+          </div>
+        </div>
+        <div class="file-tabs-bar">
+          <div class="file-tabs" id="file-tabs" role="tablist" aria-label="Fichiers ouverts" hidden></div>
+          <button type="button" id="close-tab" class="tab-close" disabled>Fermer l'onglet</button>
+        </div>
+        <div id="editor-tabpanel" role="tabpanel" tabindex="-1"><div id="editor"></div></div>
       </section>
-      <div class="side">
-        <section class="panel" aria-labelledby="diagnostics-title">
-          <h2 id="diagnostics-title" class="section-title">Diagnostics</h2>
+      <div class="splitter" data-splitter="diagnostics" role="separator" tabindex="0" aria-orientation="vertical"
+           aria-controls="workbench-side" aria-label="Largeur de la colonne Diagnostics"></div>
+      <div class="side" id="workbench-side">
+        <section class="panel" id="diagnostics-section" data-panel="diagnostics" aria-labelledby="diagnostics-title">
+          <div class="panel-head">
+            <h2 id="diagnostics-title" class="section-title">Diagnostics</h2>
+            <div class="panel-tools">
+              <button type="button" class="icon-button" data-hide="diagnostics" aria-label="Masquer le panneau Diagnostics" title="Masquer le panneau Diagnostics">×</button>
+            </div>
+          </div>
           <div id="diagnostics-panel"></div>
         </section>
         <section class="panel" aria-labelledby="workflow-title">

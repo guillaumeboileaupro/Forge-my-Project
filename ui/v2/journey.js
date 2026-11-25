@@ -25,6 +25,7 @@ const state = {
 let editor = null;
 let diagnostics = null;
 let workflow = null;
+let fileTabs = null; // onglets des fichiers ouverts (E17)
 
 const $ = selector => document.querySelector(selector);
 
@@ -397,6 +398,7 @@ function applyPlan(payload) {
     notices.push("Le fichier sélectionné n'existe plus dans ce plan.");
   }
   if (notices.length) $('#step-notice').textContent = notices.join(' ');
+  fileTabs.retain(payload.graph.files.map(file => file.path)); // onglets limites au plan courant
   select(state.selectedPath, false);
   const errors = payload.diagnostics.filter(item => item.severity === 'error').length;
   setValidation(errors ? 'invalid' : 'valid',
@@ -434,6 +436,7 @@ function markModified() {
     button.classList.toggle('modified', changed);
     button.setAttribute('aria-label', changed ? `${button.dataset.path} (modifié)` : button.dataset.path);
   });
+  if (fileTabs) fileTabs.paths().forEach(path => fileTabs.setModified(path, path in state.edits));
 }
 
 // --- Diagnostics : cible de navigation deduite du code et du sujet fournis par le serveur ----
@@ -620,6 +623,9 @@ function select(path, explicit) {
   $('#selected-path').textContent = path ? `${file && file.rule ? `règle ${file.rule}` : 'skill externe'}` : '';
   if (path) editor.setFile(path, currentFiles()[path], state.plan.contents[path]);
   else editor.setFile(null, '', '');
+  if (path) fileTabs.open(path); else fileTabs.deselect();
+  markModified();
+  $('#close-tab').disabled = !fileTabs.active();
   if (explicit && path) {
     const twin = document.querySelector(`#tree [data-path="${CSS.escape(path)}"]`);
     if (twin) twin.scrollIntoView({block: 'nearest'});
@@ -637,6 +643,17 @@ function registerCommands(shell) {
                   run: () => views.select('plan')});
   shell.register({id: 'preview.summary', label: 'Aperçu : afficher le résumé', enabled: () => views.active() !== 'summary',
                   run: () => views.select('summary')});
+  // Atelier (E17) : onglets de l'editeur et recherche ; raccourcis reels affiches (Ctrl+F est celui de l'editeur).
+  const tabsOpen = () => fileTabs && fileTabs.paths().length;
+  shell.register({id: 'editor.tab.next', label: 'Éditeur : onglet suivant', enabled: () => tabsOpen() > 1,
+                  run: () => select(fileTabs.step(1), true)});
+  shell.register({id: 'editor.tab.prev', label: 'Éditeur : onglet précédent', enabled: () => tabsOpen() > 1,
+                  run: () => select(fileTabs.step(-1), true)});
+  shell.register({id: 'editor.tab.close', label: "Éditeur : fermer l'onglet actif", enabled: () => Boolean(fileTabs && fileTabs.active()),
+                  run: () => fileTabs.close(fileTabs.active())});
+  shell.register({id: 'editor.search', label: 'Éditeur : rechercher dans le fichier', shortcut: 'Ctrl+F',
+                  enabled: () => Boolean(editor && editor.path()),
+                  run: () => { shell.goToZone('editor'); editor.openSearch(); }});
   return views;
 }
 
@@ -654,6 +671,10 @@ async function init() {
   editor = window.ForgeEditor.create($('#editor'), {id: 'content', label: 'Contenu du fichier sélectionné', onChange: edited,
     empty: "Sélectionner un fichier dans l'arborescence ou le diagramme."});
   diagnostics = window.ForgeDiagnostics.create($('#diagnostics-panel'), {resolve: diagnosticTarget, navigate});
+  fileTabs = window.ForgeFileTabs.create($('#file-tabs'), {panel: $('#editor-tabpanel'),
+    onSelect: path => select(path, true), onClose: path => select(path, false)});
+  $('#close-tab').addEventListener('click', () => fileTabs.close(fileTabs.active()));
+  window.forgeJourney.fileTabs = fileTabs;
   workflow = window.ForgeWorkflow.create($('#workflow'), {snapshot,
     onDiagnostics: (items, source) => diagnostics.update(items, source)});
   window.forgeJourney.editor = editor;

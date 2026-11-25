@@ -174,7 +174,7 @@ class FirefoxShellTests(acceptance.Common, unittest.TestCase):
             with self.subTest(width=width):
                 self.cmd("POST", "/window/rect", {"width": width, "height": 900})
                 visible = self.js("return [...document.querySelectorAll('.splitter')].filter(s => s.getBoundingClientRect().width > 0).length")
-                self.assertEqual(visible, {767: 0, 1024: 1, 1200: 2}[width])
+                self.assertEqual(visible, {767: 0, 1024: 1, 1200: 3}[width])
                 self.assertLessEqual(self.js("return document.documentElement.scrollWidth - window.innerWidth"), 0)
         self.assert_no_errors()
 
