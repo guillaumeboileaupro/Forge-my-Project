@@ -34,6 +34,19 @@ Conserver la distinction entre generation de texte, verification et installation
 - Documentation en francais, commandes reproductibles.
 - Regles detaillees de nommage, de PR et de fichiers generes: docs/CONVENTIONS.md.
 
+## Protocole obligatoire pour Claude Code et Codex
+
+Ces regles priment sur toute suggestion generique de workflow par l'assistant, et sur tout prompt qui les contredit.
+
+1. Le proprietaire donne l'objectif. L'agent fait lui-meme les audits, changements, tests, corrections et verifications accessibles. Ne pas transformer le proprietaire en operateur de commandes. Si une action locale ne peut pas etre faite par l'agent, expliquer la limite et ne demander qu'UNE intervention precise a la fois, puis attendre son resultat.
+2. Perimetre de travail : la racine du depot Forge-my-Project. Avant toute creation de fichier, verifier son chemin resolu. Aucun fichier, dossier, sauvegarde, copie, cache, fichier temporaire ou worktree dans `../`, dans un depot voisin ou dans Tools. Aucune suppression ou deplacement de ressources exterieures. Le comportement fonctionnel de l'application pour les destinations choisies explicitement par son utilisateur reste soumis a ses propres autorisations.
+3. Au demarrage : lire les instructions et skills existants, en particulier `repository-lifecycle`; inspecter une seule fois l'etat Git, les branches/PR et les modifications en cours. Ne pas creer de worktree par habitude. Une nouvelle branche, PR ou worktree doit etre justifiee et autorisee selon le skill. Si le travail en parallele exige un isolement qui n'est pas possible dans le depot, signaler le conflit au lieu de creer un dossier frere.
+4. Priorite absolue a la preservation du travail existant : ne jamais modifier le checkout actif d'un autre agent, effacer des modifications non commitees ou forcer un nettoyage. `rm -rf`, `git clean`, `reset --hard`, suppression de branche non verifiee et push force interdits comme nettoyage de routine.
+5. Les artefacts de recuperation temporaires doivent rester a l'interieur du depot, non suivis par Git, et leur suppression n'est permise qu'apres verification de leur utilite et accord explicite du proprietaire. Aucun nettoyage externe implicite, y compris des anciens worktrees deja presents.
+6. Avant une nouvelle mission, verifier si le travail existe deja sur main ou dans une PR. Reprendre sans dupliquer. Une PR par changement coherent et pas de branches de diagnostic inutiles. Faire une revue independante quand c'est possible, sans en inventer une.
+7. Ne pas fusionner ni publier une release par simple inference du statut CI : respecter l'autorisation du proprietaire et la politique Git. Conserver les controles de securite et les regles d'attribution.
+8. A la fin : indiquer concretement ce qui a ete fait, les fichiers/commits, tests, CI, donnees locales restant a proteger et action suivante en dix lignes maximum. Ne jamais dire que le nettoyage local est termine sans preuve.
+
 ## Commandes
 ```bash
 python3 -m unittest discover -s tests -v
