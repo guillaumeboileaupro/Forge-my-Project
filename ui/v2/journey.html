@@ -7,6 +7,8 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/v2/tokens.css">
   <link rel="stylesheet" href="/v2/journey.css">
+  <link rel="stylesheet" href="/v2/shell.css">
+  <script src="/v2/shell.js" defer></script>
   <script src="/v2/editor.js" defer></script>
   <script src="/v2/diagnostics.js" defer></script>
   <script src="/v2/workflow.js" defer></script>
@@ -26,19 +28,48 @@
     <path d="M302 271h39m-19-19v38" stroke="#292726" stroke-width="13" stroke-linecap="round"/>
     <path d="M301 314h66m-66 24h46" stroke="#D97757" stroke-width="13" stroke-linecap="round"/></svg>
     <h1>Forge-my-Project <span class="muted">· parcours v2 (préversion)</span></h1>
-    <a class="topbar-link" href="/">Interface actuelle</a>
+    <div class="topbar-tools">
+      <button type="button" id="shell-theme" class="topbar-button">Thème : système</button>
+      <button type="button" id="shell-density" class="topbar-button" aria-pressed="false">Densité : confortable</button>
+      <button type="button" id="shell-palette" class="topbar-button" aria-haspopup="dialog" aria-keyshortcuts="Control+K">Commandes <kbd aria-hidden="true">Ctrl K</kbd></button>
+      <a class="topbar-link" href="/">Interface actuelle</a>
+    </div>
   </header>
   <p id="banner" class="banner">Préversion : l'interface actuelle reste la référence (archive, profils, skills, vérification en ligne). Ici, l'écriture locale passe par les mêmes contrôles serveur, répétés à chaque étape.</p>
 
-  <main class="layout">
-    <nav class="steps" aria-labelledby="steps-title">
-      <h2 id="steps-title" class="section-title">Étapes</h2>
+  <div class="shell">
+  <nav class="rail" aria-label="Panneaux et zones">
+    <button type="button" class="rail-item" data-toggle="navigation" aria-pressed="true" aria-label="Panneau Étapes">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M5 6h14M5 12h14M5 18h9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <button type="button" class="rail-item" data-toggle="preview" aria-pressed="true" aria-label="Panneau Aperçu">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M4 5h16v14H4zM14 5v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" class="rail-item" data-goto="editor" aria-label="Aller à l'éditeur" title="Aller à l'éditeur">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="m9 8-4 4 4 4m6-8 4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" class="rail-item" data-goto="diagnostics" aria-label="Aller aux diagnostics" title="Aller aux diagnostics">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M12 4 3 20h18L12 4zm0 6v4m0 3v.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </nav>
+
+  <main class="layout" id="layout">
+    <nav class="steps" id="steps-panel" data-panel="navigation" aria-labelledby="steps-title">
+      <div class="panel-head">
+        <h2 id="steps-title" class="section-title">Étapes</h2>
+        <div class="panel-tools">
+          <button type="button" class="icon-button" data-move="navigation" aria-label="Déplacer le panneau Étapes à droite">→</button>
+          <button type="button" class="icon-button" data-hide="navigation" aria-label="Masquer le panneau Étapes" title="Masquer le panneau Étapes">×</button>
+        </div>
+      </div>
       <p id="progress-label" class="muted"></p>
       <progress id="progress" max="1" value="0" aria-labelledby="progress-label"></progress>
       <ol id="step-list"></ol>
     </nav>
+    <div class="splitter" data-splitter="navigation" role="separator" tabindex="0" aria-orientation="vertical"
+         aria-controls="steps-panel" aria-label="Largeur du panneau Étapes"></div>
 
-    <section id="step-panel" class="step-panel" aria-labelledby="step-title" tabindex="-1">
+    <section id="step-panel" class="step-panel" data-panel="configuration" aria-labelledby="step-title" tabindex="-1">
       <h2 id="step-title" tabindex="-1"></h2>
       <p id="step-help" class="muted"></p>
       <div id="step-body"></div>
@@ -49,17 +80,34 @@
       </div>
     </section>
 
-    <section class="preview" aria-labelledby="preview-title">
-      <h2 id="preview-title" class="section-title">Aperçu du plan</h2>
+    <div class="splitter" data-splitter="preview" role="separator" tabindex="0" aria-orientation="vertical"
+         aria-controls="preview-panel" aria-label="Largeur du panneau Aperçu"></div>
+    <section class="preview" id="preview-panel" data-panel="preview" aria-labelledby="preview-title">
+      <div class="panel-head">
+        <h2 id="preview-title" class="section-title">Aperçu du plan</h2>
+        <div class="panel-tools">
+          <button type="button" class="icon-button" data-move="preview" aria-label="Déplacer le panneau Aperçu à gauche">←</button>
+          <button type="button" class="icon-button" data-hide="preview" aria-label="Masquer le panneau Aperçu" title="Masquer le panneau Aperçu">×</button>
+        </div>
+      </div>
       <p id="validation" class="validation" role="status" aria-live="polite" data-state="idle">Renseigner le nom du projet pour calculer l'aperçu.</p>
       <div id="alerts" role="alert"></div>
-      <div class="box">
-        <h3 class="box-title">Arborescence</h3>
-        <div id="tree" class="tree" aria-label="Fichiers du plan"></div>
+      <div class="tabs" role="tablist" aria-label="Vues de l'aperçu" id="preview-tabs">
+        <button type="button" role="tab" id="tab-plan" data-tab="plan" aria-controls="view-plan" aria-selected="true">Plan</button>
+        <button type="button" role="tab" id="tab-summary" data-tab="summary" aria-controls="view-summary" aria-selected="false" tabindex="-1">Résumé</button>
       </div>
-      <div class="box">
-        <h3 class="box-title">Diagramme technologies → règles → fichiers</h3>
-        <div id="diagram" class="diagram"></div>
+      <div id="view-plan" role="tabpanel" aria-labelledby="tab-plan">
+        <div class="box">
+          <h3 class="box-title">Arborescence</h3>
+          <div id="tree" class="tree" aria-label="Fichiers du plan"></div>
+        </div>
+        <div class="box">
+          <h3 class="box-title">Diagramme technologies → règles → fichiers</h3>
+          <div id="diagram" class="diagram"></div>
+        </div>
+      </div>
+      <div id="view-summary" role="tabpanel" aria-labelledby="tab-summary" hidden>
+        <dl id="summary" class="summary"></dl>
       </div>
     </section>
 
@@ -81,5 +129,18 @@
       </div>
     </div>
   </main>
+  </div>
+
+  <dialog id="palette" class="palette" aria-labelledby="palette-title">
+    <div class="palette-box">
+      <h2 id="palette-title" class="sr-only">Palette de commandes</h2>
+      <label for="palette-input" class="sr-only">Rechercher une commande</label>
+      <input id="palette-input" type="text" role="combobox" aria-expanded="true" aria-controls="palette-list"
+             aria-autocomplete="list" aria-activedescendant="" autocomplete="off" spellcheck="false"
+             placeholder="Rechercher une commande…">
+      <ul id="palette-list" class="palette-list" role="listbox" aria-label="Commandes disponibles"></ul>
+      <p id="palette-empty" class="muted palette-empty" hidden>Aucune commande disponible.</p>
+    </div>
+  </dialog>
 </body>
 </html>

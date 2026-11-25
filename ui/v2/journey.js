@@ -165,6 +165,25 @@ function renderSteps() {
   $('#progress').max = applicable.length;
   $('#progress').value = done;
   $('#progress-label').textContent = `${done} étape(s) complète(s) sur ${applicable.length} applicable(s)`;
+  renderSummary();
+}
+
+// Onglet « Résumé » de l'apercu (E15) : reponses courantes, texte seulement.
+function renderSummary() {
+  const answers = state.answers;
+  const names = (ids, list) => ids.map(id => (list.find(item => item.id === id) || {name: id}).name).join(', ') || '—';
+  const type = state.catalog.project_types.find(option => option.id === answers.project_type);
+  const rows = [
+    ['Projet', answers.name || '—'],
+    ['Type', type ? type.label : '—'],
+    ['Technologies', names(answers.technologies, state.catalog.technologies)],
+    ['Versions', Object.entries(answers.versions).map(([id, version]) => `${id} ${version}`).join(', ') || '—'],
+    ['Agents', names(answers.agents, state.catalog.agents)],
+    ['Sécurité', answers.security || '—'],
+    ['Serveurs MCP', answers.mcp_servers.join(', ') || '—'],
+    ['Fichiers du plan', state.plan ? String(state.plan.graph.files.length) : '—'],
+  ];
+  $('#summary').replaceChildren(...rows.flatMap(([term, value]) => [el('dt', {text: term}), el('dd', {text: value})]));
 }
 
 function goTo(index, focus) {
@@ -384,6 +403,7 @@ function applyPlan(payload) {
     `Aperçu à jour : ${payload.graph.files.length} fichier(s), ${payload.graph.rules.length} règle(s)`
     + (errors ? `, ${errors} erreur(s) bloquante(s).` : '.'));
   workflow.planChanged(payload);
+  renderSummary();
   performance.mark('forge-plan'); // E18a : apercu applique
 }
 
@@ -608,13 +628,20 @@ function select(path, explicit) {
 }
 
 // --- Demarrage --------------------------------------------------------------------
-function theme() {
-  const dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+// Theme, densite et disposition : coque E15 (shell.js). Le parcours n'y ajoute que ses commandes.
+function registerCommands(shell) {
+  shell.register({id: 'journey.next', label: 'Étape suivante', enabled: () => !$('#next').disabled, run: () => move(1)});
+  shell.register({id: 'journey.prev', label: 'Étape précédente', enabled: () => !$('#prev').disabled, run: () => move(-1)});
+  const views = shell.tabs($('#preview-tabs'));
+  shell.register({id: 'preview.plan', label: 'Aperçu : afficher le plan', enabled: () => views.active() !== 'plan',
+                  run: () => views.select('plan')});
+  shell.register({id: 'preview.summary', label: 'Aperçu : afficher le résumé', enabled: () => views.active() !== 'summary',
+                  run: () => views.select('summary')});
+  return views;
 }
 
 async function init() {
-  theme();
+  window.forgeJourney.views = registerCommands(window.forgeShell);
   try {
     const response = await fetch('/api/catalog');
     state.catalog = await response.json();
