@@ -26,6 +26,7 @@ Une anomalie est **fermee** seulement avec un test qui echouait avant la correct
 | Mensuel | audit d'attribution de toutes les refs | `python3 scripts/attribution_guard.py audit` | aucune attribution interdite |
 | Mensuel | dependances et epinglages (section 3) | catalogues `verified_at` | dates de moins de 90 jours |
 | Avant chaque expiration d'exception d'audit | avis toujours sans correctif ? | registre de docs/SECURITY.md | exception retiree ou renouvelee par PR |
+| Apres chaque fusion | worktrees secondaires propres et integres (simulation, puis execution sur accord du proprietaire) | `python3 scripts/worktree_cleanup.py` puis `--apply` | worktrees sales, verrouilles, actifs ou non integres conserves avec leur motif |
 | A chaque avis de securite visant un outil epingle | remplacement de la version, de l'empreinte et des SHA d'actions | PR dediee `fix(security): ...` | CI verte avec la nouvelle version |
 
 Un controle regulier non execute est note `NON VERIFIE` dans la PR ou la release concernee ; il n'est jamais presente comme reussi. Le resultat de chaque controle mensuel est consigne en une ligne dans TODO.md (date, commande, resultat).
@@ -44,7 +45,7 @@ Un controle regulier non execute est note `NON VERIFIE` dans la PR ou la release
 1. Ouvrir l'issue (section 1) et identifier le dernier commit sain (`git bisect` si necessaire).
 2. Si la regression est P0 sur main : revenir d'abord en arriere (section 7), corriger ensuite.
 3. Ecrire le test qui reproduit la regression et constater son echec.
-4. Corriger au plus pres de la cause, dans une branche et un worktree dedies, puis faire une PR `fix(<portee>): ...` qui lie l'issue.
+4. Corriger au plus pres de la cause, dans une branche dediee (sans worktree par defaut, voir AGENTS.md), puis faire une PR `fix(<portee>): ...` qui lie l'issue.
 5. Joindre la sortie du test avant et apres, et la CI verte. Ajouter une entree `Corrige` dans CHANGELOG.md.
 6. Noter la cause et le test de non-regression dans TODO.md si la regression vient d'une tache E.
 

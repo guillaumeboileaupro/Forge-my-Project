@@ -5,6 +5,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 ## [Unreleased]
 
 ### Ajoute
+- Outil de nettoyage prudent des worktrees apres fusion `scripts/worktree_cleanup.py` : simulation par defaut, `--apply` pour executer ; refuse le worktree principal ou actif, verrouille, absent, avec operation en cours, fichier modifie, non suivi ou ignore, ou commits non integres ; `git worktree remove` et `git branch -d` uniquement, jamais de force ni de branche distante (Q15).
 - Verification statique des API utilisees par les projets generes : imports Python et JavaScript/TypeScript, sous-chemins, exports nommes et par defaut, modules des bibliotheques Python ; PASS prouve, FAIL demontre (bloquant) ou NON VERIFIE, hors ligne et en ligne a partir des archives officielles verifiees par empreinte (E11).
 - Recette progressive automatisee du parcours v2 dans Firefox : clavier seul, ordre et visibilite du focus, cibles, resolutions de reference (360 a 1920 px), contrastes rendus des deux themes, budgets de performance mesures, aucune erreur JavaScript ni ressource bloquee ; rapport docs/E18A_ACCEPTANCE.md (E18a).
 - Parcours v2 : editeur leger (coloration, numeros de ligne, recherche/remplacement, retablissement), panneau diagnostics filtrable avec navigation vers le champ ou le fichier, et flux securises existants (validation, comparaison, conflits, confirmation NON VERIFIE, ecriture) ; aucun endpoint modifie (E17a).

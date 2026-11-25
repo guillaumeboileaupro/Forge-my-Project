@@ -197,8 +197,8 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 | Q11 | B | Assistant qui prepare les commandes de protection GitHub, sans les executer | E09, v1.1.0 | DONE (E09, PR #36) |
 | Q12 | B avec PR courtes | Agents et PR en parallele; taches petites, CI verte et fusion rapide | E05, AGENTS.md | TODO |
 | Q13 | C (correction de A) | Archiver inventaire noms/SHA des branches docs/* avant suppression sur preuve de fusion | E01 | DONE |
-| Q14 | A | Supprimer codex/file-preview apres verification d'integration et absence de travail local | E01 | PARTIEL (E01: branche distante supprimee; branche locale et worktree Codex conserves) |
-| Q15 | C | Nettoyage automatise worktrees apres fusion, mode simulation, refus si sale ou actif | E01 | TODO (non construit: E01 a nettoye manuellement, sans outil automatise) |
+| Q14 | A | Supprimer codex/file-preview apres verification d'integration et absence de travail local | E01 | DONE (25/11: branche locale et worktree retires apres verification d'integration; seul main subsiste) |
+| Q15 | C | Nettoyage automatise worktrees apres fusion, mode simulation, refus si sale ou actif | E01 | DONE (`scripts/worktree_cleanup.py`, simulation par defaut, refus si sale, actif, verrouille ou non integre) |
 | Q16 | B | Audit fichiers obsoletes, temporaires, doublons, configurations; suppression seulement sur preuve | E03 | DONE (PR #28 fusionnee; aucun fichier suivi inutile demontre) |
 | Q17 | B | Verifier statiquement APIs Python, JS/TS quand possible, afficher PASS/FAIL/NON VERIFIE | E11 | DONE (E11, PR #40) |
 | Q18 | C | Skills: cache expire, recherches paralleles, classement et reverification avant copie | E12 | DONE (E12, PR #41) |
