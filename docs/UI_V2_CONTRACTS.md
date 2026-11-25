@@ -75,6 +75,19 @@ E15 et E16 restent derrière une route ou un point d'entrée distinct jusqu'à E
 - Le diagramme se construit uniquement depuis `graph` (`docs/CONTRACTS.md`). Arbre, diagramme et contenu partagent `selectedPath` ; un chemin absent du plan est refusé.
 - E15 pourra intégrer ces vues dans ses panneaux (`configuration`, `preview`, `diagnostics`) sans changer ce contrat.
 
+## Implémentation E15 (coque)
+
+Réattribuée à Claude par le propriétaire le 25/11/2026. La coque enveloppe `/v2/parcours` (route distincte jusqu'à E18) ; aucun endpoint ni flux métier modifié.
+
+- Fichiers : `ui/v2/shell.js` (`window.forgeShell`), `ui/v2/shell.css`, chargés avant les composants. La coque n'appelle aucune API et ignore l'état du parcours ; `journey.js` lui ajoute ses commandes (étape suivante/précédente, vues de l'aperçu).
+- Préférences : clé `forge-my-project.ui.v2`, `{schemaVersion: 1, theme, density, panels: {navigation, preview: {visible, size, side}}, activePanel}`. JSON invalide, autre version ou valeur inconnue : ignoré champ par champ ; tailles bornées ; côtés en conflit remis par défaut. Le brouillon v1 n'est jamais lu ni modifié.
+- Thème : `system` (suit `prefers-color-scheme`, y compris en direct), `light`, `dark`. Densité `compact` : espacements réduits, cibles 36 px (44 px sous 768 px ou pointeur grossier).
+- Panneaux : `navigation` (Étapes) et `preview` (Aperçu) masquables (en-tête, rail, palette ; le focus va à la commande de restauration), déplaçables par échange de côtés (ordre DOM = ordre visuel, focus conservé), redimensionnables par séparateur `role="separator"` (`aria-valuemin/max/now`, flèches ±16 px, Début/Fin, pointeur). Bornes : Étapes 200–440 px, Aperçu 280–720 px, et au plus 40 % de la fenêtre. `configuration` reste au centre. Sous 1200 px le panneau de droite passe sous le contenu ; sous 768 px tout s'empile, sans séparateur.
+- Onglets : aperçu « Plan » (arborescence et diagramme, toujours ensemble) et « Résumé » (réponses, texte seulement) ; modèle ARIA tabs, flèches et Début/Fin déplacent le focus, Entrée/Espace activent.
+- Palette : `dialog` modal, `combobox` + `listbox`, filtre insensible aux accents, flèches, Entrée, Échap ; le focus reste dans la palette puis revient au déclencheur. Seules les commandes disponibles sont listées ; une commande est un objet enregistré (`id` unique, `run` fonction), jamais une chaîne exécutée.
+- Raccourcis : `Ctrl+K` (palette) et Échap seulement. `Ctrl+Shift+P` (fenêtre privée), `Ctrl+1…8` (onglets) et `F6` (barre d'adresse) sont réservés par Firefox et non utilisés ; les zones sont atteintes par le rail et les commandes « Aller à ».
+- E17 place l'éditeur et les diagnostics dans des panneaux `editor` et `diagnostics` de la coque (aujourd'hui dans l'atelier sous la grille).
+
 ## Recette E18a (sous-lot E18 sans la coque)
 
 Recette automatisée de `/v2/parcours` et défauts corrigés : voir `docs/E18A_ACCEPTANCE.md`. Règles ajoutées, valables pour E15 et E17 :

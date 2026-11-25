@@ -39,6 +39,7 @@ body {
 
 .topbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
@@ -47,7 +48,7 @@ body {
 }
 .topbar h1 { margin: 0; font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 600; }
 .topbar .muted { color: var(--brand-paper); font-weight: 400; }
-.topbar-link { margin-left: auto; color: var(--brand-paper); display: inline-flex; align-items: center; min-height: var(--compact-target); }
+.topbar-link { color: var(--brand-paper); display: inline-flex; align-items: center; min-height: var(--compact-target); }
 
 .banner {
   margin: 0;
@@ -57,13 +58,27 @@ body {
   font-size: var(--text-sm);
 }
 
+/* Coque E15 : zones nommees ; les colonnes laterales et leurs separateurs sont regles par shell.js
+   (cote, largeur, masquage) via des proprietes CSS posees par le CSSOM. */
 .layout {
+  --split-width: var(--space-4);
+  --left-col: var(--nav-width);
+  --right-col: minmax(var(--preview-width), 1.1fr);
+  --left-split: var(--split-width);
+  --right-split: var(--split-width);
   display: grid;
-  grid-template-columns: var(--nav-width) minmax(0, 1fr) minmax(var(--preview-width), 1.1fr);
-  gap: var(--space-4);
+  grid-template-columns: var(--left-col) var(--left-split) minmax(0, 1fr) var(--right-split) var(--right-col);
+  grid-template-areas: "left left-split main right-split right" "bench bench bench bench bench";
+  row-gap: var(--space-4);
   padding: var(--space-4);
   align-items: start;
+  min-width: 0;
 }
+.layout > [data-slot="left"] { grid-area: left; }
+.layout > [data-slot="right"] { grid-area: right; }
+.layout > [data-slot="left-split"] { grid-area: left-split; }
+.layout > [data-slot="right-split"] { grid-area: right-split; }
+.layout > [data-panel="configuration"] { grid-area: main; }
 
 .section-title { margin: 0 0 var(--space-2); font-size: var(--text-md); font-family: var(--font-mono); }
 
@@ -198,7 +213,7 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 
 /* --- E17a : atelier (editeur, diagnostics, validation et ecriture) --- */
 .workbench {
-  grid-column: 1 / -1;
+  grid-area: bench;
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(var(--preview-width), 1fr);
   gap: var(--space-4);
@@ -305,13 +320,17 @@ textarea.editor-input:focus-visible { outline-offset: -2px; }
 #wf-unverified h4 { margin: 0 0 var(--space-2); font-size: var(--text-sm); }
 
 @media (max-width: 1199px) {
-  .layout { grid-template-columns: var(--nav-width) minmax(0, 1fr); }
-  .preview { grid-column: 1 / -1; }
+  .layout {
+    grid-template-columns: var(--left-col) var(--left-split) minmax(0, 1fr);
+    grid-template-areas: "left left-split main" "right right right" "bench bench bench";
+  }
+  .layout > [data-slot="right-split"] { display: none; }
   .workbench { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 767px) {
-  .layout { grid-template-columns: minmax(0, 1fr); padding: var(--space-2); }
+  .layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "left" "main" "right" "bench"; padding: var(--space-2); }
+  .layout > .splitter { display: none; }
   .topbar h1 .muted { display: none; }
   .step-actions { position: sticky; bottom: 0; background: var(--surface-panel); padding: var(--space-2) 0; }
   /* La barre collante ne masque jamais l'element focalise ou amene a l'ecran (WCAG 2.4.11). */

@@ -61,18 +61,28 @@ class RouteTests(unittest.TestCase):
 
 class ScriptContractTests(unittest.TestCase):
     """Contrats E14 : aucun HTML injecte, aucune ressource distante, aucun stockage de donnees projet."""
-    SCRIPTS = ("journey.js", "editor.js", "diagnostics.js", "workflow.js")
-    # Chaque composant n'appelle que ses endpoints ; l'editeur et le panneau n'appellent rien.
-    FETCHES = {"journey.js": {"/api/catalog", "/api/plan"}, "editor.js": set(), "diagnostics.js": set(),
+    SCRIPTS = ("shell.js", "journey.js", "editor.js", "diagnostics.js", "workflow.js")
+    # Chaque composant n'appelle que ses endpoints ; la coque, l'editeur et le panneau n'appellent rien.
+    FETCHES = {"shell.js": set(), "journey.js": {"/api/catalog", "/api/plan"}, "editor.js": set(), "diagnostics.js": set(),
                "workflow.js": {"/api/files/validate", "/api/destination/browse", "/api/write/compare", "/api/write/apply"}}
 
     def test_no_html_injection_remote_resource_or_storage(self):
-        for name in self.SCRIPTS + ("journey.html", "journey.css"):
+        for name in self.SCRIPTS + ("journey.html", "journey.css", "shell.css"):
             text = (ROOT / "ui" / "v2" / name).read_text(encoding="utf-8")
             with self.subTest(name):
                 self.assertNotRegex(text, r"innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(|new Function")
                 self.assertNotRegex(text, r"https?://(?!www\.w3\.org/2000/svg)")
+                if name == "shell.js":
+                    continue  # preferences de presentation : test dedie ci-dessous
                 self.assertNotRegex(text, r"localStorage|sessionStorage|indexedDB")
+
+    def test_shell_only_stores_presentation_preferences_under_its_key(self):
+        """Contrat E15 : cle distincte du brouillon v1, seul l'objet de preferences est ecrit."""
+        script = (ROOT / "ui" / "v2" / "shell.js").read_text(encoding="utf-8")
+        self.assertIn("const KEY = 'forge-my-project.ui.v2';", script)
+        self.assertEqual(re.findall(r"(?:localStorage|sessionStorage|indexedDB)\.?\w*\([^)]*\)", script),
+                         ["localStorage.getItem(KEY)", "localStorage.setItem(KEY, JSON.stringify(prefs)"])
+        self.assertNotIn("forgeJourney", script)  # la coque ignore l'etat du parcours (reponses, fichiers, jetons)
 
     def test_each_component_only_calls_its_endpoints(self):
         for name, expected in self.FETCHES.items():
@@ -94,7 +104,7 @@ class ScriptContractTests(unittest.TestCase):
     def test_scripts_load_in_dependency_order(self):
         html = (ROOT / "ui" / "v2" / "journey.html").read_text(encoding="utf-8")
         order = re.findall(r'<script src="/v2/([a-z]+\.js)" defer>', html)
-        self.assertEqual(order, ["editor.js", "diagnostics.js", "workflow.js", "journey.js"])
+        self.assertEqual(order, ["shell.js", "editor.js", "diagnostics.js", "workflow.js", "journey.js"])
 
 
 class GraphTests(unittest.TestCase):
