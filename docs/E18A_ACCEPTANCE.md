@@ -21,7 +21,7 @@ Toutes les vérifications ci-dessous sont dans `tests/test_e2e_acceptance_firefo
 | Aucune erreur JavaScript, aucune ressource bloquée | Erreurs, rejets non gérés, `console.error` et violations CSP capturés après le chargement ; chaque image doit être chargée ; aucune ressource hors origine. | PASS |
 | Budgets de performance | Voir ci-dessous. Les seuils du contrat sont appliqués tels quels. | PASS |
 | Lecteur d'écran | Non testé (aucun lecteur d'écran dans la CI). | NON VÉRIFIÉ |
-| Captures | 30 captures (6 largeurs × 2 thèmes × questionnaire/aperçu/atelier) soumises au propriétaire. | EN ATTENTE |
+| Captures | 30 captures (5 largeurs × 2 thèmes × questionnaire/aperçu/atelier) soumises au propriétaire (PR #45). | EN ATTENTE |
 
 ## Budgets mesurés
 

@@ -222,7 +222,7 @@ Pour chaque tache terminee: commande et resultat des tests, lien du run CI, impa
 | UI-07 | B | Panneau diagnostics central, gravites, filtres, clic vers le champ concerne | E17a, E17 | IN PROGRESS (E17a DONE, integration a la coque en E17) |
 | UI-08 | A | Editeur leger avec coloration syntaxique, numeros, recherche/remplacement; diff T17 conserve | E17a, E17 | IN PROGRESS (E17a DONE, integration a la coque en E17) |
 | UI-09 | C | Codex et Claude developpent en parallele par composants, design system commun, petites PR | E14-E18 | REGLE |
-| UI-10 | C+D | Tests visuels+fonctionnels progressifs, Firefox, accessibilite, performance, resolutions; ancien UI garde jusqu'a validation | E18a, E18 | IN PROGRESS (E18a) |
+| UI-10 | C+D | Tests visuels+fonctionnels progressifs, Firefox, accessibilite, performance, resolutions; ancien UI garde jusqu'a validation | E18a, E18 | IN PROGRESS (E18a DONE ; recette de la coque et bascule en E18) |
 
 ### Cadence, livraisons et suivi
 
@@ -259,7 +259,7 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 | E17 | Integration de l'editeur et du panneau diagnostics E17a dans la coque E15 (panneaux `editor` et `diagnostics`, onglets, raccourcis) | Codex + Claude (fichiers separes) | E15,E16 | 1 j | - | - | - | TODO | Voir ROADMAP_2026.md ; sous-lot E17a |
 | E17a | Sous-lot E17 sans la coque : editeur leger (coloration, lignes, recherche/remplacement), panneau diagnostics filtrable et navigable, flux securises validation/comparaison/ecriture dans /v2/parcours | Claude | E16 | 2 j | 0 h 21 (Claude) | non renseigne | non calculable | DONE | Decoupage decide par le proprietaire le 22/11 (E15 non commencee) ; PR #44 fusionnee (67a55de) |
 | E18 | Recette globale apres la coque E15 et l'integration E17 (parite de parcours avec l'interface actuelle, lecteur d'ecran, captures de la coque approuvees), puis bascule apres validation | Codex + Claude | E15,E16,E17 | 1 j | - | - | - | TODO | Voir ROADMAP_2026.md ; sous-lot E18a |
-| E18a | Sous-lot E18 sans la coque : recette progressive de /v2/parcours (clavier seul, ordre et visibilite du focus, cibles, resolutions de reference dont 360 px, contrastes rendus des deux themes, budgets de performance mesures, aucune erreur JS ni ressource bloquee), defauts corriges, captures soumises a approbation ; aucune bascule | Claude | E16,E17a | 2 j | 0 h 18 (Claude) | non renseigne | non calculable | IN PROGRESS | Decoupage decide par le proprietaire le 22/11 (E15 non commencee) ; PR #45 (DONE a sa fusion apres validation) ; rapport docs/E18A_ACCEPTANCE.md |
+| E18a | Sous-lot E18 sans la coque : recette progressive de /v2/parcours (clavier seul, ordre et visibilite du focus, cibles, resolutions de reference dont 360 px, contrastes rendus des deux themes, budgets de performance mesures, aucune erreur JS ni ressource bloquee), defauts corriges, captures soumises a approbation ; aucune bascule | Claude | E16,E17a | 2 j | 0 h 18 (Claude) | non renseigne | non calculable | DONE | Decoupage decide par le proprietaire le 22/11 (E15 non commencee) ; PR #45 fusionnee (9bc72d6) ; rapport docs/E18A_ACCEPTANCE.md |
 
 ### E14 - reprise - 22 novembre 2026 (Claude Code, Codex indisponible)
 - Charge humaine estimee: 2 j (16 h). Execution IA mesuree (horloge, pas du temps humain): Codex 0 h 15 tel que declare par Codex (non remesure); Claude 11 h 43 -> 11 h 53 (0 h 10), attente CI non comptee. Temps humain reel: non renseigne. Ecart humain: non calculable.
@@ -401,6 +401,7 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 - Defauts trouves par la recette puis corriges: logo bloque par la CSP depuis E16 (SVG inline, CSP inchangee), contraste 2,03:1 en sombre, barres de defilement claires en sombre, champ masque par la barre collante a 360 px, cibles 32 px, editeur hors budget sur 2 000 lignes (143/145 ms -> 56/30 ms). Chaque defaut a d'abord fait echouer la recette.
 - Tests: Firefox 32 OK (12 + 6 + 7 + 7), suite unitaire OK; `tests/test_journey_v2.py` + interdiction d'image externe.
 - Limites: 360 px par zoom (pas un vrai telephone); pas de lecteur d'ecran; machine de reference des budgets non fixee; `window.confirm` simule dans le parcours clavier; captures en attente d'approbation; aucune bascule (E18).
+- Fusion: PR #45 (9bc72d6) apres deux correctifs CI (session 360 px refusee par geckodriver 0.37 / Firefox 160 : acces chrome passe a geckodriver via `--allow-system-access`, sessions par defaut inchangees). Temps de ces correctifs non mesure, non inclus dans les 0 h 18. Captures publiees pour approbation, decision du proprietaire en attente.
 - Revue: auto-revue de l'auteur (non independante).
 
 ### E17a - 22 novembre 2026 (Claude Code, branche feat/e17a-editor-diagnostics)
