@@ -157,8 +157,7 @@ class Common:
         return self.js("const el = document.activeElement; return " + script)
 
     def load(self):
-        self.cmd("POST", "/url", {"url": self.base + "/v2/parcours"})
-        self.wait("return performance.getEntriesByName('forge-ready').length === 1")
+        journey.open_v2(self)  # sans brouillon : chaque chargement repart de reponses vides
         self.js(ERROR_CAPTURE)
 
     def assert_no_errors(self):

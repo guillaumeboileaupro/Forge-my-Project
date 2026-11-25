@@ -10,6 +10,17 @@ from tests import test_e2e_firefox as base
 ENABLED = base.ENABLED
 
 BORROWED = ("call", "cmd", "find", "js", "click", "wait", "screenshot")
+DRAFT_KEY = "forge-my-project.draft.v1"
+
+
+def open_v2(test, draft=None):
+    """Ouvre le parcours v2 sans brouillon (E18b : brouillon partage avec l'interface actuelle), ou avec celui fourni.
+    Le stockage est prepare depuis une ressource du meme domaine, sans l'application."""
+    test.cmd("POST", "/url", {"url": test.base + "/v2/tokens.css"})
+    test.js("localStorage.removeItem(arguments[0]); if (arguments[1]) localStorage.setItem(arguments[0], arguments[1]);",
+            DRAFT_KEY, draft)
+    test.cmd("POST", "/url", {"url": test.base + "/v2/parcours"})
+    test.wait("return performance.getEntriesByName('forge-ready').length === 1")
 
 
 @unittest.skipUnless(ENABLED, "FORGE_E2E=1, geckodriver et firefox requis")
@@ -19,8 +30,8 @@ class FirefoxJourneyTests(unittest.TestCase):
     call = classmethod(base.FirefoxFormTests.call.__func__)
 
     def setUp(self):
-        self.cmd("POST", "/url", {"url": self.base + "/v2/parcours"})
-        self.wait("return document.querySelectorAll('#step-list button').length === 6")
+        open_v2(self)
+        self.wait("return document.querySelectorAll('#step-list button').length === 7")
 
     def type_name(self, value):
         self.js("const n = document.querySelector('#q-name'); n.value = arguments[0];"
