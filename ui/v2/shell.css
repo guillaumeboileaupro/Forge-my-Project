@@ -162,6 +162,44 @@ kbd {
 .summary dt { font-weight: 600; color: var(--text-secondary); }
 .summary dd { margin: 0; overflow-wrap: anywhere; }
 
+/* --- Onglets des fichiers ouverts (E17) ---------------------------------------------------- */
+.file-tabs-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  border-bottom: var(--border-width) solid var(--border-default);
+}
+.file-tabs { display: flex; flex: 1 1 auto; gap: var(--space-1); overflow-x: auto; min-width: 0; }
+.file-tabs .file-tab {
+  flex: none;
+  min-height: var(--compact-target);
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width) solid transparent;
+  border-bottom: 2px solid transparent;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+.file-tabs .file-tab:hover { color: var(--text-primary); border-color: var(--border-default); }
+.file-tabs .file-tab[aria-selected="true"] {
+  color: var(--accent-default);
+  border-bottom-color: var(--accent-indicator);
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+.file-tabs .file-tab.modified::after { content: " ●"; color: var(--status-warn); }
+.file-tabs-bar .tab-close {
+  flex: none;
+  margin-left: auto;
+  min-height: var(--compact-target);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+}
+#editor-tabpanel:focus-visible { outline-offset: 2px; }
+
 /* --- Palette de commandes ------------------------------------------------------------------ */
 .palette {
   width: min(36rem, calc(100vw - 2rem));

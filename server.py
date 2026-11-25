@@ -22,6 +22,8 @@ STATIC = {
     # E15 : coque (themes, densite, panneaux, onglets, palette).
     "/v2/shell.js": (ROOT / "ui" / "v2" / "shell.js", "text/javascript; charset=utf-8"),
     "/v2/shell.css": (ROOT / "ui" / "v2" / "shell.css", "text/css; charset=utf-8"),
+    # E17 : onglets des fichiers ouverts de l'editeur.
+    "/v2/filetabs.js": (ROOT / "ui" / "v2" / "filetabs.js", "text/javascript; charset=utf-8"),
     "/v2/editor.js": (ROOT / "ui" / "v2" / "editor.js", "text/javascript; charset=utf-8"),
     "/v2/diagnostics.js": (ROOT / "ui" / "v2" / "diagnostics.js", "text/javascript; charset=utf-8"),
     "/v2/workflow.js": (ROOT / "ui" / "v2" / "workflow.js", "text/javascript; charset=utf-8"),

@@ -86,7 +86,14 @@ Réattribuée à Claude par le propriétaire le 25/11/2026. La coque enveloppe `
 - Onglets : aperçu « Plan » (arborescence et diagramme, toujours ensemble) et « Résumé » (réponses, texte seulement) ; modèle ARIA tabs, flèches et Début/Fin déplacent le focus, Entrée/Espace activent.
 - Palette : `dialog` modal, `combobox` + `listbox`, filtre insensible aux accents, flèches, Entrée, Échap ; le focus reste dans la palette puis revient au déclencheur. Seules les commandes disponibles sont listées ; une commande est un objet enregistré (`id` unique, `run` fonction), jamais une chaîne exécutée.
 - Raccourcis : `Ctrl+K` (palette) et Échap seulement. `Ctrl+Shift+P` (fenêtre privée), `Ctrl+1…8` (onglets) et `F6` (barre d'adresse) sont réservés par Firefox et non utilisés ; les zones sont atteintes par le rail et les commandes « Aller à ».
-- E17 place l'éditeur et les diagnostics dans des panneaux `editor` et `diagnostics` de la coque (aujourd'hui dans l'atelier sous la grille).
+- E17 place l'éditeur et les diagnostics dans des panneaux `editor` et `diagnostics` de la coque (voir ci-dessous).
+
+## Implémentation E17 (intégration à la coque)
+
+- Panneaux `editor` (`#editor-panel`) et `diagnostics` (`#diagnostics-section`) de l'atelier, sous la grille : masquables (en-tête, rail, palette), sans changement de côté. Éditeur masqué : la colonne de droite prend toute la largeur. Séparateur `diagnostics` entre l'éditeur et la colonne de droite (diagnostics + validation et écriture), bornes 280–640 px et 40 % de la fenêtre ; sous 1200 px tout s'empile. Préférences : `panels.editor {visible}`, `panels.diagnostics {visible, size}` (même `schemaVersion`, champs absents = défauts). La validation et l'écriture ne sont jamais masquables.
+- Onglets des fichiers ouverts : `ui/v2/filetabs.js` (`window.ForgeFileTabs`), sans appel réseau ni persistance. Ouvrir un fichier (arborescence, diagramme, diagnostic, onglet) l'ajoute ; 8 onglets au plus (le plus ancien inactif est fermé). Modèle ARIA tabs : flèches, Début/Fin déplacent le focus, Entrée/Espace activent, Suppr ferme l'onglet focalisé ; « Fermer l'onglet » ferme l'actif. Le voisin devient actif et reçoit le focus ; sans onglet, aucune sélection. Un nouveau plan ferme les onglets de fichiers disparus. Un onglet modifié porte « ● » et « (modifié) ».
+- Commandes : `editor.tab.next`, `editor.tab.prev`, `editor.tab.close`, `editor.search` (raccourci affiché `Ctrl+F`, celui de l'éditeur), proposées seulement si elles s'appliquent.
+- Contrats E17a inchangés : `editor.js`, `diagnostics.js` et `workflow.js` ne sont pas modifiés, mêmes endpoints, mêmes flux sécurisés.
 
 ## Recette E18a (sous-lot E18 sans la coque)
 

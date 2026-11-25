@@ -61,9 +61,9 @@ class RouteTests(unittest.TestCase):
 
 class ScriptContractTests(unittest.TestCase):
     """Contrats E14 : aucun HTML injecte, aucune ressource distante, aucun stockage de donnees projet."""
-    SCRIPTS = ("shell.js", "journey.js", "editor.js", "diagnostics.js", "workflow.js")
+    SCRIPTS = ("shell.js", "filetabs.js", "journey.js", "editor.js", "diagnostics.js", "workflow.js")
     # Chaque composant n'appelle que ses endpoints ; la coque, l'editeur et le panneau n'appellent rien.
-    FETCHES = {"shell.js": set(), "journey.js": {"/api/catalog", "/api/plan"}, "editor.js": set(), "diagnostics.js": set(),
+    FETCHES = {"shell.js": set(), "filetabs.js": set(), "journey.js": {"/api/catalog", "/api/plan"}, "editor.js": set(), "diagnostics.js": set(),
                "workflow.js": {"/api/files/validate", "/api/destination/browse", "/api/write/compare", "/api/write/apply"}}
 
     def test_no_html_injection_remote_resource_or_storage(self):
@@ -104,7 +104,7 @@ class ScriptContractTests(unittest.TestCase):
     def test_scripts_load_in_dependency_order(self):
         html = (ROOT / "ui" / "v2" / "journey.html").read_text(encoding="utf-8")
         order = re.findall(r'<script src="/v2/([a-z]+\.js)" defer>', html)
-        self.assertEqual(order, ["shell.js", "editor.js", "diagnostics.js", "workflow.js", "journey.js"])
+        self.assertEqual(order, ["shell.js", "filetabs.js", "editor.js", "diagnostics.js", "workflow.js", "journey.js"])
 
 
 class GraphTests(unittest.TestCase):

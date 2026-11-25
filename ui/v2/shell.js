@@ -14,11 +14,17 @@
   const SIDES = ['left', 'right'];
   const IDS = ['navigation', 'configuration', 'preview', 'diagnostics', 'editor'];
   const STEP_PX = 16;
-  // Panneaux lateraux : bornes de taille en px ; `auto` est la colonne par defaut (taille non choisie).
+  // Panneaux masquables. Bornes de taille en px ; `auto` est la colonne par defaut (taille non choisie) ;
+  // `measure` designe la colonne redimensionnee si ce n'est pas le panneau lui-meme. Les panneaux
+  // lateraux (`SIDE_PANELS`) changent de cote ; ceux de l'atelier (E17) gardent leur place.
   const PANELS = {
     navigation: {label: 'Étapes', side: 'left', min: 200, max: 440, auto: 'var(--nav-width)'},
     preview: {label: 'Aperçu', side: 'right', min: 280, max: 720, auto: 'minmax(var(--preview-width), 1.1fr)'},
+    editor: {label: 'Éditeur'},
+    diagnostics: {label: 'Diagnostics', side: 'right', min: 280, max: 640, auto: 'minmax(var(--preview-width), 1fr)',
+                  measure: '.workbench .side'},
   };
+  const SIDE_PANELS = ['navigation', 'preview'];
   // Zones atteignables (rail, palette) : cible de focus explicite.
   const ZONES = {
     navigation: {label: 'Étapes', target: '#steps-title'},
@@ -38,7 +44,8 @@
   function defaults() {
     return {
       schemaVersion: SCHEMA, theme: 'system', density: 'comfortable', activePanel: 'configuration',
-      panels: {navigation: {visible: true, size: null, side: 'left'}, preview: {visible: true, size: null, side: 'right'}},
+      panels: {navigation: {visible: true, size: null, side: 'left'}, preview: {visible: true, size: null, side: 'right'},
+               editor: {visible: true}, diagnostics: {visible: true, size: null}},
     };
   }
 
@@ -54,8 +61,8 @@
       const value = panels[id];
       if (!value || typeof value !== 'object') continue;
       if (typeof value.visible === 'boolean') prefs.panels[id].visible = value.visible;
-      if (Number.isFinite(value.size)) prefs.panels[id].size = clamp(Math.round(value.size), spec.min, spec.max);
-      if (SIDES.includes(value.side)) prefs.panels[id].side = value.side;
+      if (spec.min && Number.isFinite(value.size)) prefs.panels[id].size = clamp(Math.round(value.size), spec.min, spec.max);
+      if (SIDE_PANELS.includes(id) && SIDES.includes(value.side)) prefs.panels[id].side = value.side;
     }
     if (prefs.panels.navigation.side === prefs.panels.preview.side) {
       prefs.panels.navigation.side = 'left';
@@ -120,11 +127,14 @@
   const splitter = id => document.querySelector(`[data-splitter="${id}"]`);
 
   function sideOf(side) {
-    return Object.keys(PANELS).find(id => prefs.panels[id].side === side);
+    return SIDE_PANELS.find(id => prefs.panels[id].side === side);
   }
 
+  const sideOfPanel = id => prefs.panels[id].side || PANELS[id].side;
+  const resizable = () => Object.keys(PANELS).filter(id => PANELS[id].min);
+
   function width(id) {
-    const node = panel(id);
+    const node = PANELS[id].measure ? $(PANELS[id].measure) : panel(id);
     return node && !node.hidden ? Math.round(node.getBoundingClientRect().width) : 0;
   }
 
@@ -151,6 +161,7 @@
         toggle.setAttribute('aria-pressed', String(state.visible));
         toggle.title = `${state.visible ? 'Masquer' : 'Afficher'} le panneau ${spec.label}`;
       }
+      if (!SIDE_PANELS.includes(id)) continue;
       const target = state.side === 'left' ? 'droite' : 'gauche';
       for (const mover of document.querySelectorAll(`[data-move="${id}"]`)) {
         mover.setAttribute('aria-label', `Déplacer le panneau ${spec.label} à ${target}`);
@@ -175,7 +186,8 @@
       layout.insertBefore(splitter(left), content);
       content.after(splitter(right), panel(right));
     }
-    for (const [id, spec] of Object.entries(PANELS)) {
+    for (const id of SIDE_PANELS) {
+      const spec = PANELS[id];
       const state = prefs.panels[id];
       const node = panel(id);
       const separator = splitter(id);
@@ -190,8 +202,23 @@
     if (focused && focused !== document.activeElement && focused.isConnected && !focused.closest('[hidden]')) {
       focused.focus({preventScroll: true}); // un noeud deplace perd le focus : il lui est rendu
     }
+    applyWorkbench();
     updateControls();
-    Object.keys(PANELS).forEach(updateSplitter);
+    resizable().forEach(updateSplitter);
+  }
+
+  // Atelier (E17) : editeur a gauche, colonne diagnostics + validation a droite, separateur entre les deux.
+  function applyWorkbench() {
+    const bench = $('.workbench');
+    if (!bench) return;
+    const editor = prefs.panels.editor;
+    const diagnostics = prefs.panels.diagnostics;
+    panel('editor').hidden = !editor.visible;
+    panel('diagnostics').hidden = !diagnostics.visible;
+    splitter('diagnostics').hidden = !editor.visible;
+    bench.classList.toggle('without-editor', !editor.visible);
+    const spec = PANELS.diagnostics;
+    bench.style.setProperty('--side-col', diagnostics.size ? `min(${diagnostics.size}px, 40vw)` : spec.auto);
   }
 
   function setVisible(id, visible) {
@@ -208,7 +235,7 @@
   }
 
   function swapSides() {
-    for (const id of Object.keys(PANELS)) {
+    for (const id of SIDE_PANELS) {
       prefs.panels[id].side = prefs.panels[id].side === 'left' ? 'right' : 'left';
     }
     applyLayout();
@@ -236,7 +263,7 @@
   function bindSplitter(id) {
     const node = splitter(id);
     // Fleche vers le contenu central = panneau plus etroit, quel que soit le cote du panneau.
-    const grow = () => (prefs.panels[id].side === 'left' ? 1 : -1);
+    const grow = () => (sideOfPanel(id) === 'left' ? 1 : -1);
     node.addEventListener('keydown', event => {
       const spec = PANELS[id];
       const current = width(id);
@@ -502,9 +529,9 @@
     }
     $('#shell-theme').addEventListener('click', () => setTheme(THEMES[(THEMES.indexOf(prefs.theme) + 1) % THEMES.length]));
     $('#shell-density').addEventListener('click', () => setDensity(prefs.density === 'compact' ? 'comfortable' : 'compact'));
-    Object.keys(PANELS).forEach(bindSplitter);
+    resizable().forEach(bindSplitter);
     if (media && media.addEventListener) media.addEventListener('change', () => { if (prefs.theme === 'system') applyTheme(); });
-    window.addEventListener('resize', () => Object.keys(PANELS).forEach(updateSplitter));
+    window.addEventListener('resize', () => resizable().forEach(updateSplitter));
     // Panneau actif : simple repere visuel memorise, le focus n'est jamais deplace au chargement.
     document.addEventListener('focusin', event => {
       const node = event.target.closest && event.target.closest('[data-panel]');
