@@ -5,6 +5,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 ## [Unreleased]
 
 ### Ajoute
+- Parite du parcours v2 avec l'interface actuelle : brouillon automatique partage avec l'interface actuelle et revalide par le serveur, export/import JSON, reinitialisation, profils predefinis et personnels, architecture manuelle et suggestion locale, etape Skills externes (recherche, approbation, verification), controles en ligne explicites, archive ZIP et assistant de protection de branche ; memes endpoints et formats (E18b).
 - Atelier du parcours v2 integre a la coque : panneaux Editeur et Diagnostics masquables et redimensionnables, onglets des fichiers ouverts (clavier, fermeture, marque de modification) et commandes de l'editeur dans la palette (E17).
 - Coque du parcours v2 : rail, panneaux Etapes et Apercu masquables, deplacables et redimensionnables au clavier et a la souris, theme systeme/clair/sombre, densite compacte, onglets Plan/Resume, palette de commandes `Ctrl+K` et reinitialisation de la disposition ; preferences locales versionnees sans donnee projet (E15).
 - Outil de nettoyage prudent des worktrees apres fusion `scripts/worktree_cleanup.py` : simulation par defaut, `--apply` pour executer ; refuse le worktree principal ou actif, verrouille, absent, avec operation en cours, fichier modifie, non suivi ou ignore, ou commits non integres ; `git worktree remove` et `git branch -d` uniquement, jamais de force ni de branche distante (Q15).

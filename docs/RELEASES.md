@@ -34,7 +34,7 @@ Limites a reporter dans le changelog de v1.0.0 : exceptions d'audit actives (reg
 | Reconstruction complete de l'interface (pas un relooking), ancienne UI conservee jusqu'a validation | E14, E15, E16, E17 (sous-lot E17a) | design system revu, coque, parcours, editeur et diagnostics testes | a faire |
 | Ameliorations de securite | E06, E10, E11 | NON VERIFIE confirme et journalise ; Docker et Semgrep bloquants ; verification statique des API | E06 fait (PR #31) ; E10 et E11 a faire |
 | Enrichissement des catalogues et des stacks | E12, E13 | skills et stacks testes, catalogue local borne | a faire |
-| Validation fonctionnelle et visuelle complete | E18 (sous-lot E18a) | captures approuvees, Firefox, clavier, accessibilite, performances, resolutions | a faire |
+| Validation fonctionnelle et visuelle complete | E18 (sous-lots E18a, E18b) | captures approuvees, Firefox, clavier, accessibilite, performances, resolutions | a faire |
 | Conditions communes de release | - | MAINTENANCE.md section 6 | a verifier a la release |
 
 v2.0.0 est MAJEUR parce que l'interface et les parcours changent pour l'utilisateur. Une incompatibilite des formats (profils, API locale) devra etre listee dans la rubrique Modifie du changelog avec sa migration.

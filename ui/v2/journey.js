@@ -1,6 +1,8 @@
 // Parcours v2 (E16) : questionnaire progressif et conditionnel, apercu du plan reel,
 // arbre et diagramme synchronises par un meme `selectedPath`.
 // E17a : editeur (editor.js), panneau diagnostics (diagnostics.js) et flux securises (workflow.js).
+// E18b : parite avec l'interface actuelle (reponses et profils, architecture, skills, controles en ligne,
+// archive, protection de branche) par answers.js, skills.js, protection.js et workflow.js.
 // Le serveur reste l'autorite (prerequis, conflits, versions, diagnostics) : ce script
 // n'affiche que des choix et des relations fournis par /api/catalog et /api/plan.
 'use strict';
@@ -8,10 +10,13 @@
 const NAME = /^[a-z][a-z0-9-]{1,48}[a-z0-9]$/;
 const DEBOUNCE_MS = 350;
 
+const blankAnswers = () => ({name: '', description: '', project_type: '', architecture: '', technologies: [], versions: {},
+                              agents: [], security: 'strict', mcp_servers: [], external_skills: []});
+
 const state = {
   catalog: null,
-  answers: {name: '', description: '', project_type: '', technologies: [], versions: {}, agents: [],
-            security: 'strict', mcp_servers: []},
+  answers: blankAnswers(),
+  online: null, // options en ligne appliquees au plan courant ({verify, skills}) ; null = hors ligne
   step: 0,
   validation: 'idle', // idle | running | valid | invalid | stale
   requestSeq: 0,
@@ -26,6 +31,8 @@ let editor = null;
 let diagnostics = null;
 let workflow = null;
 let fileTabs = null; // onglets des fichiers ouverts (E17)
+let answersTools = null; // brouillon, import/export, profils (E18b)
+let skills = null; // skills externes (E18b)
 
 const $ = selector => document.querySelector(selector);
 
@@ -106,10 +113,55 @@ function config() {
   const answers = state.answers;
   return {
     schema_version: 1, name: answers.name, description: answers.description, project_type: answers.project_type,
-    architecture: '', technologies: [...answers.technologies], versions: {...answers.versions},
+    architecture: answers.architecture, technologies: [...answers.technologies], versions: {...answers.versions},
     agents: [...answers.agents], security: answers.security, options: {mcp: answers.mcp_servers.length > 0},
-    mcp_servers: [...answers.mcp_servers], external_skills: [],
+    mcp_servers: [...answers.mcp_servers], external_skills: answers.external_skills.map(item => Object.assign({}, item)),
   };
+}
+
+// Reponses au format du brouillon, de l'export et des profils (T05).
+function collectAnswers() {
+  const {schema_version: ignored, ...answers} = config();
+  return answers;
+}
+
+// Reponses normalisees par le serveur (brouillon, import, profil) : remplacent les reponses courantes.
+function applyAnswers(answers) {
+  const next = blankAnswers();
+  // Comme l'interface actuelle : un profil sans nom ni description conserve ceux deja saisis.
+  next.name = state.answers.name;
+  next.description = state.answers.description;
+  for (const field of Object.keys(next)) {
+    if (!(field in answers)) continue;
+    const value = answers[field];
+    next[field] = Array.isArray(value) ? value.map(item => (typeof item === 'object' ? Object.assign({}, item) : item))
+      : typeof value === 'object' && value !== null ? Object.assign({}, value) : value;
+  }
+  if (!state.catalog.security_levels.includes(next.security)) next.security = state.catalog.security_levels[0];
+  state.answers = next;
+  skills.setApprovals(next.external_skills);
+  changed();
+}
+
+// Reinitialisation : reponses vides, plan, editions et onglets retires.
+function resetAnswers() {
+  state.answers = blankAnswers();
+  state.answers.security = state.catalog.security_levels[0];
+  state.edits = {};
+  state.editBase = {};
+  state.plan = null;
+  state.online = null;
+  skills.reset();
+  $('#tree').replaceChildren();
+  $('#diagram').replaceChildren();
+  fileTabs.retain([]);
+  select(null, false);
+  diagnostics.update([], 'aperçu');
+  workflow.planChanged(null, null);
+  state.step = 0;
+  changed();
+  renderStep();
+  $('#step-title').focus();
 }
 
 // --- Etapes ---------------------------------------------------------------------
@@ -140,6 +192,10 @@ const STEPS = [
    applicable: () => mcpChoices().length > 0,
    complete: () => true,
    render: renderMcp},
+  {id: 'skills', title: 'Skills externes', help: 'Optionnels : recherche explicite, approbation après examen.',
+   applicable: () => true,
+   complete: () => true,
+   render: () => skills.node},
 ];
 
 function stepStatus(step) {
@@ -182,6 +238,8 @@ function renderSummary() {
     ['Agents', names(answers.agents, state.catalog.agents)],
     ['Sécurité', answers.security || '—'],
     ['Serveurs MCP', answers.mcp_servers.join(', ') || '—'],
+    ['Skills approuvés', answers.external_skills.map(item => item.name).join(', ') || '—'],
+    ['Architecture', answers.architecture.trim() ? 'définie manuellement' : 'suggérée par les règles locales'],
     ['Fichiers du plan', state.plan ? String(state.plan.graph.files.length) : '—'],
   ];
   $('#summary').replaceChildren(...rows.flatMap(([term, value]) => [el('dt', {text: term}), el('dd', {text: value})]));
@@ -223,6 +281,7 @@ function focusKey(node) {
 
 function changed(rerender = true) {
   if (workflow) workflow.invalidate('Configuration modifiée : valider à nouveau les contenus.');
+  if (answersTools) answersTools.changed();
   const removed = prune();
   $('#step-notice').textContent = removed.length
     ? `Retiré car la condition n'est plus remplie : ${removed.join(', ')}.` : '';
@@ -252,12 +311,22 @@ function renderProject() {
     input.addEventListener('change', () => { state.answers.project_type = option.id; changed(); });
     type.append(el('label', {class: 'choice'}, input, ` ${option.label}`));
   }
-  const description = el('textarea', {id: 'q-description', rows: 3});
+  const description = el('textarea', {id: 'q-description', rows: 3, maxlength: 2000});
   description.value = state.answers.description;
   description.addEventListener('input', () => { state.answers.description = description.value; changed(false); });
+  const architecture = el('textarea', {id: 'q-architecture', rows: 5, maxlength: 4000, 'aria-describedby': 'q-architecture-hint'});
+  architecture.value = state.answers.architecture;
+  architecture.addEventListener('input', () => { state.answers.architecture = architecture.value; changed(false); });
+  const suggest = el('button', {type: 'button', id: 'q-architecture-suggest', text: 'Proposer l\'architecture des règles locales'});
+  suggest.addEventListener('click', suggestArchitecture);
   return el('div', {},
     field('Nom du projet', name, '3 à 50 caractères : minuscules, chiffres et tirets, commence par une lettre.'),
-    type, field('Description (facultative)', description));
+    type, field('Description (facultative)', description),
+    el('details', {id: 'architecture-box', open: state.answers.architecture.trim() ? true : null},
+      el('summary', {text: 'Architecture définie manuellement (facultative)'}),
+      field('Architecture', architecture,
+        'Si renseignée, elle remplace la suggestion des règles locales. La suggestion peut être reprise ici puis modifiée.'),
+      suggest));
 }
 
 function techChoice(item) {
@@ -359,14 +428,48 @@ function schedulePlan() {
   state.timer = setTimeout(requestPlan, DEBOUNCE_MS);
 }
 
-async function requestPlan() {
+function planRequest(body) {
+  return fetch('/api/plan', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+}
+
+// Suggestion des regles locales (architecture vide envoyee), reprise dans le champ pour etre relue.
+async function suggestArchitecture() {
+  const field = $('#q-architecture');
+  if (!NAME.test(state.answers.name) || !state.answers.project_type) {
+    $('#step-notice').textContent = 'Suggestion impossible : renseigner le nom et le type de projet.';
+    return;
+  }
+  if (field.value.trim() && !window.confirm("Remplacer l'architecture saisie par la suggestion des règles locales ?")) return;
+  try {
+    const response = await planRequest({config: Object.assign(config(), {architecture: ''})});
+    const payload = await response.json();
+    if (!response.ok || !payload.architecture) throw new Error(payload.error || 'configuration incomplète');
+    if (!payload.architecture.suggested.length) {
+      $('#step-notice').textContent = 'Aucune architecture suggérée par les règles locales pour cette configuration : saisie manuelle.';
+      return;
+    }
+    field.value = payload.architecture.suggested.map(line => `- ${line}`).join('\n');
+    field.dispatchEvent(new Event('input', {bubbles: true}));
+    $('#step-notice').textContent = "Architecture proposée par les règles locales : la relire et l'adapter.";
+  } catch (error) {
+    $('#step-notice').textContent = `Suggestion impossible : ${error.message}`;
+  }
+}
+
+// Controles en ligne explicites : meme plan, recalcule avec les options reseau demandees.
+async function verifyOnline(flags) {
+  clearTimeout(state.timer);
+  await requestPlan(flags);
+}
+
+async function requestPlan(flags = null) {
   const seq = ++state.requestSeq;
-  setValidation('running', "Calcul de l'aperçu par le serveur…");
+  const online = flags && (flags.verify || flags.skills) ? {verify: Boolean(flags.verify), skills: Boolean(flags.skills)} : null;
+  setValidation('running', online ? 'Vérification en ligne par le serveur (réseau)…' : "Calcul de l'aperçu par le serveur…");
   let response;
   let payload;
   try {
-    response = await fetch('/api/plan', {method: 'POST', headers: {'Content-Type': 'application/json'},
-                                         body: JSON.stringify({config: config()})});
+    response = await planRequest(Object.assign({config: config()}, online || {}));
     payload = await response.json();
   } catch (error) {
     if (seq === state.requestSeq) setValidation('invalid', `Aperçu indisponible : ${error.message}`);
@@ -380,6 +483,7 @@ async function requestPlan() {
     return;
   }
   $('#alerts').textContent = '';
+  state.online = online; // une verification en ligne ne vaut que pour le plan verifie ; tout recalcul la retire
   applyPlan(payload);
 }
 
@@ -404,7 +508,7 @@ function applyPlan(payload) {
   setValidation(errors ? 'invalid' : 'valid',
     `Aperçu à jour : ${payload.graph.files.length} fichier(s), ${payload.graph.rules.length} règle(s)`
     + (errors ? `, ${errors} erreur(s) bloquante(s).` : '.'));
-  workflow.planChanged(payload);
+  workflow.planChanged(payload, state.online);
   renderSummary();
   performance.mark('forge-plan'); // E18a : apercu applique
 }
@@ -417,7 +521,8 @@ function currentFiles() {
 // Etat utilisable par les flux securises : apercu a jour et sans erreur bloquante.
 function snapshot() {
   if (!state.plan || state.validation !== 'valid') return null;
-  return {config: config(), files: currentFiles()};
+  const online = state.online || {verify: false, skills: false};
+  return {config: config(), files: currentFiles(), verify: online.verify, skills: online.skills};
 }
 
 function edited(path, value) {
@@ -675,8 +780,16 @@ async function init() {
     onSelect: path => select(path, true), onClose: path => select(path, false)});
   $('#close-tab').addEventListener('click', () => fileTabs.close(fileTabs.active()));
   window.forgeJourney.fileTabs = fileTabs;
-  workflow = window.ForgeWorkflow.create($('#workflow'), {snapshot,
+  workflow = window.ForgeWorkflow.create($('#workflow'), {snapshot, verifyOnline,
     onDiagnostics: (items, source) => diagnostics.update(items, source)});
+  const notice = message => { $('#step-notice').textContent = message; };
+  skills = window.ForgeSkills.create(el('div', {id: 'skills-panel'}), {config, status: () => {},
+    onChange: approvals => { state.answers.external_skills = approvals; changed(false); }});
+  window.ForgeProtection.create($('#protection'));
+  answersTools = window.ForgeAnswers.create($('#answers'), {collect: collectAnswers, apply: applyAnswers,
+    reset: resetAnswers, status: notice});
+  window.forgeJourney.answers = answersTools;
+  window.forgeJourney.skills = skills;
   window.forgeJourney.editor = editor;
   window.forgeJourney.diagnostics = diagnostics;
   window.forgeJourney.workflow = workflow;
@@ -684,8 +797,10 @@ async function init() {
   $('#next').addEventListener('click', () => move(1));
   renderStep();
   renderSteps();
+  answersTools.refresh();
+  await answersTools.restore(); // brouillon valide par le serveur avant application
   performance.mark('forge-ready'); // E18a : premier rendu utile mesure (budget < 1 s)
 }
 
-window.forgeJourney = {state, select, config, prune, files: currentFiles, diagnosticTarget, navigate}; // pilotage des tests E2E
+window.forgeJourney = {state, select, config, prune, files: currentFiles, diagnosticTarget, navigate, applyAnswers}; // pilotage des tests E2E
 document.addEventListener('DOMContentLoaded', init);

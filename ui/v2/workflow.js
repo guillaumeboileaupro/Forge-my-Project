@@ -2,6 +2,8 @@
 // decisions de conflit, confirmation NON VERIFIE, ecriture. Le navigateur n'a aucune autorite :
 // chaque etape est repetee et revalidee par le serveur (/api/files/validate, /api/write/compare,
 // /api/write/apply), avec les memes champs et le meme sens que l'interface actuelle (T17, E06, E07).
+// E18b : controles en ligne explicites (verify, skills), rapport de verification ou contrats d'API,
+// archive ZIP (/api/archive). Les options en ligne appliquees accompagnent chaque requete suivante.
 'use strict';
 
 (function () {
@@ -36,6 +38,18 @@
                    writeRoot: '', busy: false};
 
     const status = el('p', {class: 'wf-status', id: 'wf-status', role: 'status', 'aria-live': 'polite'});
+    const netVerify = el('input', {type: 'checkbox', id: 'wf-net-verify'});
+    const netSkills = el('input', {type: 'checkbox', id: 'wf-net-skills'});
+    const online = el('button', {type: 'button', id: 'wf-online', text: 'Vérifier en ligne', disabled: true});
+    const onlineReport = el('div', {id: 'wf-online-report', role: 'region', 'aria-label': 'Contrôles de la configuration'});
+    const onlineBox = el('fieldset', {class: 'choices', id: 'wf-online-box'},
+      el('legend', {text: 'Contrôles en ligne (optionnels, explicites)'}),
+      el('label', {class: 'choice', for: 'wf-net-verify'}, netVerify,
+        ' Vérifier packages, versions, vulnérabilités et serveurs MCP (PyPI, npm, OSV, endoflife.date, registre MCP)'),
+      el('label', {class: 'choice', for: 'wf-net-skills'}, netSkills,
+        ' Récupérer les skills (my-skills et skills externes approuvés, GitHub)'),
+      online, onlineReport);
+    const archive = el('button', {type: 'button', id: 'wf-archive', text: "Télécharger l'archive ZIP", disabled: true});
     const unverified = el('div', {id: 'wf-unverified'});
     const validate = el('button', {type: 'button', id: 'wf-validate', class: 'primary', text: 'Valider les fichiers'});
     const validated = el('p', {id: 'wf-validated', class: 'muted'});
@@ -70,15 +84,18 @@
     const report = el('div', {id: 'wf-report', role: 'region', 'aria-label': "Rapport d'écriture"});
 
     root.replaceChildren(
+      onlineBox,
       unverified,
       el('div', {class: 'wf-row'}, validate, validated),
+      el('div', {class: 'wf-row'}, archive),
       el('div', {class: 'field'}, el('label', {for: 'wf-destination', text: 'Destination'}), destination,
         el('p', {class: 'muted hint', id: 'wf-destination-hint'}, 'Dossier sous la racine autorisée ', rootLabel, '.'),
         el('div', {class: 'wf-row'}, browse, up), dirs),
       compare, comparison, status, report);
 
     const setStatus = message => { status.textContent = message; };
-    const key = snapshot => (snapshot ? JSON.stringify([snapshot.config, snapshot.files]) : null);
+    const key = snapshot => (snapshot ? JSON.stringify([snapshot.config, snapshot.files, snapshot.verify, snapshot.skills]) : null);
+    const flags = snapshot => ({verify: Boolean(snapshot.verify), skills: Boolean(snapshot.skills)});
     const ackBox = () => root.querySelector('#wf-ack');
     const items = () => (state.assessment ? state.assessment.items : []);
     const blocking = () => Boolean(state.assessment && state.assessment.blocking.length);
@@ -100,7 +117,7 @@
       unverified.append(list);
       if (assessment.blocking.length) {
         unverified.append(el('p', {class: 'wf-error', id: 'wf-blocking',
-          text: `Opération bloquée : ${assessment.blocking.length} contrôle(s) critique(s) NON VERIFIE. Aucune confirmation ne peut les lever : lancer la vérification en ligne (interface actuelle) ou changer de niveau de sécurité.`}));
+          text: `Opération bloquée : ${assessment.blocking.length} contrôle(s) critique(s) NON VERIFIE. Aucune confirmation ne peut les lever : lancer « Vérifier en ligne » ou changer de niveau de sécurité.`}));
       } else {
         const box = el('input', {type: 'checkbox', id: 'wf-ack'});
         box.addEventListener('change', () => { invalidate(''); update(); });
@@ -122,6 +139,8 @@
       const usable = options.snapshot() !== null;
       validate.disabled = state.busy || !usable || blocking() || !acknowledged();
       compare.disabled = state.busy || !current();
+      archive.disabled = state.busy || !current();
+      online.disabled = state.busy || !usable || !(netVerify.checked || netSkills.checked);
       const c = state.comparison;
       const pending = c ? c.entries.filter(e => e.status === 'conflict' && !state.resolutions[e.path]).length : 0;
       write.disabled = state.busy || !c || !current() || pending > 0 || c.summary.blocked > 0 || !c.destination.writable || !confirm.checked;
@@ -168,7 +187,7 @@
 
     validate.addEventListener('click', () => run('Validation des contenus par le serveur…', async () => {
       const snapshot = options.snapshot();
-      const {response, payload} = await post('/api/files/validate', {config: snapshot.config, files: snapshot.files});
+      const {response, payload} = await post('/api/files/validate', Object.assign({config: snapshot.config, files: snapshot.files}, flags(snapshot)));
       if (!response.ok || !payload.ok) {
         state.validated = null;
         if (payload.diagnostics && payload.diagnostics.length) options.onDiagnostics(payload.diagnostics, 'validation');
@@ -205,8 +224,54 @@
 
     function body(extra) {
       const snapshot = options.snapshot();
-      return Object.assign({config: snapshot.config, files: snapshot.files, destination: destination.value.trim()}, extra);
+      return Object.assign({config: snapshot.config, files: snapshot.files, destination: destination.value.trim()}, flags(snapshot), extra);
     }
+
+    // Controles en ligne : le parcours recalcule le plan avec ces options ; planChanged affiche le rapport.
+    online.addEventListener('click', () => run('Vérification en ligne en cours (réseau)…', async () => {
+      await options.verifyOnline({verify: netVerify.checked, skills: netSkills.checked});
+    }));
+    for (const box of [netVerify, netSkills]) box.addEventListener('change', update);
+
+    function check(item, text) {
+      const level = item.status === 'PASS' ? 'ok' : item.status === 'FAIL' ? 'error' : 'warning';
+      return el('li', {class: `diag diag-${level}`, 'data-check': item.status}, el('span', {class: 'diag-level', text: item.status}), ` ${text}`);
+    }
+
+    function renderOnline(plan, applied) {
+      onlineReport.replaceChildren();
+      if (!plan) return;
+      const mode = applied && (applied.verify || applied.skills)
+        ? `Plan vérifié en ligne (${[applied.verify && 'packages et registres', applied.skills && 'skills'].filter(Boolean).join(', ')}).`
+        : 'Plan calculé hors ligne : les sources tierces restent NON VERIFIE.';
+      onlineReport.append(el('p', {id: 'wf-online-mode', class: 'muted', text: mode}));
+      if (plan.verification) {
+        onlineReport.append(el('h4', {text: 'Vérification en ligne'}), el('ul', {class: 'diagnostics', id: 'wf-verification'},
+          ...plan.verification.map(item => check(item, `${item.kind} ${item.subject} : ${item.message}`))));
+      } else if (plan.api && plan.api.length) {
+        onlineReport.append(el('h4', {text: "Contrats d'API (analyse statique, hors ligne)"}), el('ul', {class: 'diagnostics', id: 'wf-api'},
+          ...plan.api.map(item => check(item, `${item.subject} : ${item.message} (${item.evidence})`))));
+      }
+    }
+
+    archive.addEventListener('click', () => run("Contrôles répétés par le serveur puis création de l'archive…", async () => {
+      if (!current()) { invalidate('Contenus modifiés : valider à nouveau.'); return; }
+      const snapshot = options.snapshot();
+      const response = await fetch('/api/archive', {method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(Object.assign({config: snapshot.config, files: snapshot.files}, flags(snapshot)))});
+      if (!response.ok) {
+        let payload = {};
+        try { payload = await response.json(); } catch (error) { payload = {error: 'réponse illisible'}; }
+        if (response.status === 409 && payload.confirmation_required) { refreshAssessment(payload.unverified, payload.error); return; }
+        if (payload.diagnostics && payload.diagnostics.length) options.onDiagnostics(payload.diagnostics, 'archive');
+        setStatus(`Archive refusée : ${payload.error || 'erreur inconnue'}`);
+        return;
+      }
+      const url = URL.createObjectURL(await response.blob());
+      el('a', {href: url, download: `${snapshot.config.name}.zip`}).click();
+      URL.revokeObjectURL(url);
+      setStatus(`Archive ${snapshot.config.name}.zip générée après contrôles.`);
+    }));
 
     compare.addEventListener('click', () => run('Comparaison avec la destination (aucune écriture)…', async () => {
       if (!current()) { invalidate('Contenus modifiés : valider à nouveau.'); return; }
@@ -344,7 +409,8 @@
 
     return {
       // Nouveau plan : nouvelle evaluation NON VERIFIE ; une confirmation anterieure ne vaut plus.
-      planChanged(plan) {
+      planChanged(plan, applied) {
+        renderOnline(plan, applied);
         const next = plan ? plan.unverified || null : null;
         const same = state.assessment && next && state.assessment.token === next.token
           && state.assessment.items.length === next.items.length;

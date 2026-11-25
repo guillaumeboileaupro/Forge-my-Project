@@ -40,8 +40,11 @@ class FirefoxShellTests(acceptance.Common, unittest.TestCase):
         return json.loads(text) if text else None
 
     def store(self, value):
+        """Preferences ecrites puis page rechargee ; le brouillon des reponses n'est pas efface."""
         self.js("localStorage.setItem(arguments[0], arguments[1])", KEY, value)
-        self.load()
+        self.cmd("POST", "/refresh", {})
+        self.wait("return performance.getEntriesByName('forge-ready').length === 1")
+        self.js(acceptance.ERROR_CAPTURE)
 
     def prefs(self):
         return self.js("return window.forgeShell.prefs()")
@@ -51,7 +54,8 @@ class FirefoxShellTests(acceptance.Common, unittest.TestCase):
 
     # --- Preferences ---------------------------------------------------------------------
     def test_corrupt_or_unknown_preferences_are_ignored_without_touching_the_v1_draft(self):
-        self.js("localStorage.setItem(arguments[0], 'brouillon v1 intact')", DRAFT_KEY)
+        draft = json.dumps({"format": "forge-my-project/answers", "schema_version": 1, "answers": {"name": "brouillon-v1"}})
+        self.js("localStorage.setItem(arguments[0], arguments[1])", DRAFT_KEY, draft)
         defaults = self.prefs()
         self.assertEqual(defaults["theme"], "system")
         self.assertEqual(defaults["density"], "comfortable")
@@ -70,7 +74,9 @@ class FirefoxShellTests(acceptance.Common, unittest.TestCase):
         self.assertEqual(prefs["panels"]["navigation"], {"visible": True, "size": 440, "side": "left"})
         self.assertEqual(prefs["panels"]["preview"], {"visible": False, "size": None, "side": "right"})  # cotes en conflit
         self.assertTrue(self.js("return document.querySelector('.preview').hidden"))
-        self.assertEqual(self.js("return localStorage.getItem(arguments[0])", DRAFT_KEY), "brouillon v1 intact")
+        # Brouillon des reponses (E18b : partage avec l'interface actuelle) restaure, jamais remplace par la coque.
+        self.assertEqual(self.js("return document.querySelector('#q-name').value"), "brouillon-v1")
+        self.assertEqual(json.loads(self.js("return localStorage.getItem(arguments[0])", DRAFT_KEY))["answers"]["name"], "brouillon-v1")
         self.assert_no_errors()
 
     def test_theme_and_density_persist_and_an_explicit_choice_overrides_the_system(self):
@@ -250,8 +256,8 @@ class FirefoxShellTests(acceptance.Common, unittest.TestCase):
     def test_shell_sends_no_request_at_mount(self):
         requests = self.js("return performance.getEntriesByType('resource')"
                            ".filter(e => ['fetch', 'xmlhttprequest'].includes(e.initiatorType)).map(e => new URL(e.name).pathname)")
-        # Parcours (catalogue) et atelier E17a (dossier par defaut) ; la coque n'appelle rien (test statique).
-        self.assertEqual(sorted(requests), ["/api/catalog", "/api/destination/browse"])
+        # Parcours (catalogue), atelier E17a (dossier par defaut) et profils (E18b) ; la coque n'appelle rien (test statique).
+        self.assertEqual(sorted(requests), ["/api/catalog", "/api/destination/browse", "/api/profiles"])
         self.assert_no_errors()
 
 

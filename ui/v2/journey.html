@@ -13,6 +13,9 @@
   <script src="/v2/editor.js" defer></script>
   <script src="/v2/diagnostics.js" defer></script>
   <script src="/v2/workflow.js" defer></script>
+  <script src="/v2/answers.js" defer></script>
+  <script src="/v2/skills.js" defer></script>
+  <script src="/v2/protection.js" defer></script>
   <script src="/v2/journey.js" defer></script>
 </head>
 <body>
@@ -36,7 +39,7 @@
       <a class="topbar-link" href="/">Interface actuelle</a>
     </div>
   </header>
-  <p id="banner" class="banner">Préversion : l'interface actuelle reste la référence (archive, profils, skills, vérification en ligne). Ici, l'écriture locale passe par les mêmes contrôles serveur, répétés à chaque étape.</p>
+  <p id="banner" class="banner">Préversion : l'interface actuelle reste la référence jusqu'à la bascule (recette E18). Les mêmes contrôles serveur sont répétés à chaque étape.</p>
 
   <div class="shell">
   <nav class="rail" aria-label="Panneaux et zones">
@@ -66,6 +69,7 @@
       <p id="progress-label" class="muted"></p>
       <progress id="progress" max="1" value="0" aria-labelledby="progress-label"></progress>
       <ol id="step-list"></ol>
+      <section id="answers" class="box answers" aria-labelledby="answers-title"></section>
     </nav>
     <div class="splitter" data-splitter="navigation" role="separator" tabindex="0" aria-orientation="vertical"
          aria-controls="steps-panel" aria-label="Largeur du panneau Étapes"></div>
@@ -142,6 +146,13 @@
           <h2 id="workflow-title" class="section-title">Validation et écriture</h2>
           <p class="muted hint">Valider, comparer puis écrire : le serveur régénère et revalide tout à chaque étape ; aucune écriture sans comparaison ni confirmation.</p>
           <div id="workflow"></div>
+        </section>
+        <section class="panel" aria-labelledby="protection-title">
+          <h2 id="protection-title" class="section-title">Protection de branche GitHub</h2>
+          <details id="protection-box">
+            <summary>Préparer une commande (lecture seule)</summary>
+            <div id="protection"></div>
+          </details>
         </section>
       </div>
     </div>

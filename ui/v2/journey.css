@@ -348,3 +348,26 @@ textarea.editor-input:focus-visible { outline-offset: -2px; }
 /* Libelles longs (confirmations) : case alignee sur la premiere ligne. */
 #workflow .choice { align-items: flex-start; margin-right: 0; }
 #workflow .choice input { margin-top: 0.3rem; flex: none; }
+
+/* --- Parite avec l'interface actuelle (E18b) ------------------------------------------------ */
+details > summary { display: flex; align-items: center; gap: var(--space-2); min-height: var(--control-height); cursor: pointer; }
+.answers-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: var(--space-2) 0; }
+.answers select { width: 100%; min-height: var(--control-height); }
+.answers .file-input { min-height: var(--control-height); max-width: 100%; }
+.file-label { font-size: var(--text-sm); }
+#answers-alert:empty, #skills-status:empty, #gh-status:empty { display: none; }
+.hints { margin: var(--space-2) 0; padding-left: var(--space-4); font-size: var(--text-sm); }
+.skill-list { list-style: none; margin: var(--space-2) 0; padding: 0; }
+.skill { padding: var(--space-3) 0; border-bottom: var(--border-width) solid var(--border-default); }
+.skill-title { margin: 0 0 var(--space-2); }
+.skill .summary { margin-bottom: var(--space-2); }
+.skill a { display: inline-flex; align-items: center; min-height: var(--control-height); }
+.tag.ok { color: var(--status-pass); border-color: var(--status-pass); }
+.tag.warning { color: var(--status-warn); border-color: var(--status-warn); }
+.tag.error { color: var(--status-fail); border-color: var(--status-fail); }
+.diag-ok .diag-level { color: var(--status-pass); }
+#wf-online-box { margin-bottom: var(--space-3); }
+#wf-online-mode { margin: var(--space-2) 0 0; font-size: var(--text-sm); }
+#wf-online-report h4 { margin: var(--space-2) 0; font-size: var(--text-sm); }
+#gh-command { width: 100%; font-family: var(--font-mono); font-size: var(--text-sm); }
+#gh-summary p { margin: var(--space-1) 0; font-size: var(--text-sm); overflow-wrap: anywhere; }

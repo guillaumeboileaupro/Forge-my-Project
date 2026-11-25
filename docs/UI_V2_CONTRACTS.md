@@ -95,6 +95,15 @@ Réattribuée à Claude par le propriétaire le 25/11/2026. La coque enveloppe `
 - Commandes : `editor.tab.next`, `editor.tab.prev`, `editor.tab.close`, `editor.search` (raccourci affiché `Ctrl+F`, celui de l'éditeur), proposées seulement si elles s'appliquent.
 - Contrats E17a inchangés : `editor.js`, `diagnostics.js` et `workflow.js` ne sont pas modifiés, mêmes endpoints, mêmes flux sécurisés.
 
+## Parité E18b (sous-lot E18)
+
+Les fonctions de l'interface actuelle absentes de la v2 sont portées sans modifier un endpoint ni un format (`ui/js/app.js` reste la référence) :
+- `answers.js` (panneau Étapes, section « Réponses ») : brouillon automatique sous la clé **du v1** `forge-my-project.draft.v1` (même enveloppe `forge-my-project/answers`, schéma 1), toujours revalidé par `/api/answers/validate` avant application ; un brouillon refusé est supprimé et signalé ; sauvegarde différée de 300 ms et à la fermeture de la page. Export JSON normalisé par le serveur, import limité à 64 Kio, réinitialisation confirmée (réponses, plan, éditions et onglets retirés, brouillon effacé). Profils prédéfinis et personnels par `/api/profiles` (GET, POST, PUT, DELETE) ; un profil sans nom ni description conserve ceux saisis. Ce brouillon remplace, pour le parcours, la règle E16 « aucun stockage local » : il ne contient que des réponses, jamais de fichier, de jeton ni de secret.
+- Étape « Projet » : architecture manuelle facultative (4 000 caractères) et suggestion des règles locales (`/api/plan` avec une architecture vide) ; une saisie n'est remplacée qu'après confirmation.
+- Étape « Skills externes » (`skills.js`) : recherche explicite (`/api/skills/search`, cache ou non), approbation après examen (confirmation si la source n'est pas reconnue), refus, retrait, vérification (`/api/skills/verify`). Les approbations rejoignent `external_skills` de la configuration. Seul lien externe autorisé dans la v2 : l'examen du contenu sur GitHub au commit approuvé (`rel="noopener noreferrer"`, navigation seulement).
+- Validation et écriture (`workflow.js`) : contrôles en ligne explicites (`verify`, `skills`) par « Vérifier en ligne » ; le plan est recalculé avec ces options, qui accompagnent ensuite la validation, l'archive, la comparaison et l'écriture, et sont retirées à tout recalcul du plan. Rapport de vérification en ligne, ou contrats d'API hors ligne. Archive ZIP par `/api/archive` après validation des contenus courants.
+- Protection de branche GitHub (`protection.js`) : `/api/github/protection/prepare`, commande en lecture seule affichée et copiable, jamais exécutée.
+
 ## Recette E18a (sous-lot E18 sans la coque)
 
 Recette automatisée de `/v2/parcours` et défauts corrigés : voir `docs/E18A_ACCEPTANCE.md`. Règles ajoutées, valables pour E15 et E17 :
