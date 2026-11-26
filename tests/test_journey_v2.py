@@ -101,7 +101,7 @@ class ScriptContractTests(unittest.TestCase):
                          ["store.setItem(DRAFT_KEY, JSON.stringify(document_()", "store.getItem(DRAFT_KEY)",
                           "store.removeItem(DRAFT_KEY)", "store.removeItem(DRAFT_KEY)"])
         self.assertEqual(script.count("window.localStorage"), 1)
-        self.assertIn("const payload = await validate(JSON.parse(raw));", script)  # jamais applique sans validation
+        self.assertIn("const payload = await validate(saved);", script)  # jamais applique sans validation
 
     def test_each_component_only_calls_its_endpoints(self):
         for name, expected in self.FETCHES.items():

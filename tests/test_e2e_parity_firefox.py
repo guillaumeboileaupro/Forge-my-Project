@@ -100,6 +100,33 @@ class FirefoxParityTests(acceptance.Common, unittest.TestCase):
         self.assertEqual(self.answers()["technologies"], [])
         self.assert_no_errors()
 
+    def test_unfinished_first_step_survives_a_reload(self):
+        journey.FirefoxJourneyTests.type_name(self, "sans-type")  # aucun type de projet choisi
+        self.wait("return (localStorage.getItem(%r) || '').includes('sans-type')" % DRAFT_KEY)
+        self.assertNotIn("project_type", self.draft())
+        self.reload_keeping_draft()
+        self.assertIn("restaurées", self.text("#draft-status"))
+        self.assertEqual(self.js("return document.querySelector('#q-name').value"), "sans-type")
+        self.assertEqual(self.answers()["project_type"], "")  # reste non choisi, pas de type par defaut
+        self.assertEqual(self.js("return document.querySelectorAll('input[name=\"q-type\"]:checked').length"), 0)
+        self.assertEqual(self.text("#answers-alert"), "")
+        self.assert_no_errors()
+
+    def test_online_check_can_be_retried_after_a_failure(self):
+        journey.FirefoxJourneyTests.ready_plan(self)
+        self.js("const real = window.fetch; let failed = false; window.fetch = (url, init) => {"
+                " if (url === '/api/plan' && init.body.includes('\"skills\":true') && !failed) {"
+                " failed = true; return Promise.reject(new TypeError('connexion interrompue')); } return real(url, init); };")
+        self.click("#wf-net-skills")
+        self.click("#wf-online")
+        self.wait("return window.forgeJourney.state.validation === 'invalid'")
+        self.assertIn("connexion interrompue", self.text("#validation"))
+        self.assertFalse(self.js("return document.querySelector('#wf-online').disabled"))  # nouvel essai possible
+        self.assertTrue(self.js("return document.querySelector('#wf-archive').disabled"))  # archive : plan valide exige
+        self.click("#wf-online")
+        self.wait("return window.forgeJourney.state.online !== null && window.forgeJourney.state.validation === 'valid'")
+        self.assert_no_errors()
+
     # --- Export et import JSON ---------------------------------------------------------------
     def test_export_then_import(self):
         journey.FirefoxJourneyTests.fill_minimal(self, ("python",))

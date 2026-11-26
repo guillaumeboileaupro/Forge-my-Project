@@ -77,6 +77,11 @@
     const showAlert = message => { alert.textContent = message; };
     const document_ = () => ({format: ANSWERS_FORMAT, schema_version: 1, answers: options.collect()});
     const validate = value => call('/api/answers/validate', 'POST', {document: value});
+    // Un document sans type de projet (premiere etape inachevee) le laisse non choisi au lieu du type par defaut.
+    const unchosen = (source, answers) => {
+      const raw = source && typeof source === 'object' && source.answers && typeof source.answers === 'object' ? source.answers : source;
+      return raw && typeof raw === 'object' && !('project_type' in raw) ? Object.assign({}, answers, {project_type: ''}) : answers;
+    };
 
     // --- Brouillon --------------------------------------------------------------
     function save() {
@@ -103,8 +108,9 @@
       try { raw = store && store.getItem(DRAFT_KEY); } catch (error) { raw = null; }
       if (raw) {
         try {
-          const payload = await validate(JSON.parse(raw));
-          options.apply(payload.answers);
+          const saved = JSON.parse(raw);
+          const payload = await validate(saved);
+          options.apply(unchosen(saved, payload.answers));
           draft.textContent = 'Réponses précédentes restaurées.';
         } catch (error) {
           try { store.removeItem(DRAFT_KEY); } catch (ignored) { /* stockage indisponible */ }
@@ -139,7 +145,7 @@
       }
       try {
         const payload = await validate(parsed);
-        options.apply(payload.answers);
+        options.apply(unchosen(parsed, payload.answers));
         save();
         options.status(`Configuration importée depuis ${file.name}.`);
       } catch (error) {

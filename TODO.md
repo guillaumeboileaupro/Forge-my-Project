@@ -395,6 +395,14 @@ Les 34 decisions et les criteres de recette sont dans [docs/ROADMAP_2026.md](doc
 - Limites: preversion sans archive, ecriture, profils, import/export, skills ni verification en ligne (l'interface actuelle reste la reference jusqu'a E18); pas de coque E15 (panneaux, onglets, palette, choix du theme); arbre en listes natives (pas de modele ARIA tree); le diagramme ne montre que les regles produisant des fichiers; 360 px non atteignable par redimensionnement Firefox (a valider en E18); captures non approuvees.
 - Revue: auto-revue de l'auteur (non independante).
 
+### Revues automatiques non traitees - 26 novembre 2026 (Claude Code, branche fix/review-findings)
+- Origine: commentaires de relecture laisses sur des PR deja fusionnees, relus le 26/11 : #47 (2 P1, `scripts/worktree_cleanup.py`), #53 (2 P2, parcours v2), #45 (1 P2, editeur). Le P1 d'attribution de #45 porte sur un commit Codex deja integre : non corrigeable sans reecrire l'historique (interdit), signale.
+- Execution IA mesuree (horloge, pas du temps humain): 20 h 01 -> 20:10 (0 h 09), attente CI non comptee. Temps humain reel: non renseigne.
+- Corrige: worktree exterieur a la racine conserve sauf `--allow-external CHEMIN` exact ; reinspection de chaque candidat juste avant `git worktree remove` (HEAD, branche, verrou, operation, fichiers ignores, integration) ; brouillon v2 sans type de projet restaurable (type omis du document, laisse non choisi a la restauration) ; « Vérifier en ligne » possible apres un echec (configuration envoyable, l'archive et l'ecriture exigent toujours un plan valide) ; largeur du document entier portee par la couche virtualisee de l'editeur.
+- Tests: `tests/test_worktree_cleanup.py` (12, dont worktree exterieur, changement apres inspection, course pendant `--apply`) ; `tests/test_e2e_parity_firefox.py` (+2) ; `tests/test_e2e_editor_firefox.py` (+1). 8 mutations injectees, toutes detectees. Suite locale OK (62 ignores sans E2E) ; Firefox v2 local 41/43, les 2 echecs etant l'ecriture locale refusee (dossier temporaire dans le depot), a confirmer par la CI. Budgets E18a respectes (max 404 ms pour l'apercu, 66 ms pour une interaction).
+- Limite: une modification entre la reinspection et `git worktree remove` reste possible (fenetre de quelques millisecondes, sans verrou de fichiers).
+- Revue: auto-revue de l'auteur (non independante).
+
 ### E18b - 25 novembre 2026 (Claude Code, branche feat/e18b-v2-parity)
 - Decoupage: E18 exige la parite de parcours ; 6 fonctions de l'interface actuelle manquaient dans la v2. Sur decision du proprietaire le 25/11, E18b (Claude, depend de E16 et E17, 3 j) les porte ; E18 garde lecteur d'ecran, captures et bascule. Total 36,5 j -> 39,5 j.
 - Charge humaine estimee: 3 j (24 h). Execution IA mesuree (horloge, pas du temps humain): 20 h 23 -> 20:56 (0 h 33), attente CI non comptee. Temps humain reel: non renseigne. Ecart humain: non calculable.

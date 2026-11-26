@@ -4,17 +4,23 @@
 Simulation par defaut : n'execute rien sans --apply. Un worktree secondaire n'est
 retire que s'il remplit toutes les conditions suivantes :
 - ce n'est ni le worktree principal ni celui depuis lequel l'outil est lance ;
+- il est sous la racine du worktree principal ; un worktree exterieur (dossier frere,
+  par exemple) n'est retire que si son chemin exact est autorise par --allow-external ;
 - il n'est pas verrouille (`git worktree lock`) et son dossier existe ;
 - aucune operation en cours (fusion, rebase, cherry-pick, revert, bisect) ;
 - aucun fichier modifie, non suivi ou ignore (un fichier ignore peut etre unique,
   par exemple un .env, et `git worktree remove` le supprimerait sans prevenir) ;
 - son HEAD est entierement integre a la reference de base (ancetre de --base).
 
+Juste avant chaque suppression, le worktree est inspecte a nouveau (HEAD, branche,
+verrou, operation, fichiers y compris ignores, integration) : un changement depuis
+l'inspection initiale annule la suppression.
+
 Actions, uniquement avec --apply : `git worktree remove` (jamais --force), puis
 `git branch -d` (jamais -D) pour la branche du worktree. Aucune branche distante,
 aucun stash et aucun fichier hors des commandes Git ci-dessus ne sont touches.
 
-Usage : worktree_cleanup.py [--repo DEPOT] [--base REF] [--apply]
+Usage : worktree_cleanup.py [--repo DEPOT] [--base REF] [--allow-external CHEMIN]... [--apply]
 Codes de sortie : 0 sans erreur (y compris si des worktrees sont conserves), 1 erreur.
 """
 
@@ -82,13 +88,15 @@ def operation_in_progress(path):
     return found
 
 
-def decide(repo, worktree, base, invoking):
+def decide(repo, worktree, base, invoking, root, allowed=frozenset()):
     reasons = []
     if worktree.main:
         reasons.append("worktree principal")
     path = worktree.path.resolve()
     if invoking == path or path in invoking.parents:
         reasons.append("worktree actif (outil lance depuis ce dossier)")
+    if not worktree.main and not path.is_relative_to(root) and path not in allowed:
+        reasons.append("hors de la racine du depot (autorisation par chemin: --allow-external)")
     if worktree.locked:
         reasons.append("verrouille")
     if worktree.prunable or not worktree.path.is_dir():
@@ -110,6 +118,19 @@ def decide(repo, worktree, base, invoking):
     return Decision(worktree, not reasons, reasons or [f"propre et integre a {base}"])
 
 
+def recheck(repo, decision, base, invoking, root, allowed):
+    """Inspection repetee juste avant la suppression ; refuse tout changement depuis la premiere."""
+    before = decision.worktree
+    fresh = next((w for w in list_worktrees(repo) if w.path == before.path), None)
+    if fresh is None:
+        raise RuntimeError("worktree introuvable a la reinspection")
+    if (fresh.head, fresh.branch) != (before.head, before.branch):
+        raise RuntimeError("HEAD ou branche modifie depuis l'inspection")
+    again = decide(repo, fresh, base, invoking, root, allowed)
+    if not again.remove:
+        raise RuntimeError("etat modifie depuis l'inspection: " + "; ".join(again.reasons))
+
+
 def apply(repo, decision):
     worktree = decision.worktree
     git(repo, "worktree", "remove", str(worktree.path))
@@ -127,12 +148,17 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo", default=".", help="depot Git (defaut: dossier courant)")
     parser.add_argument("--base", default="origin/main", help="reference d'integration")
+    parser.add_argument("--allow-external", action="append", default=[], metavar="CHEMIN",
+                        help="autoriser ce worktree exterieur a la racine (chemin exact, repetable)")
     parser.add_argument("--apply", action="store_true", help="executer (sinon simulation)")
     args = parser.parse_args(argv)
     repo, invoking = Path(args.repo), Path.cwd().resolve()
+    allowed = frozenset(Path(path).resolve() for path in args.allow_external)
     try:
         git(repo, "rev-parse", "--verify", "--quiet", args.base + "^{commit}")
-        decisions = [decide(repo, wt, args.base, invoking) for wt in list_worktrees(repo)]
+        worktrees = list_worktrees(repo)
+        root = worktrees[0].path.resolve()
+        decisions = [decide(repo, wt, args.base, invoking, root, allowed) for wt in worktrees]
     except RuntimeError as error:
         print(f"erreur: {error}", file=sys.stderr)
         return 1
@@ -146,6 +172,7 @@ def main(argv=None):
         print(f"- {verdict}: {label} - {'; '.join(decision.reasons)}")
         if decision.remove and args.apply:
             try:
+                recheck(repo, decision, args.base, invoking, root, allowed)
                 print("  -> " + "; ".join(apply(repo, decision)))
             except RuntimeError as error:
                 failed = True
