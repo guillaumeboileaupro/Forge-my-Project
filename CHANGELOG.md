@@ -5,6 +5,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 ## [Unreleased]
 
 ### Ajoute
+- Rapport de recette E18 (docs/E18_ACCEPTANCE.md) : conditions de bascule et preuves, matrice de parite, checklist lecteur d'ecran Orca, regeneration des captures ; bascule non appliquee.
 - Parite du parcours v2 avec l'interface actuelle : brouillon automatique partage avec l'interface actuelle et revalide par le serveur, export/import JSON, reinitialisation, profils predefinis et personnels, architecture manuelle et suggestion locale, etape Skills externes (recherche, approbation, verification), controles en ligne explicites, archive ZIP et assistant de protection de branche ; memes endpoints et formats (E18b).
 - Atelier du parcours v2 integre a la coque : panneaux Editeur et Diagnostics masquables et redimensionnables, onglets des fichiers ouverts (clavier, fermeture, marque de modification) et commandes de l'editeur dans la palette (E17).
 - Coque du parcours v2 : rail, panneaux Etapes et Apercu masquables, deplacables et redimensionnables au clavier et a la souris, theme systeme/clair/sombre, densite compacte, onglets Plan/Resume, palette de commandes `Ctrl+K` et reinitialisation de la disposition ; preferences locales versionnees sans donnee projet (E15).
@@ -25,6 +26,7 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 - Analyse de l'image conteneur avec Trivy 0.76.2 (empreinte verifiee) des projets Docker des qu'un Dockerfile existe, bloquante en `high`/`critical` (`medium` en hardened), sans ignorer les vulnerabilites non corrigees ; NON VERIFIE sans Dockerfile (E10).
 
 ### Corrige
+- Parcours v2 : heure de la sauvegarde automatique affichee au format francais (24 h) quelle que soit la langue du navigateur.
 - Nettoyage des worktrees : un worktree hors de la racine du depot n'est retire que si son chemin exact est autorise (`--allow-external`), et chaque candidat est reinspecte juste avant sa suppression (HEAD, branche, verrou, operation, fichiers y compris ignores) ; un fichier `.env` cree apres l'inspection n'est plus supprime (revue de la PR #47).
 - Parcours v2 : un brouillon sans type de projet choisi n'est plus rejete au rechargement ; la verification en ligne peut etre relancee apres un echec ; la couche coloree de l'editeur garde la largeur du document entier, le texte reste sous le curseur apres un defilement horizontal (revues des PR #53 et #45).
 - Parcours v2 : logo invisible (image bloquee par la CSP, desormais en SVG inline), contraste du sous-titre en theme sombre, barres de defilement claires en theme sombre, champ focalise masque par la barre d'actions collante a 360 px, cibles de 32 px relevees a 36/44 px, et editeur sous le budget de 100 ms sur un fichier de 2 000 lignes (rendu des seules lignes visibles, remplacement en une copie) (E18a).

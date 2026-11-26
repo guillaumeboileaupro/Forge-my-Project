@@ -73,7 +73,7 @@ class FirefoxParityTests(acceptance.Common, unittest.TestCase):
     def test_draft_is_saved_restored_reset_and_an_incompatible_one_ignored(self):
         journey.FirefoxJourneyTests.fill_minimal(self, ("python",))
         self.wait("return (localStorage.getItem(arguments[0]) || '').includes('python')".replace("arguments[0]", repr(DRAFT_KEY)))
-        self.assertIn("sauvegardées", self.text("#draft-status"))
+        self.assertRegex(self.text("#draft-status"), r"sauvegardées automatiquement à \d{2}:\d{2}:\d{2}\.$")  # heure francaise
         self.click("#next")
         self.check('input[name="q-tech"][value="pytest"]')
         self.reload_keeping_draft()  # rechargement immediat : sauvegarde a la fermeture
