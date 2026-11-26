@@ -25,6 +25,8 @@ Format : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/). Versions : [S
 - Analyse de l'image conteneur avec Trivy 0.76.2 (empreinte verifiee) des projets Docker des qu'un Dockerfile existe, bloquante en `high`/`critical` (`medium` en hardened), sans ignorer les vulnerabilites non corrigees ; NON VERIFIE sans Dockerfile (E10).
 
 ### Corrige
+- Nettoyage des worktrees : un worktree hors de la racine du depot n'est retire que si son chemin exact est autorise (`--allow-external`), et chaque candidat est reinspecte juste avant sa suppression (HEAD, branche, verrou, operation, fichiers y compris ignores) ; un fichier `.env` cree apres l'inspection n'est plus supprime (revue de la PR #47).
+- Parcours v2 : un brouillon sans type de projet choisi n'est plus rejete au rechargement ; la verification en ligne peut etre relancee apres un echec ; la couche coloree de l'editeur garde la largeur du document entier, le texte reste sous le curseur apres un defilement horizontal (revues des PR #53 et #45).
 - Parcours v2 : logo invisible (image bloquee par la CSP, desormais en SVG inline), contraste du sous-titre en theme sombre, barres de defilement claires en theme sombre, champ focalise masque par la barre d'actions collante a 360 px, cibles de 32 px relevees a 36/44 px, et editeur sous le budget de 100 ms sur un fichier de 2 000 lignes (rendu des seules lignes visibles, remplacement en une copie) (E18a).
 
 ## [1.1.0] - 2026-11-19

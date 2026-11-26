@@ -26,7 +26,7 @@ Une anomalie est **fermee** seulement avec un test qui echouait avant la correct
 | Mensuel | audit d'attribution de toutes les refs | `python3 scripts/attribution_guard.py audit` | aucune attribution interdite |
 | Mensuel | dependances et epinglages (section 3) | catalogues `verified_at` | dates de moins de 90 jours |
 | Avant chaque expiration d'exception d'audit | avis toujours sans correctif ? | registre de docs/SECURITY.md | exception retiree ou renouvelee par PR |
-| Apres chaque fusion | worktrees secondaires propres et integres (simulation, puis execution sur accord du proprietaire) | `python3 scripts/worktree_cleanup.py` puis `--apply` | worktrees sales, verrouilles, actifs ou non integres conserves avec leur motif |
+| Apres chaque fusion | worktrees secondaires propres et integres (simulation, puis execution sur accord du proprietaire) | `python3 scripts/worktree_cleanup.py` puis `--apply` (worktree exterieur au depot : `--allow-external CHEMIN` exact) | worktrees sales, verrouilles, actifs, non integres ou exterieurs non autorises conserves avec leur motif ; reinspection avant chaque suppression |
 | A chaque avis de securite visant un outil epingle | remplacement de la version, de l'empreinte et des SHA d'actions | PR dediee `fix(security): ...` | CI verte avec la nouvelle version |
 
 Un controle regulier non execute est note `NON VERIFIE` dans la PR ou la release concernee ; il n'est jamais presente comme reussi. Le resultat de chaque controle mensuel est consigne en une ligne dans TODO.md (date, commande, resultat).

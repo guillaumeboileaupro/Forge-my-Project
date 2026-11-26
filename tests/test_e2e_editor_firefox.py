@@ -64,6 +64,20 @@ class FirefoxEditorTests(unittest.TestCase):
         self.js("document.querySelector('.workbench').scrollIntoView()")
         base.FirefoxFormTests.screenshot(self, "e17a-editor")
 
+    def test_horizontal_scroll_stays_aligned_outside_the_painted_window(self):
+        """Ligne la plus longue hors des lignes peintes : la couche garde la largeur du document entier."""
+        self.ready_plan()
+        self.open_file("README.md")
+        long_text = "x" * 3000 + "\n" + "\n".join("ligne %d" % i for i in range(1500))
+        self.set_value("#content", long_text)
+        self.js("const a = document.querySelector('#content'); a.scrollLeft = 5000; a.dispatchEvent(new Event('scroll'));")
+        self.js("const a = document.querySelector('#content'); a.scrollTop = a.scrollHeight; a.dispatchEvent(new Event('scroll'));")
+        self.wait("return !document.querySelector('#editor .editor-layer').textContent.includes('xxxxxxxxxx')")  # longue ligne hors fenetre
+        self.js("return new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))")
+        area, layer = self.js("return ['#content', '#editor .editor-layer'].map(s => document.querySelector(s).scrollLeft)")
+        self.assertGreater(area, 1000)
+        self.assertEqual(layer, area)  # texte affiche sous le curseur reel
+
     def test_search_replace_marks_the_file_modified_and_revert_restores(self):
         self.ready_plan()
         self.open_file("README.md")

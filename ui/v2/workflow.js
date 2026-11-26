@@ -140,7 +140,7 @@
       validate.disabled = state.busy || !usable || blocking() || !acknowledged();
       compare.disabled = state.busy || !current();
       archive.disabled = state.busy || !current();
-      online.disabled = state.busy || !usable || !(netVerify.checked || netSkills.checked);
+      online.disabled = state.busy || !options.canVerifyOnline() || !(netVerify.checked || netSkills.checked);
       const c = state.comparison;
       const pending = c ? c.entries.filter(e => e.status === 'conflict' && !state.resolutions[e.path]).length : 0;
       write.disabled = state.busy || !c || !current() || pending > 0 || c.summary.blocked > 0 || !c.destination.writable || !confirm.checked;

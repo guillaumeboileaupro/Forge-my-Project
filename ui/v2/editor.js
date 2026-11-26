@@ -191,7 +191,15 @@
     }
 
     // Seules les lignes visibles (plus une marge) sont peintes ; deux espaces gardent la hauteur totale,
-    // donc le defilement natif du textarea et de la couche reste identique ligne a ligne.
+    // donc le defilement natif du textarea et de la couche reste identique ligne a ligne. L'espace du haut
+    // porte aussi la largeur du document entier (ligne la plus longue, meme hors fenetre) : sans elle, la
+    // couche plus etroite bornerait scrollLeft et le texte affiche ne serait plus sous le curseur.
+    function extent() {
+      const style = getComputedStyle(area);
+      const scrollbar = area.offsetWidth - area.clientWidth; // la couche n'a pas de barre verticale
+      return Math.max(0, area.scrollWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) + scrollbar);
+    }
+
     function render() {
       state.frame = 0;
       const text = area.value;
@@ -204,7 +212,9 @@
       const to = last < total ? state.starts[last] : text.length;
       state.window = [first, last];
       const current = state.matches[state.current];
-      layer.replaceChildren(spacer(first * height));
+      const top = spacer(first * height);
+      top.style.width = `${extent()}px`;
+      layer.replaceChildren(top);
       paint(layer, text.slice(from, to), clip(state.tokens, from, to), clip(state.matches, from, to), current ? current.start : -1);
       layer.append(document.createTextNode('\n'), // hauteur identique au textarea si le texte finit par \n
         spacer((total - last) * height));

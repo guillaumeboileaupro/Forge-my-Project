@@ -120,8 +120,10 @@ function config() {
 }
 
 // Reponses au format du brouillon, de l'export et des profils (T05).
+// Type non encore choisi : absent du document (le contrat n'accepte que les types du catalogue).
 function collectAnswers() {
   const {schema_version: ignored, ...answers} = config();
+  if (!answers.project_type) delete answers.project_type;
   return answers;
 }
 
@@ -780,7 +782,10 @@ async function init() {
     onSelect: path => select(path, true), onClose: path => select(path, false)});
   $('#close-tab').addEventListener('click', () => fileTabs.close(fileTabs.active()));
   window.forgeJourney.fileTabs = fileTabs;
-  workflow = window.ForgeWorkflow.create($('#workflow'), {snapshot, verifyOnline,
+  // Controles en ligne : possibles des que la configuration est envoyable, meme apres un echec (nouvel essai).
+  const canVerifyOnline = () => NAME.test(state.answers.name) && Boolean(state.answers.project_type)
+    && state.validation !== 'running';
+  workflow = window.ForgeWorkflow.create($('#workflow'), {snapshot, verifyOnline, canVerifyOnline,
     onDiagnostics: (items, source) => diagnostics.update(items, source)});
   const notice = message => { $('#step-notice').textContent = message; };
   skills = window.ForgeSkills.create(el('div', {id: 'skills-panel'}), {config, status: () => {},

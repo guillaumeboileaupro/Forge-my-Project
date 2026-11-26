@@ -11,9 +11,12 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 TOOL = ROOT / "scripts" / "worktree_cleanup.py"
+sys.path.insert(0, str(TOOL.parent))
+import worktree_cleanup as cleanup  # noqa: E402
 IDENTITY = {"GIT_AUTHOR_NAME": "Owner", "GIT_AUTHOR_EMAIL": "owner@example.invalid",
             "GIT_COMMITTER_NAME": "Owner", "GIT_COMMITTER_EMAIL": "owner@example.invalid"}
 
@@ -28,7 +31,7 @@ class WorktreeCleanupTests(unittest.TestCase):
         self.repo = self.sandbox / "repo"
         self.repo.mkdir()
         self.git(self.repo, "init", "-q", "-b", "main")
-        (self.repo / ".gitignore").write_text(".env\n", encoding="utf-8")
+        (self.repo / ".gitignore").write_text(".env\nwt/\n", encoding="utf-8")
         self.commit(self.repo, "init")
 
     def git(self, cwd, *args):
@@ -40,8 +43,9 @@ class WorktreeCleanupTests(unittest.TestCase):
         self.git(cwd, "add", "-A")
         self.git(cwd, "commit", "-q", "-m", message)
 
-    def add_worktree(self, name, merged=True):
-        path = self.sandbox / name
+    def add_worktree(self, name, merged=True, external=False):
+        # Sous la racine du depot par defaut ; `external` : dossier frere du depot.
+        path = self.sandbox / name if external else self.repo / "wt" / name
         self.git(self.repo, "worktree", "add", "-q", "-b", name, str(path))
         self.commit(path, name)
         if merged:
@@ -112,7 +116,7 @@ class WorktreeCleanupTests(unittest.TestCase):
         self.assert_kept(path, "operation en cours: MERGE_HEAD")
 
     def test_detached_merged_worktree_is_removed_without_branch_deletion(self):
-        path = self.sandbox / "detached"
+        path = self.repo / "wt" / "detached"
         self.git(self.repo, "worktree", "add", "-q", "--detach", str(path), "main")
         result = self.run_tool("--apply")
         self.assertIn("HEAD detache", result.stdout)
@@ -120,6 +124,56 @@ class WorktreeCleanupTests(unittest.TestCase):
         self.assertNotIn("branche", result.stdout.split("detached")[-1])
         self.assertFalse(path.exists())
         self.assertEqual(self.branches(), ["main"])
+
+    def test_external_worktree_needs_a_path_specific_authorization(self):
+        path = self.add_worktree("feat-sibling", external=True)
+        self.assert_kept(path, "hors de la racine du depot")
+        other = self.add_worktree("feat-other-sibling", external=True)
+        result = self.run_tool("--apply", "--allow-external", str(path))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(f"A RETIRER: {path} [feat-sibling]", result.stdout)
+        self.assertFalse(path.exists())
+        self.assertRegex(result.stdout, rf"CONSERVE: {re.escape(str(other))} .*hors de la racine")  # autorisation par chemin
+        self.assertTrue(other.is_dir())
+
+    def in_process(self):
+        patch = mock.patch.dict(os.environ, self.env)
+        patch.start()
+        self.addCleanup(patch.stop)
+        worktrees = cleanup.list_worktrees(self.repo)
+        return worktrees, worktrees[0].path.resolve()
+
+    def test_candidate_changed_after_inspection_is_not_removed(self):
+        for name, change in (("feat-env", lambda path: (path / ".env").write_text("SECRET=1", encoding="utf-8")),
+                             ("feat-late-commit", lambda path: self.commit(path, "late")),
+                             # Autre branche au meme commit integre : seule la comparaison HEAD/branche le voit.
+                             ("feat-switched", lambda path: self.git(path, "switch", "-q", "-c", "feat-switched-2")),
+                             ("feat-locked-late", lambda path: self.git(self.repo, "worktree", "lock", str(path)))):
+            with self.subTest(name):
+                path = self.add_worktree(name)
+                worktrees, root = self.in_process()
+                decision = cleanup.decide(self.repo, next(w for w in worktrees if w.path == path), "main", ROOT, root)
+                self.assertTrue(decision.remove)
+                change(path)
+                with self.assertRaisesRegex(RuntimeError, "depuis l'inspection"):
+                    cleanup.recheck(self.repo, decision, "main", ROOT, root, frozenset())
+                self.assertTrue(path.is_dir())
+
+    def test_apply_rechecks_each_candidate_before_removal(self):
+        path = self.add_worktree("feat-race")
+        self.in_process()
+        original = cleanup.decide
+
+        def decide_then_change(repo, worktree, *args):
+            decision = original(repo, worktree, *args)
+            if worktree.path == path and not (path / ".env").exists():
+                (path / ".env").write_text("SECRET=1", encoding="utf-8")  # cree apres l'inspection initiale
+            return decision
+
+        with mock.patch.object(cleanup, "decide", decide_then_change), mock.patch("sys.stdout"), mock.patch("sys.stderr"):
+            self.assertEqual(cleanup.main(["--repo", str(self.repo), "--base", "main", "--apply"]), 1)
+        self.assertEqual((path / ".env").read_text(encoding="utf-8"), "SECRET=1")
+        self.assertIn("feat-race", self.branches())
 
     def test_unknown_base_is_an_error_and_changes_nothing(self):
         path = self.add_worktree("feat-merged")
