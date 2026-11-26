@@ -59,6 +59,8 @@ Chaque défaut a d'abord fait échouer un test de la recette, puis le test est p
 
 ## Ce qui reste pour E18 (après E15 et E17)
 
+Suivi dans `docs/E18_ACCEPTANCE.md`.
+
 - Refaire cette recette sur la coque E15 : panneaux, onglets, palette, raccourcis (`F6`, `Ctrl+K`, `Ctrl+Shift+P`), modèle ARIA des onglets et des séparateurs, choix du thème et de la densité.
 - Établir la parité de parcours avec l'interface actuelle (archive, profils, import/export, skills, vérification en ligne), absente de la v2. Portée par le sous-lot E18b (25/11/2026, `tests/test_e2e_parity_firefox.py`).
 - Passer une recette avec un lecteur d'écran (Orca) et une recette manuelle sur un vrai téléphone.

@@ -91,7 +91,7 @@
       if (!store) { draft.textContent = 'Sauvegarde automatique indisponible dans ce navigateur.'; return; }
       try {
         store.setItem(DRAFT_KEY, JSON.stringify(document_()));
-        draft.textContent = `Réponses sauvegardées automatiquement à ${new Date().toLocaleTimeString()}.`;
+        draft.textContent = `Réponses sauvegardées automatiquement à ${new Date().toLocaleTimeString('fr-FR')}.`;
       } catch (error) {
         draft.textContent = 'Sauvegarde automatique indisponible dans ce navigateur.';
       }
